@@ -1,7 +1,7 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.5.15/schema.json",
   "files": {
-    "includes": ["**", "!**/node_modules", "!**/dist", "!**/target", "!**/gen", "!docs-site/_site", "!**/.wrangler"]
+    "includes": ["**", "!**/node_modules", "!**/dist", "!**/target", "!**/gen", "!docs-site/_site", "!**/.wrangler", "!**/integrations/claude-plugin/server"]
   },
   "formatter": { "indentStyle": "space", "indentWidth": 2, "lineWidth": 120 },
   "javascript": { "formatter": { "quoteStyle": "single" } },

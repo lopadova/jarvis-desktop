@@ -1,0 +1,60 @@
+{
+  "$schema": "https://raw.githubusercontent.com/modelcontextprotocol/mcpb/main/dist/mcpb-manifest-v0.3.schema.json",
+  "manifest_version": "0.3",
+  "name": "jarvis",
+  "display_name": "Jarvis",
+  "version": "0.1.0",
+  "description": "Let Claude talk to you out loud through Jarvis, your voice assistant on this computer.",
+  "long_description": "Jarvis Desktop is a voice-first personal assistant. With this extension Claude can speak short updates, ask you a question out loud and wait for your answer, show a notification, start background tasks in Jarvis and read what Jarvis remembers about you.\n\nThe Jarvis app must be running on this computer. Calls go only to the local Jarvis process (loopback); risky actions still need your approval on screen.",
+  "author": {
+    "name": "Jarvis Desktop contributors",
+    "url": "https://github.com/lopadova/jarvis-desktop"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lopadova/jarvis-desktop"
+  },
+  "homepage": "https://github.com/lopadova/jarvis-desktop",
+  "support": "https://github.com/lopadova/jarvis-desktop/issues",
+  "icon": "icon.png",
+  "server": {
+    "type": "node",
+    "entry_point": "server/jarvis-mcp.mjs",
+    "mcp_config": {
+      "command": "node",
+      "args": ["${__dirname}/server/jarvis-mcp.mjs"],
+      "env": {}
+    }
+  },
+  "tools": [
+    {
+      "name": "jarvis_speak",
+      "description": "Say a short message out loud on the user's computer (≤ 300 characters)."
+    },
+    {
+      "name": "jarvis_ask_user",
+      "description": "Ask the user a question out loud and wait for their spoken or clicked answer. Use when you are blocked and need a decision."
+    },
+    { "name": "jarvis_notify", "description": "Show a desktop notification to the user (silent)." },
+    {
+      "name": "jarvis_start_task",
+      "description": "Start a background task on the user's computer with Jarvis (Claude Code, Codex or the Home agent). Risky steps still require the user's approval on their screen."
+    },
+    {
+      "name": "jarvis_list_sessions",
+      "description": "List Jarvis background sessions with their status and latest activity."
+    },
+    { "name": "jarvis_session_result", "description": "Get the final result text of a Jarvis session." },
+    { "name": "jarvis_remember", "description": "Save a durable preference or fact about the user in Jarvis memory." },
+    { "name": "jarvis_recall", "description": "List what Jarvis remembers about the user (preferences and facts)." }
+  ],
+  "tools_generated": false,
+  "keywords": ["voice", "speech", "assistant", "notifications", "tts"],
+  "license": "MIT",
+  "compatibility": {
+    "platforms": ["darwin", "win32", "linux"],
+    "runtimes": {
+      "node": ">=20.0.0"
+    }
+  }
+}
