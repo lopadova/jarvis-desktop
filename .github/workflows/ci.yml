@@ -84,7 +84,6 @@ jobs:
             libayatana-appindicator3-dev \
             librsvg2-dev \
             libasound2-dev \
-            libpipewire-0.3-dev libspa-0.2-dev \
             patchelf
 
       - uses: dtolnay/rust-toolchain@89b12181fb390509a0842a86cc55eeb8eb928c1d # stable
