@@ -1,24 +1,53 @@
 ![Jarvis — calm by default, alive when spoken to](resources/jarvis-banner.svg)
 
-# Jarvis
+<h1 align="center">Jarvis</h1>
 
-[![License: MIT](https://img.shields.io/badge/license-MIT-22b8e6?style=flat-square)](LICENSE)
-[![Platforms](https://img.shields.io/badge/platforms-macOS%20%7C%20Windows%20%7C%20Linux-0b1426?style=flat-square)](#install)
-[![Tauri 2](https://img.shields.io/badge/Tauri-2-24C8DB?style=flat-square&logo=tauri&logoColor=white)](https://v2.tauri.app)
-[![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
-[![Sign in with ChatGPT](https://img.shields.io/badge/Sign%20in%20with-ChatGPT-10a37f?style=flat-square)](docs/guides/brains.md#chatgpt-plan--sign-in-with-chatgpt)
-[![Claude Code](https://img.shields.io/badge/works%20with-Claude%20Code-d97757?style=flat-square)](docs/guides/brains.md)
-[![Codex](https://img.shields.io/badge/works%20with-Codex-000000?style=flat-square)](docs/guides/brains.md)
-[![ElevenLabs](https://img.shields.io/badge/voices-ElevenLabs%20%C2%B7%20Fish%20%C2%B7%20local-f5a524?style=flat-square)](docs/guides/voices.md)
-[![PRs welcome](https://img.shields.io/badge/PRs-welcome-22c55e?style=flat-square)](CONTRIBUTING.md)
-[![Release](https://img.shields.io/github/v/release/lopadova/jarvis-desktop?include_prereleases&style=flat-square&label=release)](https://github.com/lopadova/jarvis-desktop/releases)
+<p align="center"><b>Say "Jarvis", ask for anything, and get it done.</b><br/>
+Your voice assistant for Mac, Windows and Linux — it uses the AI subscriptions you already pay for,<br/>
+and nothing risky happens without your OK.</p>
 
-> **Say "Jarvis", ask for anything, and get it done — using the AI subscriptions you already pay for, with nothing risky happening without your OK.**
+<p align="center">
+  <a href="https://github.com/lopadova/jarvis-desktop/releases/latest"><img alt="Download" src="https://img.shields.io/badge/%E2%AC%87%20Download-v0.1.0-22b8e6?style=for-the-badge"/></a>
+  <a href="#quickstarts"><img alt="Quickstarts" src="https://img.shields.io/badge/Quickstarts-ChatGPT%20%C2%B7%20Claude%20%C2%B7%20Codex%20%C2%B7%20local-0b1426?style=for-the-badge"/></a>
+  <a href="docs/guides/getting-started.md"><img alt="Docs" src="https://img.shields.io/badge/Read%20the-docs-7c5cff?style=for-the-badge"/></a>
+</p>
 
-Jarvis is a small assistant that lives next to your clock, on Mac, Windows and Linux. You talk to it like you would to a helpful colleague: it answers quick questions out loud, sets timers and reminders, tidies up what you copied, and hands bigger jobs to a background helper that keeps you posted. It works with ChatGPT, Claude or a model running on your own computer, and it always asks before doing anything that could cause trouble.
+<p align="center">
+  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-22b8e6?style=flat-square"/></a>
+  <a href="https://github.com/lopadova/jarvis-desktop/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/lopadova/jarvis-desktop/ci.yml?branch=main&style=flat-square&label=CI"/></a>
+  <a href="https://github.com/lopadova/jarvis-desktop/releases"><img alt="Release" src="https://img.shields.io/github/v/release/lopadova/jarvis-desktop?include_prereleases&style=flat-square&label=release"/></a>
+  <a href="https://github.com/lopadova/jarvis-desktop/stargazers"><img alt="Stars" src="https://img.shields.io/github/stars/lopadova/jarvis-desktop?style=flat-square"/></a>
+  <a href="#install"><img alt="Platforms" src="https://img.shields.io/badge/platforms-macOS%20%7C%20Windows%20%7C%20Linux-0b1426?style=flat-square"/></a>
+  <a href="https://v2.tauri.app"><img alt="Tauri 2" src="https://img.shields.io/badge/Tauri-2-24C8DB?style=flat-square&logo=tauri&logoColor=white"/></a>
+  <a href="https://www.typescriptlang.org"><img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-strict-3178C6?style=flat-square&logo=typescript&logoColor=white"/></a>
+  <a href="CONTRIBUTING.md"><img alt="PRs welcome" src="https://img.shields.io/badge/PRs-welcome-22c55e?style=flat-square"/></a>
+</p>
+
+<p align="center">
+  <a href="docs/guides/brains.md#chatgpt-plan--sign-in-with-chatgpt"><img alt="Sign in with ChatGPT" src="https://img.shields.io/badge/Sign%20in%20with-ChatGPT-10a37f?style=flat-square"/></a>
+  <a href="docs/guides/brains.md"><img alt="Claude Code" src="https://img.shields.io/badge/works%20with-Claude%20Code-d97757?style=flat-square"/></a>
+  <a href="docs/guides/brains.md"><img alt="Codex" src="https://img.shields.io/badge/works%20with-Codex-000000?style=flat-square"/></a>
+  <a href="docs/guides/cowork-claude-desktop.md"><img alt="Claude Cowork" src="https://img.shields.io/badge/inside-Claude%20Desktop%20%26%20Cowork-d97757?style=flat-square"/></a>
+  <a href="docs/guides/chatgpt.md"><img alt="ChatGPT" src="https://img.shields.io/badge/inside-ChatGPT-10a37f?style=flat-square"/></a>
+  <a href="docs/guides/voices.md"><img alt="Voices" src="https://img.shields.io/badge/voices-ElevenLabs%20%C2%B7%20Fish%20%C2%B7%20OpenAI%20%C2%B7%20local-f5a524?style=flat-square"/></a>
+</p>
+
+<p align="center"><img alt="Jarvis Home: suggestions you can click or say, chat and composer" src="resources/screenshots/home-dark.png" width="860"/></p>
+
+Jarvis is a small assistant that lives next to your clock. You talk to it like you would to a helpful colleague: it answers quick questions out loud, sets timers and reminders, tidies up what you copied, and hands bigger jobs to a background helper that keeps you posted. It works with ChatGPT, Claude or a model running on your own computer, and it **always asks before doing anything that could cause trouble**.
 
 > [!NOTE]
-> **Status: v0.1.0 is released.** Installers are **unsigned** for now — see [Install](#install) for the one-time "open anyway" step. The design lives in the [product spec](docs/product-spec.md); what's next is in the [Roadmap](ROADMAP.md).
+> **Status: v0.1.0 is out as a pre-release.** Installers are **unsigned** for now — see [Install](#install) for the one-time "open anyway" step. The design lives in the [product spec](docs/product-spec.md); what's next is in the [Roadmap](ROADMAP.md). If something doesn't work on your computer, please [open an issue](https://github.com/lopadova/jarvis-desktop/issues/new/choose) — early feedback shapes the next release.
+
+### ⚡ Start in 60 seconds — pick your path
+
+| I'm… | Do this |
+|---|---|
+| 🙋 **Not technical** | Paste `https://github.com/lopadova/jarvis-desktop — install Jarvis for me, step by step.` into **ChatGPT or Claude**. It follows [`INSTALL_WITH_AI.md`](INSTALL_WITH_AI.md) and walks you through every click. [More →](#a-home-user-no-terminal-needed) |
+| 💳 **A ChatGPT / Claude / Codex subscriber** | Install, then **Continue with ChatGPT** or **Use Claude Code** — no API key, no surprise bill. [ChatGPT](#b-with-a-chatgpt-plus-or-pro-plan) · [Claude Code](#c-with-a-claude-code-subscription) · [Codex](#d-with-codex) |
+| 🔒 **Privacy-first** | Run everything locally: Ollama + local Whisper + Piper voice. Nothing leaves your computer. [How →](#e-without-any-subscription) |
+| 🔌 **Using Claude Desktop / Cowork or ChatGPT already** | Add Jarvis as an extension so your agents can speak to you and start tasks. [Claude](#f-use-jarvis-from-claude-desktop-or-cowork) · [ChatGPT](#g-use-jarvis-from-chatgpt) |
+| 🛠️ **A developer** | `pnpm install && pnpm dev`. [Build from source →](#h-developers-build-from-source) |
 
 ---
 
@@ -66,9 +95,12 @@ Light theme, Italian UI and per-project permission levels: [Home (light)](resour
 
 ## Table of contents
 
+- [Start in 60 seconds](#-start-in-60-seconds--pick-your-path)
 - [What can it do for you?](#what-can-it-do-for-you)
+  - [See it (screenshots)](#see-it)
 - [Why Jarvis is different](#why-jarvis-is-different)
 - [How it compares](#how-it-compares)
+  - [Built to be trusted](#built-to-be-trusted)
 - [Install](#install)
 - [Quickstarts](#quickstarts)
   - [a. Home user](#a-home-user-no-terminal-needed)
@@ -129,23 +161,36 @@ A fair comparison against general categories of tools, not specific products.
 
 > Legend: ✅ built-in · ➖ partial, depends on the product or needs extra setup · ❌ not available.
 
+### Built to be trusted
+
+| | |
+|---|---|
+| 🧪 **600+ automated tests** | across the core, providers, assistant process, MCP bridge, relay and UI — plus end-to-end runs of the real assistant process with the real MCP bridge and the real relay |
+| 🛡️ **Every security rule has a test** | 12 written rules ([security model](docs/security-model.md)) from "links can't run commands" to "agents can't escalate their own permissions", each pinned by regression tests |
+| 🔍 **Reviewed continuously** | every change went through an automated security review; the findings (and the fixes) are in the history |
+| 🧰 **Boring, auditable stack** | Tauri 2, TypeScript, SQLite, official SDKs — no telemetry, secrets only in your OS keychain |
+
 ---
 
 ## Install
 
-Download the latest installer from **[GitHub Releases](https://github.com/lopadova/jarvis-desktop/releases/latest)**:
+Download from **[GitHub Releases](https://github.com/lopadova/jarvis-desktop/releases/latest)**. v0.1.0 is a **pre-release** and currently ships:
 
-| OS | File |
-|---|---|
-| macOS (Apple Silicon) | `Jarvis_<version>_aarch64.dmg` |
-| macOS (Intel) | `Jarvis_<version>_x64.dmg` |
-| Windows 10/11 | `Jarvis_<version>_x64-setup.exe` (or the `.msi`) |
-| Linux | `Jarvis_<version>_amd64.AppImage`, `.deb` or `.rpm` |
+| What | File | Status |
+|---|---|---|
+| Windows 10/11 (portable, unsigned) | `Jarvis_0.1.0_windows-x64-unsigned_portable.zip` | Tested on real Windows 11 |
+| Claude Desktop / Cowork extension | `jarvis.mcpb` | Double-click to install |
+| Any MCP client (Codex, Claude Code, ChatGPT relay) | `jarvis-mcp-bundle.zip` | Self-contained bridge |
+| macOS (Apple Silicon / Intel) | `.dmg` | Built by CI, attached once the release workflow completes |
+| Linux | `.AppImage` / `.deb` | Built by CI, attached once the release workflow completes |
+
+Until the macOS and Linux installers are attached, you can run Jarvis from source on any OS: see [docs/guides/install.md](docs/guides/install.md).
 
 > [!IMPORTANT]
-> **v0.1 installers are not code-signed** (signing certificates cost money; see the [Roadmap](ROADMAP.md)). The first time you open Jarvis:
+> **v0.1 builds are not code-signed** (signing certificates cost money; see the [Roadmap](ROADMAP.md)). The first time you open Jarvis:
 > - **macOS:** right-click Jarvis in Applications › **Open** › **Open**. Or *System Settings › Privacy & Security › Open Anyway*.
 > - **Windows:** on the SmartScreen dialog click **More info** › **Run anyway**.
+> - **Windows with Smart App Control on:** Windows may refuse unsigned programs outright ("an application control policy blocked this file"). Either wait for the signed build, run from source, or turn Smart App Control off (this cannot be undone without reinstalling Windows).
 > - **Linux:** `chmod +x Jarvis_*.AppImage` and run it, or `sudo apt install ./Jarvis_<version>_amd64.deb`.
 
 Full per-OS instructions: [docs/guides/install.md](docs/guides/install.md).
@@ -167,6 +212,58 @@ https://github.com/lopadova/jarvis-desktop — install Jarvis for me, step by st
 ```
 
 The assistant will follow [`INSTALL_WITH_AI.md`](INSTALL_WITH_AI.md), a guide written for AI helpers that walks you through each click and asks before anything important.
+
+<details>
+<summary><b>📋 Copy-paste prompts for ChatGPT or Claude</b> (open for ready-made messages)</summary>
+
+**Install Jarvis on my computer**
+```text
+Read https://github.com/lopadova/jarvis-desktop/blob/main/INSTALL_WITH_AI.md and help me install Jarvis on my
+computer. I am not technical: tell me which computer you think I have, ask me before every step, and give me
+one small step at a time.
+```
+
+**Connect Jarvis to my ChatGPT plan** (no API key)
+```text
+I installed Jarvis (https://github.com/lopadova/jarvis-desktop). Explain, in simple steps, how to use
+"Continue with ChatGPT" in Jarvis so it runs on my ChatGPT Plus/Pro plan, how to set a weekly usage cap for it
+in ChatGPT, and what to do when the cap is reached.
+```
+
+**Let ChatGPT talk to Jarvis** (advanced)
+```text
+Using https://github.com/lopadova/jarvis-desktop/blob/main/docs/guides/chatgpt.md, guide me through deploying the
+free Cloudflare relay for Jarvis and adding it as a custom connector in ChatGPT. Explain each step and warn me
+about anything that costs money or needs a paid ChatGPT plan.
+```
+
+**I'm in Italian** — *"Leggi https://github.com/lopadova/jarvis-desktop/blob/main/INSTALL_WITH_AI.md e aiutami a installare Jarvis sul mio computer, un passo alla volta, chiedendomi conferma prima di ogni passaggio."*
+
+</details>
+
+<details>
+<summary><b>🧑‍💻 First time with a terminal?</b> (junior-friendly walkthrough to build it yourself)</summary>
+
+You only need this if you want to run Jarvis from the source code. Everyone else: use the installer above.
+
+1. **Install the tools** (once): [Node.js 22+](https://nodejs.org), [Git](https://git-scm.com), [Rust](https://rustup.rs) and [Bun](https://bun.sh). On Windows also install the **"Desktop development with C++"** workload of [Visual Studio Build Tools](https://visualstudio.microsoft.com/downloads/); on Linux see the [Tauri prerequisites](https://v2.tauri.app/start/prerequisites/).
+2. **Open a terminal** — Windows: *Windows Terminal* or PowerShell; macOS: *Terminal*; Linux: your terminal app.
+3. **Copy these lines one at a time** (press Enter after each):
+
+   ```bash
+   git clone https://github.com/lopadova/jarvis-desktop.git   # downloads the code
+   cd jarvis-desktop                                          # goes into the folder
+   corepack enable                                            # enables pnpm, the package manager
+   pnpm install                                               # downloads the libraries (a few minutes)
+   pnpm sidecar:build                                         # builds the background assistant
+   pnpm dev                                                   # starts Jarvis
+   ```
+4. A Jarvis window appears and an icon shows up next to your clock. Follow the welcome screens.
+5. **Something went wrong?** Run `pnpm test` to check your setup, then read [Troubleshooting](docs/guides/troubleshooting.md) or ask in an [issue](https://github.com/lopadova/jarvis-desktop/issues/new/choose) (paste the error text).
+
+> **Windows note:** if Smart App Control blocks the build tools ("an app control policy blocked this file"), see the [signing guide](docs/guides/signing.md#testing-unsigned-builds-locally) for a Docker/Sandbox route.
+
+</details>
 
 ### b. With a ChatGPT Plus or Pro plan
 

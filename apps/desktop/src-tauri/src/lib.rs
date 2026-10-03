@@ -204,7 +204,10 @@ pub fn run() {
                 .ok()
                 .and_then(|p| p.parent().map(|p| p.to_path_buf()))
                 .unwrap_or_default();
-            match sidecar::resolve_launch(&exe_dir, sidecar::dev_repo_root().as_deref()) {
+            let repo_override = sidecar::repo_override();
+            let prefer_repo = repo_override.is_some();
+            let repo_root = repo_override.or_else(sidecar::dev_repo_root);
+            match sidecar::resolve_launch(&exe_dir, repo_root.as_deref(), prefer_repo) {
                 Some(launch) => {
                     let tx = endpoint_tx
                         .lock()

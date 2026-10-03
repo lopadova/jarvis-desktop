@@ -20,3 +20,4 @@ models/
 dist-windows/
 dist-sandbox/
 apps/desktop/src-tauri/tauri.signing.json
+e2e-out/
