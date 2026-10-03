@@ -14,7 +14,20 @@ p.on('pageerror', (e) => msgs.push(`PAGEERROR: ${e.message}`));
 p.on('requestfailed', (r) => msgs.push(`REQFAILED: ${r.url()} ${r.failure()?.errorText}`));
 await p.evaluate(() => location.reload()).catch((e) => msgs.push(`evalerr ${e.message}`));
 await sleep(5000);
-console.log('root children:', await p.evaluate(() => document.getElementById('root')?.children.length).catch(() => 'n/a'));
-console.log('text:', JSON.stringify((await p.locator('body').innerText().catch(() => '')).slice(0, 300)));
+console.log(
+  'root children:',
+  await p.evaluate(() => document.getElementById('root')?.children.length).catch(() => 'n/a'),
+);
+console.log(
+  'text:',
+  JSON.stringify(
+    (
+      await p
+        .locator('body')
+        .innerText()
+        .catch(() => '')
+    ).slice(0, 300),
+  ),
+);
 console.log(msgs.slice(0, 15).join('\n'));
 await b.close();

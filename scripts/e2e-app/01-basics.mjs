@@ -87,7 +87,11 @@ await say(home, "delete today's history");
 // Everything from today must be gone (the confirmation itself may be wiped too, so an empty conversation is fine).
 await sleep(3000);
 const left = await waitConversation(home, (c) => !/milk|shopping list|what time/i.test(c), 90000);
-check('"delete today\'s history" clears the conversation', left !== null, left === null ? await conversation(home) : `left: "${left}"`);
+check(
+  '"delete today\'s history" clears the conversation',
+  left !== null,
+  left === null ? await conversation(home) : `left: "${left}"`,
+);
 
 await shot(home, 'basics-final');
 await browser.close();

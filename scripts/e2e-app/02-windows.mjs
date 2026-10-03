@@ -17,7 +17,12 @@ const watch = (page, label) => {
 
 const renders = async (page) =>
   (await page.evaluate(() => document.getElementById('root')?.children.length ?? 0).catch(() => 0)) > 0 &&
-  (await page.locator('body').innerText().catch(() => '')).trim().length > 10;
+  (
+    await page
+      .locator('body')
+      .innerText()
+      .catch(() => '')
+  ).trim().length > 10;
 
 // Home
 const home = await pageFor(browser, 'home');
@@ -34,7 +39,17 @@ if (settings) {
   await settings.bringToFront();
   await sleep(2500);
   check('Settings renders', await renders(settings));
-  const tabs = ['General', 'Brain & accounts', 'Agents & projects', 'Voice', 'Microphone & wake word', 'Privacy', 'Integrations', 'Shortcuts', 'About'];
+  const tabs = [
+    'General',
+    'Brain & accounts',
+    'Agents & projects',
+    'Voice',
+    'Microphone & wake word',
+    'Privacy',
+    'Integrations',
+    'Shortcuts',
+    'About',
+  ];
   for (const t of tabs) {
     const el = settings.getByText(t, { exact: true }).first();
     const visible = await el.isVisible().catch(() => false);
@@ -48,7 +63,11 @@ if (settings) {
 
 // Sessions panel via its button
 await home.bringToFront();
-await home.getByRole('button', { name: /Sessions/ }).first().click().catch(() => {});
+await home
+  .getByRole('button', { name: /Sessions/ })
+  .first()
+  .click()
+  .catch(() => {});
 const sessions = await pageFor(browser, 'sessions', 8000);
 check('Sessions panel opens', !!sessions);
 if (sessions) {

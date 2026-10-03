@@ -1,7 +1,7 @@
 /** Settings controls (handoff `Settings.dc.html`): Row/Section, PermissionLevelControl (R1), ShortcutRecorder, PairingQR. */
 import { Check, Info, type LucideIcon, Shield, ShieldAlert, ShieldCheck, TriangleAlert } from 'lucide-react';
-import { renderSVG } from 'uqr';
 import { type CSSProperties, type KeyboardEvent, type ReactNode, useEffect, useId, useRef, useState } from 'react';
+import { renderSVG } from 'uqr';
 import { type MessageKey, useT } from '../../i18n';
 import { cn } from '../../lib/cn';
 import type { PermissionLevel, Platform, RelayState } from '../../types/ui';
