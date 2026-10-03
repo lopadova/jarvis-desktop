@@ -11,7 +11,8 @@
       "!**/.wrangler",
       "!**/integrations/claude-plugin/server",
       "!.claude",
-      "!docs/design/handoff"
+      "!docs/design/handoff",
+      "!docs-site/docs/_docmd-search"
     ]
   },
   "formatter": {
@@ -37,7 +38,11 @@
   },
   "overrides": [
     {
-      "includes": ["**/test/**", "**/*.test.ts", "**/*.test.tsx"],
+      "includes": [
+        "**/test/**",
+        "**/*.test.ts",
+        "**/*.test.tsx"
+      ],
       "linter": {
         "rules": {
           "suspicious": {
