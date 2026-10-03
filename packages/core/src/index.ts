@@ -7,6 +7,7 @@ export * from './phrases.js';
 export * from './policy/content.js';
 export * from './policy/risk.js';
 export * from './providers.js';
+export * from './router/everyday.js';
 export * from './router/fastpath.js';
 export * from './router/prompt.js';
 export * from './router/schema.js';

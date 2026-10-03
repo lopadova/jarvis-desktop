@@ -10,7 +10,7 @@
 | 4 | Voice out (ElevenLabs, Fish, OpenAI, local, cues, streaming) | — |
 | 5 | Voice in (PTT, wake word, VAD, Whisper, cloud STT, AEC) | — |
 | 6 | MCP & interop (.mcpb, Cowork plugin, Cloudflare relay for ChatGPT) | — |
-| 7 | Everyday features + suggestion chips | — |
+| 7 | Everyday features + suggestion chips | ✅ branch `feat/everyday` |
 | 8 | Release v0.1.0, README, docs-site — **real app screenshots taken while testing** (home, pill states, approval card, sessions, onboarding, settings) added to README and docs-site "See it" | — |
 
 ## Log
@@ -56,3 +56,22 @@
     Onboarding (5 steps, confetti), Settings (9 tabs, Full-auto confirm with checkbox), in-window toasts.
   - Settings/Onboarding code-split: main chunk 681 kB → 308 kB. Browser preview draws windows on the wallpaper.
   - New app icon and README banner from the handoff's Brand page; screenshots in `resources/screenshots/`.
+- 2026-10-03 — Phase 7 (branch `feat/everyday`): every suggestion chip works end to end.
+  - Fast path (EN + IT, no LLM): dictation start/stop, shopping list add/remove/list/clear, "forget today",
+    "what do you know about me", "good morning" (briefing), "copy it".
+  - Dictation: the next utterance is typed with `host.typeText` (never sent to a brain, never stored); stop phrases
+    or Esc cancel; 60 s timeout; the pill shows a Dictation state (`listening.dictation`).
+  - Clipboard questions: `host.clipboard.read` → brain with `wrapUntrusted('clipboard', …, 8000)`; spoken `speak` +
+    ephemeral `text-result` card with Copy (`clipboard.write` → new `host.clipboard.write`).
+  - Screen questions: opt-in `screenAccess` (default off); vision brain chosen before capture (primary, else a
+    connected ChatGPT/local — never a paid API, R10; private mode local-only); `BrainRequest.images` implemented
+    for ChatGPT plan/OpenAI (Responses `input_image`), Anthropic (base64 image blocks), local (`image_url`, clear
+    error for text-only models); CLI brains refuse images. The shell downscales screenshots to ≤ 2 MB in memory.
+  - Shopping list in SQLite (migration v3), `shopping.list/remove/clear`, `ui.shopping`, shopping card with live
+    remove buttons. `ui.navigate` opens the Memory view; `ui.history` clears today's conversation in the UI.
+  - Morning briefing: Home agent (or default agent) with a read-only task (weather only with a location memory,
+    calendar + important mail through the user's MCP tools, ≤ 60 spoken words, final JSON block) → `briefing` card;
+    plain-text fallback.
+  - Docs: everyday guide, voice commands, settings (+ docs-site equivalents).
+  - Tests: core 121, providers 68, agent-host 179, desktop 43 (workspace 438); Rust 53 (`png_within`);
+    `pnpm e2e` 6/6.

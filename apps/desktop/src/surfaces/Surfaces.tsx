@@ -128,6 +128,14 @@ export function HomeSurface({ platform }: { platform: Platform }) {
     };
   }, []);
 
+  // The sidecar asked to show a rail view ("what do you know about me?" → Memory).
+  const navSeq = s.navigate?.seq;
+  // biome-ignore lint/correctness/useExhaustiveDependencies: react only to a new navigate request (seq).
+  useEffect(() => {
+    const view = useApp.getState().navigate?.view;
+    if (view) setRail(view);
+  }, [navSeq]);
+
   const pillKind = s.pill.state.kind;
   const orbState: OrbState =
     pillKind === 'hidden' || pillKind === 'idle-hint' || pillKind === 'clarify' ? 'idle' : orbStateFor(s.pill.state);
@@ -164,6 +172,7 @@ export function HomeSurface({ platform }: { platform: Platform }) {
       pendingForget={pendingForget}
       history={history}
       projects={projects}
+      shopping={s.shopping}
       overlay={<Toasts />}
       onRail={setRail}
       onCategoryChange={setCategory}
@@ -190,6 +199,8 @@ export function HomeSurface({ platform }: { platform: Platform }) {
           }, FORGET_UNDO_MS),
         );
       }}
+      onCopy={(text) => send('clipboard.write', { text: text.slice(0, 20_000) })}
+      onShoppingRemove={(id) => send('shopping.remove', { id })}
       onUndoForget={(id) => {
         clearTimeout(forgetTimers.current.get(id));
         forgetTimers.current.delete(id);

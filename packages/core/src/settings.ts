@@ -49,6 +49,8 @@ export const SettingsSchema = z.object({
   toggleSessions: hotkey.default('CommandOrControl+Shift+J'),
 
   privateMode: z.boolean().default(false),
+  /** Opt-in: "what's on my screen?" may capture one screenshot per request and send it to a vision brain. */
+  screenAccess: z.boolean().default(false),
   openResults: z.boolean().default(true),
   historyRetentionDays: z.number().int().min(0).max(3650).default(30),
   relayUrl: z.string().default(''),

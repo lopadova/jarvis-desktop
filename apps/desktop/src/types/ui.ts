@@ -49,6 +49,9 @@ export type {
   Theme,
 };
 
+/** Views of the Home window rail. */
+export type RailView = 'home' | 'history' | 'memory' | 'projects';
+
 export interface ListeningPillProps {
   state: PillState;
   privateMode: boolean;

@@ -67,6 +67,7 @@ Hotkeys use Tauri accelerator syntax (`CommandOrControl`, `Alt`, `Shift`, `Space
 | Key | Type | Default | Meaning |
 |---|---|---|---|
 | `privateMode` | boolean | `false` | Everything stays on this computer: local brain, STT and voice. [Privacy] |
+| `screenAccess` | boolean | `false` | Opt-in for "what's on my screen?" / "explain this error": one screenshot per request (≤ 2 MB, never stored) is shown to a vision-capable brain. Off = Jarvis explains how to enable it and captures nothing. [Privacy] |
 | `openResults` | boolean | `true` | Automatically open viewable results (HTML file, localhost URL) when a session finishes. [Agents & projects] |
 | `historyRetentionDays` | integer 0–3650 | `30` | Days of conversation history to keep; `0` = don't keep. [Privacy] |
 | `relayUrl` | string | `''` | URL of your ChatGPT relay; empty = not configured. [Integrations] |

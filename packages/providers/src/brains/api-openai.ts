@@ -17,6 +17,7 @@ const TIMEOUT_MS = 45_000;
 export class OpenAiApiBrain implements BrainProvider {
   readonly id = ID;
   readonly label = 'OpenAI API';
+  readonly vision = true;
 
   constructor(
     private readonly deps: ProviderDeps,

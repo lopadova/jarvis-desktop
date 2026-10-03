@@ -30,9 +30,24 @@ export class ResponsesHttpError extends Error {
 }
 
 export function responsesBody(model: string, req: BrainRequest, structured: boolean): Record<string, unknown> {
+  const lastUser = req.images?.length ? req.messages.map((m) => m.role).lastIndexOf('user') : -1;
   const body: Record<string, unknown> = {
     model,
-    input: req.messages.map((m) => ({ role: m.role === 'system' ? 'developer' : m.role, content: m.content })),
+    input: req.messages.map((m, i) => ({
+      role: m.role === 'system' ? 'developer' : m.role,
+      // Vision: the last user message carries the images as `input_image` parts (data URLs, never stored: store:false).
+      content:
+        i === lastUser
+          ? [
+              { type: 'input_text', text: m.content },
+              ...(req.images ?? []).map((img) => ({
+                type: 'input_image',
+                image_url: `data:${img.mime};base64,${img.base64}`,
+                detail: 'auto',
+              })),
+            ]
+          : m.content,
+    })),
     store: false,
     stream: true,
   };

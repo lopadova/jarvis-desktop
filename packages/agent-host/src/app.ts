@@ -15,6 +15,7 @@ import {
   mergeSettings,
   type Project,
   type ProviderStatus,
+  parseBriefing,
   phrases,
   type Role,
   RpcErrorCode,
@@ -152,6 +153,12 @@ export class App {
       summarize: (s) => this.summarize(s),
       guidance: () => this.memory.guidance(),
       generalWorkspace: () => this.generalWorkspace(),
+      announcePurpose: async (s) => {
+        // Morning briefing: the agent's final JSON block becomes the briefing card; its `speak` is said.
+        const b = parseBriefing(s.resultText ?? '');
+        if (b.card) this.orchestrator.card(b.card);
+        return b.speak || null;
+      },
       tokens: this.tokens,
       now: this.now,
     });
@@ -453,6 +460,7 @@ export class App {
       providers: [],
       reminders: this.reminders.list(),
       chat: this.deps.store.recentChat(100),
+      shopping: this.deps.store.listShopping(),
       pill: { state: this.pill.state, privateMode: this.settings().privateMode },
       relay: this.relay.status(),
     };
@@ -532,9 +540,7 @@ export class App {
     });
     reg('history.list', ui, (p) => ({ turns: this.deps.store.listTurns(p.query, p.limit) }));
     reg('history.clear', ui, (p) => {
-      const d = new Date(this.now());
-      d.setHours(0, 0, 0, 0);
-      this.deps.store.clearHistory(p.scope === 'today' ? d.getTime() : 0);
+      this.orchestrator.clearHistory(p.scope);
       return ok;
     });
     reg('providers.status', ui, async () => ({ providers: await this.publishProviders() }));
@@ -602,6 +608,22 @@ export class App {
     reg('relay.unpair', ui, async () => ({ ok: true, ...(await this.relay.unpair()) }));
     reg('reminders.list', ui, () => ({ reminders: this.reminders.list() }));
     reg('reminders.cancel', ui, (p) => ({ ok: this.reminders.cancel(p.id) }));
+    reg('shopping.list', ui, () => ({ items: this.deps.store.listShopping() }));
+    reg('shopping.remove', ui, (p) => {
+      const removed = this.deps.store.removeShopping(p.id);
+      this.deps.ui.emit('ui.shopping', { items: this.deps.store.listShopping() });
+      return { ok: removed };
+    });
+    reg('shopping.clear', ui, () => {
+      this.deps.store.clearShopping();
+      this.deps.ui.emit('ui.shopping', { items: [] });
+      return ok;
+    });
+    reg('clipboard.write', ui, async (p) => {
+      if (!this.deps.host.connected) throw new RpcError(RpcErrorCode.notAvailable, 'shell not connected');
+      await this.deps.host.call('host.clipboard.write', { text: p.text });
+      return ok;
+    });
 
     // voice.* notifications from the shell
     const shell: readonly Role[] = ['shell'];
@@ -616,11 +638,17 @@ export class App {
         this.bargeIn = true;
         this.voice.pause(true);
       }
-      this.pill.set({ kind: 'listening', level: 0, partial: '', committed: '' });
+      this.pill.set({ kind: 'listening', level: 0, partial: '', committed: '', ...this.dictationFlag() });
       return ok;
     });
     vreg('voice.partial', (p) => {
-      this.pill.set({ kind: 'listening', level: p.level, partial: p.partial, committed: p.committed });
+      this.pill.set({
+        kind: 'listening',
+        level: p.level,
+        partial: p.partial,
+        committed: p.committed,
+        ...this.dictationFlag(),
+      });
       return ok;
     });
     vreg('voice.transcript', (p) => {
@@ -674,6 +702,10 @@ export class App {
         return this.mcp.call(input);
       }) as (p: never, ctx: CallContext) => unknown,
     });
+  }
+
+  private dictationFlag(): { dictation?: true } {
+    return this.orchestrator.dictating ? { dictation: true } : {};
   }
 
   /** Live session count (diagnostics). */

@@ -2,7 +2,7 @@
  * S3 — Home (handoff "Prototype" window): title bar · rail · greeting + orb · suggestion chips ·
  * conversation · composer · footer (usage meter, R11 microphone indicator, connection).
  */
-import type { Memory, Project, Turn } from '@jarvis/core';
+import type { Memory, Project, ShoppingItem, Turn } from '@jarvis/core';
 import {
   Brain,
   FolderKanban,
@@ -27,6 +27,7 @@ import type {
   ChatMessage,
   Platform,
   ProviderStatus,
+  RailView,
   Suggestion,
   SuggestionCategory,
 } from '../../types/ui';
@@ -37,7 +38,7 @@ import { Composer } from './Composer';
 import { ChatBubble, formatTime } from './Conversation';
 import { SuggestionGrid } from './SuggestionGrid';
 
-export type RailView = 'home' | 'history' | 'memory' | 'projects';
+export type { RailView };
 
 export interface HomeScreenProps {
   platform: Platform;
@@ -72,6 +73,8 @@ export interface HomeScreenProps {
   pendingForget: string[];
   history: Turn[] | null;
   projects: Project[] | null;
+  /** Live shopping list: the newest shopping card in the conversation shows it with remove buttons. */
+  shopping?: ShoppingItem[];
   /** Toasts etc. rendered inside the window card. */
   overlay?: ReactNode;
   onRail(view: RailView): void;
@@ -86,6 +89,8 @@ export interface HomeScreenProps {
   onReplay?(id: string): void;
   onForget(id: string): void;
   onUndoForget(id: string): void;
+  onCopy?(text: string): void;
+  onShoppingRemove?(id: string): void;
   onAttachClipboard?(): Promise<string | null>;
   onAttachScreenshot?(): void;
   onSettings(tab?: string): void;
@@ -116,6 +121,8 @@ export function HomeScreen(p: HomeScreenProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const primary = p.providers.find((x) => x.id === p.primary) ?? p.providers.find((x) => x.primary);
   const brainLabel = (id: BrainId) => t(`brain.${id}` as MessageKey);
+
+  const lastShoppingCard = p.chat.findLast((m) => m.role === 'system' && m.card.type === 'shopping')?.id;
 
   const prevLen = useRef(p.chat.length);
   // biome-ignore lint/correctness/useExhaustiveDependencies: scroll to the newest message whenever one arrives.
@@ -261,6 +268,9 @@ export function HomeScreen(p: HomeScreenProps) {
                         onOpenSession={p.onOpenSession}
                         onViewSession={p.onViewSessions}
                         onApproval={p.onApproval}
+                        onCopy={p.onCopy}
+                        shoppingLive={m.id === lastShoppingCard ? p.shopping : undefined}
+                        onShoppingRemove={p.onShoppingRemove}
                         resolved={
                           m.role === 'system' && m.card.type === 'approval-needed'
                             ? p.resolvedApprovals[m.card.request.id]

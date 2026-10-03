@@ -2,13 +2,20 @@
 import type { AgentId, ApprovalDecision, ApprovalRequest, BrainId, SessionView } from './model.js';
 import type { Suggestion, SuggestionCategory } from './suggestions.js';
 
+export interface ShoppingItem {
+  id: string;
+  text: string;
+  createdAt: number;
+}
+
 export type Theme = 'dark' | 'light';
 export type Material = 'glass' | 'solid';
 
 export type PillState =
   | { kind: 'hidden' }
   | { kind: 'idle-hint'; shortcut: string[] }
-  | { kind: 'listening'; level: number; partial: string; committed: string }
+  /** `dictation`: the next utterance is typed into the active app instead of being answered. */
+  | { kind: 'listening'; level: number; partial: string; committed: string; dictation?: boolean }
   | { kind: 'thinking'; transcript: string; brain?: BrainId }
   | { kind: 'speaking'; text: string; progress: number; level: number }
   | { kind: 'clarify'; question: string; quickReplies: string[] }
@@ -27,6 +34,9 @@ export type SystemCardData =
   | { type: 'result-ready'; session: SessionView }
   | { type: 'reminder-set'; text: string; dueAt: number }
   | { type: 'timer'; label: string; endsAt: number }
+  | { type: 'shopping'; items: ShoppingItem[]; added?: string[]; removed?: string[] }
+  /** Full text produced from clipboard/screen content (ephemeral: never persisted). */
+  | { type: 'text-result'; source: 'clipboard' | 'screen'; text: string }
   | {
       type: 'briefing';
       weather?: string;

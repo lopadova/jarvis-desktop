@@ -231,6 +231,15 @@ pub async fn dispatch(shell: &ShellRef, method: &str, params: Value) -> Result<V
             let text = shell.app.clipboard().read_text().ok();
             Ok(json!({ "text": text }))
         }
+        "host.clipboard.write" => {
+            use tauri_plugin_clipboard_manager::ClipboardExt;
+            let p: TypeText = parse(params)?;
+            if p.text.len() > MAX_CLIPBOARD_WRITE {
+                return Err(bad("text too long"));
+            }
+            shell.app.clipboard().write_text(p.text).map_err(internal)?;
+            ok()
+        }
         "host.screenshot" => {
             let png = blocking(|| screenshot_primary().map_err(internal)).await?;
             Ok(json!({ "pngBase64": base64::engine::general_purpose::STANDARD.encode(png) }))
@@ -341,6 +350,12 @@ fn system_speak(shell: &ShellRef, p: Speak) -> Result<(), HostError> {
     Ok(())
 }
 
+/// Largest text `host.clipboard.write` accepts (bytes; matches the `clipboard.write` IPC limit).
+const MAX_CLIPBOARD_WRITE: usize = 80_000;
+/// Screenshots sent to a vision brain stay below this size (PNG bytes); larger captures are downscaled.
+pub const MAX_SCREENSHOT_BYTES: usize = 2 * 1024 * 1024;
+
+/// Captures the primary monitor in memory (never written to disk) and returns a PNG ≤ `MAX_SCREENSHOT_BYTES`.
 fn screenshot_primary() -> anyhow::Result<Vec<u8>> {
     let monitors = xcap::Monitor::all()?;
     let m = monitors
@@ -348,10 +363,37 @@ fn screenshot_primary() -> anyhow::Result<Vec<u8>> {
         .find(|m| m.is_primary().unwrap_or(false))
         .or(monitors.first())
         .ok_or_else(|| anyhow::anyhow!("no monitor"))?;
-    let img = m.capture_image()?;
-    let mut png = Vec::new();
-    img.write_to(&mut std::io::Cursor::new(&mut png), image::ImageFormat::Png)?;
-    Ok(png)
+    let img = image::DynamicImage::ImageRgba8(m.capture_image()?);
+    png_within(img, MAX_SCREENSHOT_BYTES)
+}
+
+/// Encodes `img` as PNG, halving its longest side (from at most 2560 px) until it fits in `max_bytes`.
+pub fn png_within(img: image::DynamicImage, max_bytes: usize) -> anyhow::Result<Vec<u8>> {
+    let encode = |i: &image::DynamicImage| -> anyhow::Result<Vec<u8>> {
+        let mut png = Vec::new();
+        i.write_to(&mut std::io::Cursor::new(&mut png), image::ImageFormat::Png)?;
+        Ok(png)
+    };
+    let mut current = if img.width().max(img.height()) > 2560 {
+        img.resize(2560, 2560, image::imageops::FilterType::Triangle)
+    } else {
+        img
+    };
+    loop {
+        let png = encode(&current)?;
+        if png.len() <= max_bytes {
+            return Ok(png);
+        }
+        let (w, h) = (current.width(), current.height());
+        if w.max(h) <= 320 {
+            anyhow::bail!("screenshot does not fit in {max_bytes} bytes");
+        }
+        current = current.resize(
+            (w / 2).max(1),
+            (h / 2).max(1),
+            image::imageops::FilterType::Triangle,
+        );
+    }
 }
 
 /// Settings snapshot from the sidecar (`settings.get` or `ui.settings`).
@@ -419,5 +461,40 @@ mod tests {
     #[test]
     fn truncation_is_char_safe() {
         assert_eq!(truncate("héllo", 2), "hé");
+    }
+
+    fn noise(w: u32, h: u32) -> image::DynamicImage {
+        // Pseudo-random pixels compress badly, like a busy screen.
+        let mut seed: u32 = 0x9e37_79b9;
+        let img = image::RgbaImage::from_fn(w, h, |_, _| {
+            seed ^= seed << 13;
+            seed ^= seed >> 17;
+            seed ^= seed << 5;
+            let [a, b, c, _] = seed.to_le_bytes();
+            image::Rgba([a, b, c, 255])
+        });
+        image::DynamicImage::ImageRgba8(img)
+    }
+
+    #[test]
+    fn small_screenshots_are_kept_as_is() {
+        let png = png_within(noise(64, 48), MAX_SCREENSHOT_BYTES).unwrap();
+        let back = image::load_from_memory(&png).unwrap();
+        assert_eq!((back.width(), back.height()), (64, 48));
+    }
+
+    #[test]
+    fn large_screenshots_are_downscaled_below_the_limit() {
+        let limit = 200 * 1024;
+        let png = png_within(noise(1600, 1000), limit).unwrap();
+        assert!(png.len() <= limit, "{} > {limit}", png.len());
+        let back = image::load_from_memory(&png).unwrap();
+        assert!(back.width() < 1600);
+        assert_eq!(back.width() * 1000 / 1600, back.height());
+    }
+
+    #[test]
+    fn impossible_limits_fail_instead_of_looping() {
+        assert!(png_within(noise(800, 600), 10).is_err());
     }
 }

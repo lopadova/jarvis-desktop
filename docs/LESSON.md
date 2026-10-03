@@ -2,6 +2,15 @@
 
 A running log of non-obvious findings, newest first. Consolidate into docs and rules at each milestone.
 
+## 2026-10-03 — everyday features (phase 7)
+- **Captured content must not leak into history by the back door.** The router path persists every turn's `said` and every chat message. For clipboard/screen answers and dictation the derived text is as sensitive as the source, so those replies go out as *ephemeral* chat events (not stored) and the turn keeps only `heard` + action. Tests grep the SQLite rows for a marker string from the clipboard.
+- **Pick the brain before capturing.** Choosing the vision brain (and checking private mode) before calling `host.screenshot` means a refused request never takes a screenshot at all — simpler to reason about than "capture, then drop".
+- **Vision fallback vs R10:** falling back from Claude Code/Codex (no images) to the OpenAI/Anthropic API would be a silent paid fallback. Only the ChatGPT plan and the local model are tried; otherwise Jarvis explains.
+- **`norm()` drops commas**, so "milk, eggs and bread" became "milk eggs". Keep commas when normalising for list parsing and turn them into " and " after the wake word is stripped.
+- **Regex escapes through shell heredocs:** writing TypeScript through a Python heredoc turned the regex word boundary `\b` into a literal backspace character (0x08), and the code still compiled. Use the editor tool for regex-heavy code, and search for control characters when a regex silently stops matching.
+- **System TTS splits replies into sentences** (`host.systemSpeak` per sentence): assert on the joined spoken text, not on `spoken()[0]`.
+- **docmd builds 0 pages from a path with spaces** (`Visual Basic/…`) without failing. Building a copy under a space-free path generates all pages; CI is unaffected.
+
 ## 2026-10-03 — host follow-ups
 - **`codex app-server`** (codex-cli 0.159) speaks newline-delimited JSON-RPC **without** the `"jsonrpc"` field. The handshake is `initialize`, then the `initialized` notification. `codex app-server generate-ts --out <dir>` produces the exact protocol types, which beats the README.
   - **Approvals:** `item/commandExecution/requestApproval` and `item/fileChange/requestApproval` take `{decision: accept|decline}`. The file-change request carries **no paths**: take them from the `fileChange` item announced by `item/started` with the same `itemId`.

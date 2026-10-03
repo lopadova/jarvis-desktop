@@ -79,6 +79,8 @@ export class ClaudeCliBrain implements BrainProvider {
   }
 
   async complete(req: BrainRequest): Promise<BrainResponse> {
+    if (req.images?.length)
+      throw new ProviderError('Claude Code (print mode) cannot read images', 'not-configured', ID);
     const path = this.cliPath();
     if (!path) throw new ProviderError('Claude Code CLI not found', 'not-configured', ID);
     const tmp = await privateTempDir('jarvis-claude-');

@@ -24,6 +24,8 @@ type Format = 'json_schema' | 'json_object';
 export class LocalBrain implements BrainProvider {
   readonly id = ID;
   readonly label = 'Local model';
+  /** Attempted: works with vision models; others fail with a clear `not-configured` ProviderError. */
+  readonly vision = true;
   /** Remembered per base URL once a server rejects json_schema. */
   private readonly formatFor = new Map<string, Format>();
 
@@ -68,6 +70,15 @@ export class LocalBrain implements BrainProvider {
         );
         if (!res.ok) {
           const err = await readErrorBody(res);
+          if (req.images?.length && (res.status === 400 || res.status === 422 || res.status === 500)) {
+            if (/image|vision|multi-?modal|content.*(array|part)/i.test(err.message) || format !== 'json_schema') {
+              throw new ProviderError(
+                `The local model "${this.deps.settings().localBrain.model}" cannot read images. Pick a vision model (for example llava or llama3.2-vision).`,
+                'not-configured',
+                ID,
+              );
+            }
+          }
           if (format === 'json_schema' && (res.status === 400 || res.status === 422)) {
             this.deps.logger.info('local: json_schema rejected; retrying with json_object');
             format = 'json_object';
@@ -86,7 +97,21 @@ export class LocalBrain implements BrainProvider {
   }
 
   private body(req: BrainRequest, format: Format | undefined): Record<string, unknown> {
-    const messages = req.messages.map((m) => ({ role: m.role, content: m.content }));
+    const lastUser = req.images?.length ? req.messages.map((m) => m.role).lastIndexOf('user') : -1;
+    const messages: Array<{ role: string; content: unknown }> = req.messages.map((m, i) => ({
+      role: m.role,
+      // Vision (OpenAI-compatible servers such as Ollama with a vision model): `image_url` data-URL parts.
+      content:
+        i === lastUser
+          ? [
+              { type: 'text', text: m.content },
+              ...(req.images ?? []).map((img) => ({
+                type: 'image_url',
+                image_url: { url: `data:${img.mime};base64,${img.base64}` },
+              })),
+            ]
+          : m.content,
+    }));
     const body: Record<string, unknown> = { model: this.deps.settings().localBrain.model, messages, stream: true };
     if (req.jsonSchema && format === 'json_schema') {
       body.response_format = {

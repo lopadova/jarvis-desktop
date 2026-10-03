@@ -53,6 +53,8 @@ export interface SessionDeps {
   /** Standing preferences (memories) appended to every agent's guidance. */
   guidance: () => string;
   generalWorkspace: () => string;
+  /** Custom announcement for special-purpose runs (e.g. the briefing card); returns the line to speak. */
+  announcePurpose?: (s: Session, purpose: SessionPurpose) => Promise<string | null>;
   /** Issues/revokes per-session MCP tokens (verified caller identity). */
   tokens?: McpSessionTokens;
   now?: () => number;
@@ -66,7 +68,11 @@ export interface StartRequest {
   origin?: string;
   /** Upper bound for the permission level (tasks started by another agent never escalate). */
   permissionCap?: PermissionLevel;
+  /** Special-purpose run whose result is announced by `SessionDeps.announcePurpose` instead of a summary. */
+  purpose?: SessionPurpose;
 }
+
+export type SessionPurpose = 'briefing';
 
 const LEVEL_ORDER: Record<PermissionLevel, number> = { safe: 0, trusted: 1, 'full-auto': 2 };
 export const capLevel = (level: PermissionLevel, cap?: PermissionLevel): PermissionLevel =>
@@ -91,6 +97,7 @@ export class SessionManager {
   private readonly sessions = new Map<string, Session>();
   private readonly runtime = new Map<string, Runtime>();
   private readonly caps = new Map<string, PermissionLevel>();
+  private readonly purposes = new Map<string, SessionPurpose>();
   private progressTimer: ReturnType<typeof setInterval> | null = null;
   private lastGlobalProgress = 0;
   private readonly now: () => number;
@@ -176,6 +183,7 @@ export class SessionManager {
       activity: 'Starting',
     };
     this.sessions.set(session.id, session);
+    if (req.purpose) this.purposes.set(session.id, req.purpose);
     if (req.permissionCap) {
       this.caps.set(session.id, req.permissionCap);
       this.deps.store.kvSet(`session-cap:${session.id}`, req.permissionCap); // survives restarts/resume
@@ -200,6 +208,7 @@ export class SessionManager {
       return 'queued';
     }
     if (!s.agentSessionId) return 'not-resumable';
+    this.purposes.delete(id); // a follow-up is an ordinary conversation
     if (this.liveCount() >= this.deps.settings().maxConcurrentSessions) return 'limit';
     const driver = this.deps.drivers[s.agent];
     if (!driver) return 'not-resumable';
@@ -446,6 +455,20 @@ export class SessionManager {
   private async announce(s: Session): Promise<void> {
     const settings = this.deps.settings();
     const p = phrases(settings.locale);
+    const purpose = this.purposes.get(s.id);
+    if (purpose && this.deps.announcePurpose && s.status === 'done') {
+      this.purposes.delete(s.id);
+      let custom: string | null = null;
+      try {
+        custom = await this.deps.announcePurpose(s, purpose);
+      } catch (e) {
+        this.deps.logger.warn('purpose announcement failed', { error: errorMessage(e) });
+      }
+      if (custom) {
+        await this.deps.speak(custom); // the user asked for it: spoken like a reply, not a background summary
+        return;
+      }
+    }
     const openable = safeOpenable(s.resultUrl, s.cwd);
     if (openable && settings.openResults && this.deps.host.connected) {
       await this.deps.host.call('host.open', openable).catch(() => undefined);

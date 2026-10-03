@@ -74,6 +74,39 @@ When an approval card asks for your OK (low and medium risk only — high risk a
 
 Anything else is not taken as an answer — Jarvis keeps waiting, and the request is denied when it times out.
 
+## Everyday
+
+| Intent | English | Italian |
+|---|---|---|
+| Morning briefing (whole utterance) | "good morning", "morning" | "buongiorno", "buon giorno" |
+| Start dictation | "dictate", "dictation", "start dictation", "take dictation", "type what I say" | "dettatura", "detta", "avvia la dettatura", "inizia la dettatura", "scrivi sotto dettatura" |
+| Stop dictation | "stop dictation", "cancel dictation", "end dictation" (or **Esc**, or "stop") | "fine dettatura", "stop dettatura", "annulla la dettatura", "basta dettatura" |
+| What you know about me | "what do you know about me", "what do you remember about me" | "cosa sai di me", "cosa ricordi di me" |
+| Forget today | "delete today's history", "clear today's history", "forget today" | "cancella la cronologia di oggi", "elimina la cronologia di oggi", "dimentica oggi" |
+| Copy the last result | "copy it", "copy that", "copy the result" | "copialo", "copiala", "copia il risultato" |
+
+While dictation is on, the next utterance is typed into the active app instead of being matched against these commands (only the stop phrases still work).
+
+## Shopping list
+
+Items are split on commas and "and" / "e"; leading articles ("the", "some", "il", "la", "le", "l'"…) are dropped.
+
+| Intent | English | Italian |
+|---|---|---|
+| Add | "add {items} to the shopping list", "put {items} on my shopping list" | "aggiungi {articoli} alla lista della spesa", "metti {articoli} nella lista della spesa" |
+| Remove | "remove {items} from the shopping list", "take {items} off the shopping list" | "togli {articoli} dalla lista della spesa", "rimuovi {articoli} dalla lista della spesa" |
+| List | "what's on the shopping list", "read me the shopping list", "shopping list" | "cosa c'è nella lista della spesa", "leggimi la lista della spesa", "lista della spesa" |
+| Clear | "clear the shopping list", "empty my shopping list" | "svuota la lista della spesa", "azzera la lista della spesa" |
+
+## Clipboard and screen
+
+These are recognised locally but answered by your brain, with the content attached as untrusted data (it can never start a task):
+
+| Source | Recognised when the request mentions | Example |
+|---|---|---|
+| Clipboard | "copied", "clipboard" / "copiato", "copiata", "appunti" | "summarise what I copied", "traduci gli appunti" |
+| Screen (needs Screen access) | "on my screen", "screenshot", "what am I looking at" / "sullo schermo", "cosa vedo", "cosa sto guardando"; a short "explain this error" / "spiegami questo errore" | "what's on my screen?" |
+
 ## Spoken confirmations
 
 Fast-path replies are fixed phrases, for example "Timer set for 10 minutes.", "Alarm set for 7:30.", "Okay, in 20 minutes I'll remind you to call Marco.", "Private mode on. Everything stays on this computer." (Italian equivalents when `locale` is `it`).

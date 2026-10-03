@@ -31,6 +31,26 @@ accents don't matter.
 Durations understand digits and words ("ten", "twenty", "half an hour", "dieci", "mezz'ora",
 "un'ora e mezza"), seconds, minutes and hours.
 
+## Everyday
+
+| Intent | English | Italiano |
+|---|---|---|
+| Morning briefing | "good morning" (the whole sentence) | "buongiorno" |
+| Start dictation | "dictate", "start dictation", "take dictation" | "dettatura", "detta", "avvia la dettatura" |
+| Stop dictation | "stop dictation", "cancel dictation" (or **Esc**) | "fine dettatura", "annulla la dettatura" |
+| What you know about me | "what do you know about me?" | "cosa sai di me?", "cosa ricordi di me?" |
+| Forget today | "delete today's history", "forget today" | "cancella la cronologia di oggi", "dimentica oggi" |
+| Copy the last result | "copy it", "copy the result" | "copialo", "copia il risultato" |
+| Shopping list: add | "add milk, eggs and bread to the shopping list" | "aggiungi il latte e le uova alla lista della spesa" |
+| Shopping list: read | "what's on the shopping list?" | "cosa c'è nella lista della spesa?" |
+| Shopping list: remove | "remove eggs from the shopping list" | "togli le uova dalla lista della spesa" |
+| Shopping list: clear | "clear the shopping list" | "svuota la lista della spesa" |
+
+Requests that mention what you **copied** ("copied", "clipboard" / "copiato", "appunti") or your
+**screen** ("on my screen", "what am I looking at", a short "explain this error" / "sullo schermo",
+"spiegami questo errore") are recognised locally and answered by your brain with that content attached
+as data. Screen questions need **Screen access** turned on.
+
 ## Approvals by voice
 
 Only for **low and medium** risk. High risk always needs a click.

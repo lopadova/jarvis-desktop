@@ -12,8 +12,15 @@ export interface BrainMessage {
   content: string;
 }
 
+export interface BrainImage {
+  mime: 'image/png';
+  base64: string;
+}
+
 export interface BrainRequest {
   messages: BrainMessage[];
+  /** Images attached to the last user message (vision). Only sent to brains with `vision: true`. */
+  images?: BrainImage[];
   /** JSON Schema for structured output; providers that cannot enforce it fall back to JSON-in-text. */
   jsonSchema?: Record<string, unknown>;
   /** Hint: 'fast' for routing, 'smart' for summaries/answers that need quality. */
@@ -53,6 +60,8 @@ export class ProviderError extends Error {
 export interface BrainProvider {
   readonly id: BrainId;
   readonly label: string;
+  /** True when `complete` accepts `images` (the model may still reject them with a ProviderError). */
+  readonly vision?: boolean;
   status(): Promise<ProviderStatus>;
   complete(req: BrainRequest): Promise<BrainResponse>;
 }

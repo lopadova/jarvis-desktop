@@ -5,6 +5,7 @@
 import {
   AudioLines,
   CircleAlert,
+  Keyboard,
   Lock,
   type LucideIcon,
   MessageCircleQuestionMark,
@@ -184,7 +185,10 @@ function PillShell({
   const req = st.kind === 'approval' ? st.request : undefined;
 
   const chips: Partial<Record<PillState['kind'], [string, LucideIcon, string]>> = {
-    listening: [t('pill.chip.listening'), Mic, 'var(--color-accent)'],
+    listening:
+      st.kind === 'listening' && st.dictation
+        ? [t('pill.chip.dictation'), Keyboard, 'var(--color-accent)']
+        : [t('pill.chip.listening'), Mic, 'var(--color-accent)'],
     thinking: [
       st.kind === 'thinking' && st.brain
         ? t('pill.using', { brain: t(`brain.${st.brain}` as MessageKey) })
@@ -248,7 +252,7 @@ function PillShell({
             st.committed || st.partial ? (
               <LiveTranscript committed={st.committed} partial={st.partial} animated={anim} />
             ) : (
-              <span className="text-[14px] text-muted">{t('pill.listening')}</span>
+              <span className="text-[14px] text-muted">{st.dictation ? t('pill.dictation') : t('pill.listening')}</span>
             )
           ) : null}
           {st.kind === 'thinking' ? <span style={shimmer(anim)}>{st.transcript || t('pill.thinking')}</span> : null}
