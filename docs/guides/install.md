@@ -27,6 +27,10 @@ If you want extra assurance, compare the file's SHA-256 with the checksum listed
 3. Follow the installer. Jarvis starts in the system tray (you may need to click the `^` arrow to see the icon; drag it to the taskbar to keep it visible).
 4. Allow microphone access if Windows asks. If Jarvis cannot hear you, check **Settings › Privacy & security › Microphone** and make sure "Let desktop apps access your microphone" is on.
 
+> **WebView2 Runtime.** Jarvis draws its windows with Microsoft's WebView2, which Windows 11 includes. On a clean install or on Windows 10 the setup program installs it for you. The **portable zip** does not: if you see a message about a missing "WebView2 Runtime", install the [Evergreen Bootstrapper](https://developer.microsoft.com/microsoft-edge/webview2/) once and start Jarvis again.
+>
+> **Portable zip (unsigned).** Keep `agent-host.exe` next to `jarvis-desktop.exe`. If Smart App Control blocks it ("an app control policy blocked this file"), it only trusts signed apps: use a signed release when available, or turn the feature off (a one-way switch on most Windows 11 builds, so check first).
+
 > Windows uses `Alt+Space` for the window menu. In Jarvis Settings › Shortcuts we suggest switching push-to-talk to `Ctrl+Alt+Space`.
 
 ## Linux (x86_64)
