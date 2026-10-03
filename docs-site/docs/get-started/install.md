@@ -79,9 +79,10 @@ Notes:
 ## After installing
 
 - The first launch opens the [welcome wizard](/get-started/first-run).
-- Local voice models (wake word, voice detection, Whisper) are downloaded on first use into the
-  `models` folder of your data directory — see [Microphone](/guides/microphone).
-- Updates: Jarvis checks GitHub releases and offers updates from **Settings › About**.
+- Local speech models (wake word, voice detection, Whisper) are downloaded from **Settings › Microphone &
+  wake word › Download models** into the `models` folder of your data directory — see [Microphone](/guides/microphone).
+- Updates: v0.1.0 has no automatic updates yet. Download the newer installer from the releases page and
+  install over the existing app; settings, memory and history are kept.
 
 ## Uninstall
 

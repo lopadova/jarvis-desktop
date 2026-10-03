@@ -60,7 +60,7 @@ stored in your OS keyring, never in files.
 ```bash
 ollama pull llama3.2
 ```
-Pick **Kokoro** or **Piper** as the voice and keep **local Whisper** for transcription. Nothing leaves
+Pick **Piper** as the voice (downloaded on demand; Kokoro is an optional, English-only alternative) and keep **local Whisper** for transcription. Nothing leaves
 your computer.
 
 == tab "Developers"

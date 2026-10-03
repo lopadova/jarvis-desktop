@@ -26,6 +26,8 @@ on my own"* — and you choose what to do. This is security rule **R10**, covere
 | **OpenAI API** | API key | Pay per use | Also enables OpenAI voice and transcription | You pay per token |
 | **Local** | Ollama or any OpenAI-compatible server | Free, your hardware | Privacy, offline | Needs a capable computer; smaller models are less clever |
 
+![Onboarding: choose your brain](/assets/screenshots/onboarding-brain-dark.png)
+
 You can connect several and choose a **primary** one in **Settings › Brain & accounts**, from the
 composer's provider switcher, or by asking.
 
@@ -74,6 +76,11 @@ codex login
 
 Choose **Codex** as brain or agent. Custom location: `codexPath`. Say *"do the same with Codex"* to run
 the last task again with Codex.
+
+::: callout warning "Codex as a brain is slow" icon:clock
+Every brain call boots a full Codex agent: 40–80 seconds per request with a ChatGPT login. Prefer the
+ChatGPT plan, Claude Code or an API key as the *primary* brain, and use Codex as an **agent** for coding tasks.
+:::
 
 ## API keys
 

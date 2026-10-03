@@ -32,6 +32,8 @@ When Jarvis starts for the first time, a short setup window opens:
    - **Run locally** — Ollama on your own computer, fully private.
 
    See [Brains](brains.md) for the details and limits of each.
+
+   ![Onboarding: choose your brain](../../resources/screenshots/onboarding-brain-dark.png)
 4. **Voice** — choose how Jarvis sounds (ElevenLabs, Fish Audio, OpenAI, a local voice, or your system voice) and the language (English or Italiano). Press ▶ to preview. See [Voices](voices.md).
 5. **Try it** — say *"Jarvis, what time is it?"*. When you hear the answer, you are done.
 

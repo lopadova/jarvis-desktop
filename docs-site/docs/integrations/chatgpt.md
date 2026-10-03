@@ -44,7 +44,7 @@ Then:
 == tab "Vercel"
 For people who already use Vercel. Vercel Functions cannot hold a WebSocket, so the desktop
 **long-polls** a queue on Upstash Redis (free tier). It works, with a bit more latency. Deploy the
-Vercel variant described in `packages/relay` and set the Upstash credentials as environment variables,
+Vercel variant in [`packages/relay/vercel`](https://github.com/lopadova/jarvis-desktop/tree/main/packages/relay/vercel) and set `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN`,
 then pair exactly as with Cloudflare.
 
 == tab "Cloudflare Tunnel"

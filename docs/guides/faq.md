@@ -57,7 +57,7 @@ Yes, with the `.mcpb` extension or the plugin. See [Claude Desktop & Cowork](cow
 Yes, through a free relay you deploy (Cloudflare recommended). Connector availability depends on your ChatGPT plan — check the current OpenAI docs. See [ChatGPT](chatgpt.md).
 
 **Can Claude Code or Codex talk to me through Jarvis?**
-Yes: add the `jarvis-mcp` server and they can speak, ask you questions and notify you. See the [MCP tools reference](../reference/mcp-tools.md).
+Yes: add Jarvis as an MCP server (`node /path/to/jarvis-mcp.mjs`) and they can speak, ask you questions and notify you. See the [MCP tools reference](../reference/mcp-tools.md).
 
 ## Developers
 

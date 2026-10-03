@@ -31,13 +31,13 @@ Default: `stt = local-whisper`, with whisper.cpp running on your computer. Pick 
 
 | Model | Approx. download | Speed | Accuracy | Good for |
 |---|---|---|---|---|
-| `tiny` | ~75 MB | fastest | basic | old computers, short commands |
-| `base` | ~150 MB | very fast | fair | — |
-| `small` (default) | ~470 MB | fast | good | most laptops, English and Italian |
-| `medium` | ~1.5 GB | slower | very good | strong CPUs/GPUs |
-| `large-v3-turbo` | ~1.6 GB | moderate on GPU | best | Apple Silicon, recent GPUs |
+| `tiny` | ~115 MB | fastest | basic | old computers, short commands |
+| `base` | ~210 MB | very fast | fair | — |
+| `small` (default) | ~640 MB | fast | good | most laptops, English and Italian |
+| `medium` | ~1.9 GB | slower | very good | strong CPUs/GPUs |
+| `large-v3-turbo` | ~565 MB | moderate on GPU | best | Apple Silicon, recent GPUs |
 
-Models are downloaded on first use into the `models/` folder of the data directory, together with the small wake-word (sherpa-onnx keyword spotting) and VAD models.
+Models are downloaded with **Settings › Microphone & wake word › Download models** into the `models/` folder of the data directory, together with the small wake-word (sherpa-onnx keyword spotting) and VAD models.
 
 ## Cloud transcription (opt-in)
 

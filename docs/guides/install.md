@@ -59,11 +59,11 @@ Notes:
 
 ## First-run downloads
 
-On first use of local voice features Jarvis downloads its on-device models (wake word, voice-activity detection, Whisper) into the `models/` folder of its data directory. The Whisper size you pick decides the download (see [Microphone](microphone.md#local-transcription-whisper)). Local TTS voices (Kokoro, Piper) are downloaded when you select them.
+The on-device speech models (wake word, voice-activity detection, Whisper) are downloaded from **Settings › Microphone & wake word › Download models** and stored in the `models/` folder of the data directory. The Whisper size you pick decides the download (see [Microphone](microphone.md#local-transcription-whisper)). The Piper voice binary and voices are downloaded the first time you use them.
 
 ## Updating
 
-Jarvis checks for updates and offers to install them. You can also download a newer installer and install over the existing app; your settings, memory and history are kept.
+v0.1.0 has no automatic updates yet (update signing is not configured). To update, download the newer installer from the releases page and install over the existing app; your settings, memory and history are kept.
 
 ## Uninstalling
 

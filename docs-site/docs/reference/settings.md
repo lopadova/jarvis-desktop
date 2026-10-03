@@ -11,6 +11,8 @@ across versions. **Secrets are never settings** — API keys and tokens live in 
 
 You change settings in the **Settings** window; the tab is shown for each group.
 
+![Settings › Agents & projects](/assets/screenshots/settings-agents-dark.png)
+
 ## General
 
 | Key | Type | Default | Meaning |

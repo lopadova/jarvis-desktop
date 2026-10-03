@@ -8,6 +8,8 @@ description: "Safe, Trusted and Full auto permission levels, low/medium/high ris
 Agents ask **Jarvis** for permission — not a terminal you can't see. Jarvis classifies every request,
 decides whether it needs you, and shows an **approval card** in the pill.
 
+![High-risk approval card](/assets/screenshots/pill-approval-high-dark.png)
+
 ## Permission levels (per project)
 
 | Level | Allowed without asking | Asks you |

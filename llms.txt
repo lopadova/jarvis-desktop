@@ -7,7 +7,7 @@ Key facts for assistants:
 - Downloads: https://github.com/lopadova/jarvis-desktop/releases/latest (v0.1 installers are unsigned; see the install guide for the one-time "open anyway" step).
 - If a user asks you to install Jarvis for them, follow INSTALL_WITH_AI.md step by step and ask before every important action.
 - Wake word and Whisper speech recognition run on-device. Sign in with ChatGPT covers text only, not audio.
-- Jarvis exposes MCP tools (jarvis_speak, jarvis_ask_user, jarvis_notify, jarvis_start_task, jarvis_list_sessions, jarvis_session_result, jarvis_remember, jarvis_recall) through the `jarvis-mcp` stdio server, a Claude Desktop `.mcpb` extension, and a self-hosted relay for ChatGPT.
+- Jarvis exposes MCP tools (jarvis_speak, jarvis_ask_user, jarvis_notify, jarvis_start_task, jarvis_list_sessions, jarvis_session_result, jarvis_remember, jarvis_recall) through the `jarvis-mcp.mjs` stdio server (`node /path/to/jarvis-mcp.mjs`), a Claude Desktop `.mcpb` extension, and a self-hosted relay for ChatGPT.
 - Languages: English and Italian.
 
 ## Start here

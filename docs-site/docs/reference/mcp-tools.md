@@ -6,7 +6,7 @@ description: "Every tool exposed by the Jarvis MCP server, with parameters, limi
 # MCP tools reference
 
 Defined by `McpTools` in `packages/core/src/ipc.ts`. The same tools are served by the stdio bridge
-(`jarvis-mcp`), the local HTTP endpoint and the ChatGPT relay. `readOnly` maps to the MCP
+(`node jarvis-mcp.mjs`), the local HTTP endpoint and the ChatGPT relay. `readOnly` maps to the MCP
 `readOnlyHint` annotation, `destructive` to `destructiveHint`. On the relay, write tools are hidden
 unless `relayExposeWriteTools` is on.
 

@@ -14,8 +14,8 @@ and pick a voice per language.
 | Provider | Setting `tts` | Account | Strengths | Notes |
 |---|---|---|---|---|
 | **System** (default) | `system` | none | Free, offline, instant | Quality depends on your OS voices |
-| **Kokoro** | `kokoro` | none | Natural local voice, offline | Model downloaded on first use |
-| **Piper** | `piper` | none | Very light, offline, Italian voices | Model downloaded on first use |
+| **Kokoro** | `kokoro` | none | Natural local voice, offline | Optional: needs the `kokoro-js` package next to the sidecar; English only; ~90 MB model fetched on first use |
+| **Piper** | `piper` | none | Very light, offline, English and Italian voices | Binary and voice (en_US-lessac, it_IT-paola) downloaded on first use, SHA-256 verified |
 | **ElevenLabs** | `elevenlabs` | API key | Most expressive; emotion tags | Paid beyond free tier |
 | **Fish Audio** | `fish` | API key | Expressive, great multilingual | Default model `s2-pro` |
 | **OpenAI** | `openai` | OpenAI API key | Clear, reliable | Not covered by a ChatGPT plan |

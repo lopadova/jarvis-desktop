@@ -53,7 +53,7 @@ You'll get a URL like `https://jarvis-relay.<your-account>.workers.dev`.
 
 ## Option B — Vercel (free tier)
 
-Vercel Functions cannot keep WebSockets open, so in this variant Jarvis **long-polls** a queue stored in Upstash Redis (free tier). It works, with higher latency. Deployment steps are in `packages/relay` (Vercel variant); pairing and the ChatGPT side are the same as above.
+Vercel Functions cannot keep WebSockets open, so in this variant Jarvis **long-polls** a queue stored in Upstash Redis (free tier). It works, with higher latency. Deployment steps (including a Deploy with Vercel button and the `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` variables) are in [`packages/relay/vercel`](../../packages/relay/vercel/README.md); pairing and the ChatGPT side are the same as above.
 
 ## Option C — Cloudflare Tunnel (no code)
 

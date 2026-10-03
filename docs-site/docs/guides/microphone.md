@@ -54,14 +54,15 @@ one in `stt`.
 
 | `whisperModel` | Approx. download | Good for |
 |---|---|---|
-| `tiny` | ~75 MB | Older computers, quick commands |
-| `base` | ~150 MB | Light machines |
-| `small` (default) | ~470 MB | Best balance, good Italian |
-| `medium` | ~1.5 GB | Accents, noisy rooms |
-| `large-v3-turbo` | ~1.6 GB | Highest accuracy on a fast machine |
+| `tiny` | ~115 MB | Older computers, quick commands |
+| `base` | ~210 MB | Light machines |
+| `small` (default) | ~640 MB | Best balance, good Italian |
+| `medium` | ~1.9 GB | Accents, noisy rooms |
+| `large-v3-turbo` | ~565 MB | Highest accuracy on a fast machine |
 
-Models (wake word, voice detection, Whisper, local voices) are downloaded the first time they are needed
-into the `models` folder of the data directory. Sizes are approximate.
+Speech models (wake word, voice detection, Whisper) are downloaded with **Settings › Microphone & wake
+word › Download models** into the `models` folder of the data directory. Local voices (Piper) download on
+first use. Sizes are approximate.
 
 ## Echo cancellation and barge-in
 

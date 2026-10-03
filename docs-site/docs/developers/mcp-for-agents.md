@@ -16,11 +16,11 @@ to choose between Postgres and SQLite" and wait for your spoken answer — even 
 
 ## How it connects
 
-The MCP bridge is a single file, `jarvis-mcp.mjs`, shipped with the app and in the `jarvis-mcp-bundle.zip` release asset (run it with Node.js 20+). It is a small **stdio** bridge that finds the running
+The MCP bridge is a single file, `jarvis-mcp.mjs`, shipped in the `jarvis-mcp-bundle.zip` release asset (it contains `dist/jarvis-mcp.mjs`; run it with Node.js 20+) and in the `.mcpb` and plugin; there is no `jarvis-mcp` on your `PATH`. It is a small **stdio** bridge that finds the running
 Jarvis through a connection file in the data directory (`run/agent-host.json`, owner-only permissions)
 and forwards tool calls over the local, token-protected socket. Jarvis must be running.
 
-Find the exact command for your OS in **Settings › Integrations › Copy command**.
+Use the absolute path of `jarvis-mcp.mjs` wherever you see `/path/to/jarvis-mcp.mjs` below.
 
 ::: tabs
 == tab "Claude Code"

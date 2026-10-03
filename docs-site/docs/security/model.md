@@ -7,7 +7,7 @@ description: "What Jarvis protects, the threats it is designed against, and the 
 
 Jarvis listens to a microphone and can start agents that run shell commands, edit files, read email and
 browse the web. That is a powerful combination, so security is designed in from day one. Every rule
-below must hold in every release, and **each has an automated test** in `packages/core/test`.
+below must hold in every release, and **each has an automated test** (core rules in `packages/core/test/security.test.ts`, host and relay rules in their package tests).
 
 ## What we protect
 
@@ -34,12 +34,12 @@ below must hold in every release, and **each has an automated test** in `package
 ::: grids
   ::: grid
     ::: card "R1 — Safe by default" icon:shield
-    New projects are **Safe**: shell, network, deletions outside the project and MCP write tools need approval. Full auto is an explicit opt-in.
+    New projects are **Safe**: shell, network, deletions outside the project and MCP write tools need approval. Full auto is an explicit opt-in, and high risk still asks. At Safe a shell command always asks, even a read-only one. The morning briefing runs read-only, enforced in code.
     :::
   :::
   ::: grid
     ::: card "R2 — Risk-tiered approvals" icon:shield-alert
-    Low/medium/high. High risk needs a **click**; voice only for low/medium; no "always allow" for high; timeout = deny.
+    Low/medium/high. High risk needs a **click**; voice only for low/medium; no "always allow" for high; timeout = deny. Commands are judged after quotes are stripped; chained or redirected commands are never low risk. Codex approvals map onto the same flow.
     :::
   :::
   ::: grid
@@ -54,7 +54,7 @@ below must hold in every release, and **each has an automated test** in `package
   :::
   ::: grid
     ::: card "R5 — Egress awareness" icon:globe-lock
-    The Home agent's network tool has allow/deny rules and asks for unknown domains with POST bodies.
+    The Home agent's web tool asks for unknown hosts, long or high-entropy URLs and any non-GET request, and once it has read private data it asks for every new host. Private and loopback addresses are refused.
     :::
   :::
   ::: grid
@@ -69,12 +69,12 @@ below must hold in every release, and **each has an automated test** in `package
   :::
   ::: grid
     ::: card "R8 — No string-built commands" icon:terminal
-    Terminals, editors and files are opened with argument vectors, never interpolated scripts.
+    Terminals, editors and files are opened with argument vectors, never interpolated scripts. The terminal launcher only accepts `claude` or `codex` resuming a session id.
     :::
   :::
   ::: grid
     ::: card "R9 — Relay hardening" icon:radio-tower
-    OAuth **and** a pairing secret; read-only by default; every call visible; rate limits; no inbound ports.
+    OAuth **and** a pairing secret; read-only by default; every call visible; rate limits; no inbound ports. Unpairing revokes every grant. Agents calling Jarvis carry a per-session token, and starting a task or saving a memory always asks you.
     :::
   :::
   ::: grid
@@ -113,7 +113,7 @@ flowchart TB
 
 - The sidecar listens only on `127.0.0.1`, requires a random launch token passed via environment
   variable (never argv) and checks the `Origin` header to block browsers and DNS rebinding.
-- Raw microphone audio never reaches the TypeScript side; the native shell sends transcripts only.
+- Raw microphone audio stays in the native shell; the TypeScript side receives transcripts only (audio is forwarded only if you enabled a cloud speech provider).
 
 ## Reporting a vulnerability
 
