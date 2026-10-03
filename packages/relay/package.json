@@ -39,7 +39,7 @@
   "devDependencies": {
     "@cloudflare/vitest-pool-workers": "^0.22.0",
     "@cloudflare/workers-types": "^5.20261001.1",
-    "@types/node": "^24.0.0",
+    "@types/node": "^26.6.3",
     "@upstash/redis": "^1.39.0",
     "typescript": "^7.0.2",
     "vitest": "~4.1.11",
