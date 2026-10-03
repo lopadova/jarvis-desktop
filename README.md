@@ -54,6 +54,12 @@ Italian works too: *"Jarvis, ricordami tra 20 minuti di chiamare Marco"*. The fu
 |---|---|---|
 | ![Pill listening](resources/screenshots/pill-listening-dark.png) | ![Pill thinking](resources/screenshots/pill-thinking-dark.png) | ![Pill speaking](resources/screenshots/pill-speaking-dark.png) |
 
+**The real app, running on Windows 11** (captured in Windows Sandbox, light theme):
+
+| First run | Choose your brain | Home, connected to the assistant |
+|---|---|---|
+| ![Onboarding welcome](resources/screenshots/windows-onboarding-welcome.png) | ![Onboarding: choose your brain](resources/screenshots/windows-onboarding-brain.png) | ![Home screen of the running app](resources/screenshots/windows-home.png) |
+
 Light theme, Italian UI and per-project permission levels: [Home (light)](resources/screenshots/home-light.png) · [Home in Italian](resources/screenshots/home-it-dark.png) · [Settings › Agents & projects](resources/screenshots/settings-agents-dark.png).
 
 ---

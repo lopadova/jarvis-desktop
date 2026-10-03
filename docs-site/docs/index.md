@@ -161,6 +161,12 @@ An approval looks like this — high-risk actions are click-only, with **Deny** 
 
 ![Sessions panel](/assets/screenshots/sessions-dark.png)
 
+And the real app running on Windows 11 (captured in Windows Sandbox):
+
+![Onboarding: choose your brain](/assets/screenshots/windows-onboarding-brain.png)
+
+![Home screen of the running app](/assets/screenshots/windows-home.png)
+
 High-risk requests (for example `git push` or deleting files outside the project) drop the voice hint and
 the "always allow" button: **click to confirm**.
 
