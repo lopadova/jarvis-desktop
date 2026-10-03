@@ -89,6 +89,8 @@ export async function openDatabase(path: string): Promise<SqlDb> {
 }
 
 function withPragmas(db: SqlDb): SqlDb {
-  db.exec('PRAGMA journal_mode = WAL; PRAGMA synchronous = NORMAL; PRAGMA foreign_keys = ON; PRAGMA busy_timeout = 3000;');
+  db.exec(
+    'PRAGMA journal_mode = WAL; PRAGMA synchronous = NORMAL; PRAGMA foreign_keys = ON; PRAGMA busy_timeout = 3000;',
+  );
   return db;
 }

@@ -99,7 +99,6 @@ interface SessionRow {
   pid_start: number | null;
 }
 
-
 function rowToSession(r: SessionRow): Session {
   const s: Session = {
     id: r.id,
@@ -220,9 +219,7 @@ export class Store {
   // ───────── sessions ─────────
   listSessions(limit = 200): Session[] {
     this.writer.flush();
-    return this.db
-      .all<SessionRow>('SELECT * FROM sessions ORDER BY started_at DESC LIMIT ?', limit)
-      .map(rowToSession);
+    return this.db.all<SessionRow>('SELECT * FROM sessions ORDER BY started_at DESC LIMIT ?', limit).map(rowToSession);
   }
   saveSession(s: Session): void {
     this.writer.drop(`session-activity:${s.id}`);
@@ -294,7 +291,13 @@ export class Store {
     this.db.transaction(() => {
       this.db.run('DELETE FROM memories');
       for (const m of list)
-        this.db.run('INSERT INTO memories (id, text, created_at, source) VALUES (?, ?, ?, ?)', m.id, m.text, m.createdAt, m.source);
+        this.db.run(
+          'INSERT INTO memories (id, text, created_at, source) VALUES (?, ?, ?, ?)',
+          m.id,
+          m.text,
+          m.createdAt,
+          m.source,
+        );
     });
   }
 
@@ -349,12 +352,7 @@ export class Store {
 
   // ───────── chat ─────────
   addChat(m: ChatMessage): void {
-    this.db.run(
-      'INSERT OR REPLACE INTO chat_messages (id, at, json) VALUES (?, ?, ?)',
-      m.id,
-      m.at,
-      JSON.stringify(m),
-    );
+    this.db.run('INSERT OR REPLACE INTO chat_messages (id, at, json) VALUES (?, ?, ?)', m.id, m.at, JSON.stringify(m));
   }
   recentChat(limit = 100): ChatMessage[] {
     return this.db
@@ -378,15 +376,13 @@ export class Store {
     const sql = includeDone
       ? 'SELECT * FROM reminders ORDER BY due_at ASC'
       : 'SELECT * FROM reminders WHERE done = 0 ORDER BY due_at ASC';
-    return this.db
-      .all<{ id: string; text: string; due_at: number; kind: string; done: number }>(sql)
-      .map((r) => ({
-        id: r.id,
-        text: r.text,
-        dueAt: Number(r.due_at),
-        kind: r.kind as Reminder['kind'],
-        done: !!r.done,
-      }));
+    return this.db.all<{ id: string; text: string; due_at: number; kind: string; done: number }>(sql).map((r) => ({
+      id: r.id,
+      text: r.text,
+      dueAt: Number(r.due_at),
+      kind: r.kind as Reminder['kind'],
+      done: !!r.done,
+    }));
   }
   markReminderDone(id: string): void {
     this.db.run('UPDATE reminders SET done = 1 WHERE id = ?', id);
@@ -496,4 +492,3 @@ export class BatchedWriter {
     this.timer = null;
   }
 }
-

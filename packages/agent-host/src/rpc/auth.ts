@@ -50,10 +50,7 @@ export function parseProtocols(header: string | string[] | undefined): string[] 
     .filter(Boolean);
 }
 
-export function authenticate(
-  cfg: AuthConfig,
-  req: { origin?: string; url?: string; protocols: string[] },
-): AuthResult {
+export function authenticate(cfg: AuthConfig, req: { origin?: string; url?: string; protocols: string[] }): AuthResult {
   if (!originAllowed(req.origin, cfg.extraOrigins)) return { ok: false, status: 403, reason: 'origin not allowed' };
   let role: Role = 'ui';
   try {

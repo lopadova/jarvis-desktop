@@ -11,6 +11,7 @@
  */
 import type { IncomingMessage } from 'node:http';
 import type { AddressInfo } from 'node:net';
+import type { Logger } from '@jarvis/core';
 import {
   type HostMethod,
   type HostMethods,
@@ -23,7 +24,6 @@ import {
 } from '@jarvis/core';
 import { type WebSocket, WebSocketServer } from 'ws';
 import type { z } from 'zod';
-import type { Logger } from '@jarvis/core';
 import {
   type CallContext,
   DEFAULT_HOST_TIMEOUT_MS,
