@@ -189,7 +189,7 @@ describe('codex CLI brain', () => {
 });
 
 describe('CLI discovery helpers', () => {
-  it('resolves npm .cmd shims to their JS entry point without a shell', () => {
+  it.skipIf(process.platform !== 'win32')('resolves npm .cmd shims to their JS entry point without a shell', () => {
     const shimDir = mkdtempSync(join(tmpdir(), 'jarvis-shim-'));
     const script = join(shimDir, 'node_modules', '@openai', 'codex', 'bin');
     mkdirSync(script, { recursive: true });

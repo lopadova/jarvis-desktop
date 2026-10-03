@@ -404,7 +404,8 @@ impl Worker {
         self.framer.push(&self.resampled);
         let mut frames: Vec<f32> = Vec::new();
         self.framer.drain(|f| frames.extend_from_slice(f));
-        for frame in frames.chunks_exact(VAD_WINDOW) {
+        let (windows, _partial) = frames.as_chunks::<VAD_WINDOW>();
+        for frame in windows {
             self.frame(frame);
         }
     }
