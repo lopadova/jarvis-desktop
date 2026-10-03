@@ -18,7 +18,7 @@ import {
   type TtsRequest,
   type TtsVoice,
 } from '@jarvis/core';
-import { fetchOf, type ProviderDeps, preferredVoice } from '../deps.js';
+import { type ProviderDeps, preferredVoice } from '../deps.js';
 import { bodyChunks } from '../util/http.js';
 import { DEFAULT_VOICES, lang } from './defaults.js';
 

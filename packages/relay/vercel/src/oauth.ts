@@ -152,7 +152,7 @@ async function validateAuthParams(
 ): Promise<AuthParams | Response> {
   const client = await loadClient(store, params.get('client_id') ?? '');
   const redirectUri = params.get('redirect_uri') ?? '';
-  if (!client || !client.redirectUris.includes(redirectUri)) {
+  if (!client?.redirectUris.includes(redirectUri)) {
     return page('Cannot connect', '<h1>Cannot connect</h1><p>Unknown app or redirect address.</p>', 400);
   }
   const state = params.get('state') ?? '';

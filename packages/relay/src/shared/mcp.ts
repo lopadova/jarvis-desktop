@@ -81,7 +81,7 @@ export async function handleMcpRequest(request: Request, backend: RelayBackend):
     return rpcError(null, -32700, 'Parse error', 400);
   }
   if (Array.isArray(message)) return rpcError(null, -32600, 'Batch requests are not supported', 400);
-  if (!message || message.jsonrpc !== '2.0') return rpcError(null, -32600, 'Invalid JSON-RPC message', 400);
+  if (message?.jsonrpc !== '2.0') return rpcError(null, -32600, 'Invalid JSON-RPC message', 400);
 
   // Notifications and client responses get 202 with no body.
   if (message.id === undefined || message.id === null || typeof message.method !== 'string') {

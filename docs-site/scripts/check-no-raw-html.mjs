@@ -13,7 +13,7 @@ async function files(dir) {
   const out = [];
   for (const entry of entries) {
     const full = path.join(dir, entry.name);
-    if (entry.isDirectory()) out.push(...await files(full));
+    if (entry.isDirectory()) out.push(...(await files(full)));
     else if (entry.isFile() && full.endsWith('.md')) out.push(full);
   }
   return out;
@@ -44,12 +44,12 @@ async function exists(file) {
 }
 
 async function htmlFiles(dir) {
-  if (!await exists(dir)) return [];
+  if (!(await exists(dir))) return [];
   const entries = await readdir(dir, { withFileTypes: true });
   const out = [];
   for (const entry of entries) {
     const full = path.join(dir, entry.name);
-    if (entry.isDirectory()) out.push(...await htmlFiles(full));
+    if (entry.isDirectory()) out.push(...(await htmlFiles(full)));
     else if (entry.isFile() && full.endsWith('.html')) out.push(full);
   }
   return out;

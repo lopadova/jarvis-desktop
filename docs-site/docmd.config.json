@@ -71,9 +71,7 @@
     "appearance": "system",
     "codeHighlight": true,
     "primaryColor": "#22b8e6",
-    "customCss": [
-      "assets/custom.css"
-    ]
+    "customCss": ["assets/custom.css"]
   },
   "copyCode": true,
   "pageNavigation": true,
@@ -274,12 +272,8 @@
     "search": {
       "semantic": true,
       "model": "Xenova/all-MiniLM-L6-v2",
-      "include": [
-        "**/*.md"
-      ],
-      "exclude": [
-        "**/drafts/**"
-      ],
+      "include": ["**/*.md"],
+      "exclude": ["**/drafts/**"],
       "showConfidence": true,
       "showFilters": true
     },

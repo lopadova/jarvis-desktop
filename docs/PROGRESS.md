@@ -33,3 +33,10 @@
   - MCP handler, relay link client
   - 103 vitest tests covering R1–R12
   - Bun-compiled binary verified on Windows
+- 2026-10-03 — `apps/desktop` (branch `feat/desktop`): Tauri 2 shell and provisional UI.
+  - Rust: windows + materials, tray, shortcuts (PTT press/release), deep links (R3), sidecar supervision,
+    shell IPC client with all `host.*` methods, rodio playback, on-device voice (sherpa-onnx KWS/VAD/Whisper)
+    with model download + SHA-256, `--self-test`.
+  - UI: React 19 / Tailwind v4 surfaces S1–S5 following the design brief contract, IPC client + mock mode, EN/IT.
+  - Verified: vite build, tsc, vitest (27), cargo fmt/clippy/test on Linux (49 + 1 ignored model test),
+    Windows cross-build (cargo-xwin) with 50 unit tests and `--self-test` passing on Windows 11.

@@ -5,7 +5,8 @@ import type { RouterAction } from '../router/schema.js';
  * wrapped in a delimited block, sanitised, and can never be the source of an action.
  */
 
-const CONTROL = new RegExp('[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]', 'g');
+// biome-ignore lint/suspicious/noControlCharactersInRegex: stripping control characters from untrusted text is the point
+const CONTROL = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g;
 
 export function sanitizeUntrusted(text: string, maxChars: number): string {
   const cleaned = text.replace(CONTROL, '').replace(/<\/?untrusted_data[^>]*>/gi, '[tag removed]');

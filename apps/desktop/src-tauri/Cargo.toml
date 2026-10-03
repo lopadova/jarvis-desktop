@@ -1,0 +1,76 @@
+[package]
+name = "jarvis-desktop"
+version = "0.1.0"
+description = "Jarvis Desktop shell: windows, tray, shortcuts, keyring, audio playback and on-device voice input"
+authors = ["Jarvis Desktop contributors"]
+license = "MIT"
+repository = "https://github.com/lopadova/jarvis-desktop"
+edition = "2024"
+rust-version = "1.88"
+
+[lib]
+name = "jarvis_desktop_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[[bin]]
+name = "jarvis-desktop"
+path = "src/main.rs"
+
+[features]
+default = ["voice"]
+# On-device voice input: cpal capture + sherpa-onnx keyword spotting, Silero VAD and Whisper.
+voice = ["dep:sherpa-onnx", "dep:cpal"]
+# Acoustic echo cancellation (follow-up; currently a documented stub).
+aec = []
+
+[build-dependencies]
+tauri-build = { version = "2.7.1", features = [] }
+
+[dependencies]
+tauri = { version = "2.12.1", features = ["tray-icon", "image-png", "macos-private-api"] }
+tauri-plugin-single-instance = { version = "2.5.2", features = ["deep-link"] }
+tauri-plugin-global-shortcut = "2.4.0"
+tauri-plugin-autostart = "2.7.0"
+tauri-plugin-deep-link = "2.6.1"
+tauri-plugin-notification = "2.5.1"
+tauri-plugin-clipboard-manager = "2.4.1"
+tauri-plugin-opener = "2.7.0"
+# native-tls: OS TLS stack (SChannel / Security.framework / OpenSSL) instead of a bundled C crypto build.
+tauri-plugin-updater = { version = "2.13.1", default-features = false, features = ["native-tls", "zip", "system-proxy"] }
+tauri-plugin-log = "2.10.0"
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.151"
+tokio = { version = "1.53.2", features = ["rt-multi-thread", "macros", "sync", "time", "process", "io-util", "net"] }
+tokio-tungstenite = "0.30.0"
+futures-util = { version = "0.3.34", default-features = false, features = ["sink", "std"] }
+log = "0.4.34"
+thiserror = "2.0.21"
+anyhow = "1.0.104"
+base64 = "0.23.1"
+getrandom = "0.4.3"
+hex = "0.4.3"
+sha2 = "0.11.0"
+url = "2.5.8"
+keyring = "4.2.0"
+rodio = { version = "0.22.2", default-features = false, features = ["playback", "mp3", "wav"] }
+xcap = "0.9.8"
+enigo = "0.6.1"
+image = { version = "0.25.10", default-features = false, features = ["png"] }
+window-vibrancy = "0.8.1"
+reqwest = { version = "0.13.5", default-features = false, features = ["native-tls", "stream"] }
+bzip2 = "0.6.1"
+tar = "0.4.46"
+rubato = "5.0.1"
+rtrb = "0.4.0"
+sherpa-onnx = { version = "1.13.8", optional = true }
+cpal = { version = "0.17.3", optional = true }
+
+[target.'cfg(windows)'.dependencies]
+windows = { version = "0.62.2", features = ["Win32_UI_Shell", "Win32_Foundation", "Win32_System_Console"] }
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = "s"
+panic = "abort"
+strip = true

@@ -23,7 +23,9 @@ const norm = (s: string): string =>
     .replace(/[̀-ͯ]/g, '')
     // Keep "." and "," only between digits ("7.45 pm", "1,5 ore"); everything else that isn't a word char goes.
     .replace(/(\d)[.,](\d)/g, '$1\u0000$2')
+    // biome-ignore lint/suspicious/noControlCharactersInRegex: NUL is a private sentinel that never occurs in transcripts
     .replace(/[^\p{L}\p{N}:\s'\u0000]/gu, ' ')
+    // biome-ignore lint/suspicious/noControlCharactersInRegex: NUL is a private sentinel that never occurs in transcripts
     .replace(/\u0000/g, '.')
     .replace(/\s+/g, ' ')
     .trim()

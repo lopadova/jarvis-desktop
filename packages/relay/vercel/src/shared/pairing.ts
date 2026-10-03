@@ -94,6 +94,7 @@ export function parseRegistration(body: unknown): PairRegistration | string {
   if (typeof secretHash !== 'string' || !SECRET_HASH_RE.test(secretHash)) return 'secretHash must be 64 lowercase hex';
   if (label !== undefined && typeof label !== 'string') return 'label must be a string';
   const cleanLabel = (label ?? '')
+    // biome-ignore lint/suspicious/noControlCharactersInRegex: rejecting control characters in labels is the point
     .replace(/[\u0000-\u001f\u007f]/g, '')
     .trim()
     .slice(0, 80);
