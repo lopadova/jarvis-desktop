@@ -38,6 +38,9 @@ export function safeOpenable(candidate: string | undefined, cwd: string): Openab
   }
   if (/^(\\\\|\/\/)/.test(p)) return undefined; // UNC / network paths
   if (/^[a-z][a-z0-9+.-]+:/i.test(p) && !/^[a-z]:[\\/]/i.test(p)) return undefined; // other schemes
+  // A Windows drive path is never a local path on other systems: `resolve` would treat it as relative to cwd
+  // and wrongly accept it as "inside the session folder".
+  if (process.platform !== 'win32' && /^[a-z]:[\\/]/i.test(p)) return undefined;
   const abs = resolve(cwd, p);
   if (!isAbsolute(abs) || !isInside(cwd, abs)) return undefined;
   return { target: abs, kind: 'path' };

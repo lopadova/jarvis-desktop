@@ -61,11 +61,11 @@ pub fn pcm16_to_f32(carry: &mut Option<u8>, bytes: &[u8], out: &mut Vec<f32>) {
         }
     }
     let rest = &bytes[i..];
-    let mut chunks = rest.chunks_exact(2);
-    for c in &mut chunks {
-        out.push(i16::from_le_bytes([c[0], c[1]]) as f32 / 32768.0);
+    let (pairs, tail) = rest.as_chunks::<2>();
+    for c in pairs {
+        out.push(i16::from_le_bytes(*c) as f32 / 32768.0);
     }
-    if let [b] = chunks.remainder() {
+    if let [b] = tail {
         *carry = Some(*b);
     }
 }
