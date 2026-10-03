@@ -18,6 +18,18 @@ if [ -d /xwin-sdk/crt ] && [ -d /xwin-sdk/sdk ]; then
     find "$X" -depth -type f | while read -r f; do
       d=$(dirname "$f"); b=$(basename "$f"); l=$(echo "$b" | tr 'A-Z' 'a-z')
       if [ "$b" != "$l" ] && [ ! -e "$d/$l" ]; then ln -s "$b" "$d/$l"; fi
+      # Linker directives also ask for UPPERCASE stems (LIBCMT.lib, OLDNAMES.lib).
+      case "$b" in *.lib|*.Lib|*.LIB)
+        u="$(echo "${b%.*}" | tr 'a-z' 'A-Z').lib"
+        if [ "$b" != "$u" ] && [ ! -e "$d/$u" ]; then ln -s "$b" "$d/$u"; fi ;;
+      esac
+    done
+    # Mixed-case names some crates link verbatim.
+    for pair in "pathcch.lib:PathCch.lib" "shlwapi.lib:ShLwApi.lib" "version.lib:Version.lib"; do
+      src="${pair%%:*}"; dst="${pair##*:}"
+      for dir in "$X"/sdk/lib/um/x86_64; do
+        if [ -e "$dir/$src" ] && [ ! -e "$dir/$dst" ]; then ln -s "$src" "$dir/$dst"; fi
+      done
     done
     touch "$X/.ready"
   fi
