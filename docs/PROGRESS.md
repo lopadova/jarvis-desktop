@@ -4,7 +4,7 @@
 |---|---|---|
 | 0 | Foundations: design brief, product spec, security model, ADRs | ✅ in review |
 | 1 | Scaffold: monorepo, Tauri 2 shell, sidecar, CI | ⏳ next |
-| 1b | **UI pixel-perfect** from the Claude Design handoff in `docs/design/handoff/` (replaces the provisional UI) | ⏳ after desktop shell lands |
+| 1b | **UI pixel-perfect** from the Claude Design handoff in `docs/design/handoff/` (replaces the provisional UI) | ✅ branch `feat/ui-pixel` |
 | 2 | Brain & core (Sign in with ChatGPT, Claude, Codex, API keys, Ollama, router, memory, policy) | — |
 | 3 | Agents (Claude Agent SDK, Codex SDK, Home agent, approvals, SQLite) | — |
 | 4 | Voice out (ElevenLabs, Fish, OpenAI, local, cues, streaming) | — |
@@ -40,3 +40,11 @@
   - UI: React 19 / Tailwind v4 surfaces S1–S5 following the design brief contract, IPC client + mock mode, EN/IT.
   - Verified: vite build, tsc, vitest (27), cargo fmt/clippy/test on Linux (49 + 1 ignored model test),
     Windows cross-build (cargo-xwin) with 50 unit tests and `--self-test` passing on Windows 11.
+- 2026-10-03 — Phase 1b (branch `feat/ui-pixel`): UI rebuilt from the Claude Design handoff.
+  - `tokens.css` from the handoff's `tokens()` (dark/light × glass/solid, hue-driven accent, `--backdrop`, `--wallpaper`).
+  - Orb, Listening Pill (all states, hide animation), Approval Card (countdown ring, R2 rules kept), Session Card/Panel,
+    chat bubbles + system cards (inline approve/deny, timer countdown, briefing), Home (rail views: memory with undo,
+    history, projects), composer (brain menu, click/hold mic, waveform), footer (usage meter, R11 mic indicator),
+    Onboarding (5 steps, confetti), Settings (9 tabs, Full-auto confirm with checkbox), in-window toasts.
+  - Settings/Onboarding code-split: main chunk 681 kB → 308 kB. Browser preview draws windows on the wallpaper.
+  - New app icon and README banner from the handoff's Brand page; screenshots in `resources/screenshots/`.

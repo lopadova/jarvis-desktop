@@ -2,6 +2,12 @@
 
 A running log of non-obvious findings, newest first. Consolidate into docs and rules at each milestone.
 
+## 2026-10-03 — ui-pixel (phase 1b)
+- **Unlayered element CSS beats Tailwind v4 utilities.** A plain `button { font: inherit }` in `globals.css` silently overrode every `text-[12px]`/`font-semibold` on buttons, because utilities live in `@layer utilities`. Put element defaults in `@layer base`.
+- **The handoff's inline styles are `content-box`.** A `width:212px; padding:12px 10px` sidebar is 232 px wide, and a `960×680` window with a 1 px border is 962×682. Tailwind's preflight is `border-box`, so add the padding/border when porting.
+- **Inline `animation` shorthands reset `animation-play-state`.** Pausing on `visibilitychange` (and reduced motion) needs `!important` in the global rule; keep a targeted `biome-ignore` with the reason.
+- **Comparing with the design:** serve `docs/design/handoff/` with a static server (not `file://`) and drive both pages with Playwright at the same viewport; element screenshots of `[data-window]` make side-by-side checks easy.
+
 ## 2026-10-03 — providers
 - On Windows, spawning an npm `.cmd` shim needs a shell. Instead, parse the shim and run its JS entry point with node: no shell, no injection surface.
 - `claude -p` accepts `--system-prompt-file` and returns `structured_output` in the JSON envelope when given `--json-schema`.
