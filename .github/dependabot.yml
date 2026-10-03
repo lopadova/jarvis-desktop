@@ -17,6 +17,13 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 10
+    ignore:
+      # packages/relay runs tests in workerd via @cloudflare/vitest-pool-workers, which needs vitest 4.x.
+      - dependency-name: "vitest"
+        update-types: ["version-update:semver-major"]
+      # Types track the oldest supported Node major (engines: node >= 22).
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
     groups:
       minor-and-patch:
         update-types: ["minor", "patch"]
@@ -39,6 +46,9 @@ updates:
     directory: /apps/desktop/src-tauri
     schedule:
       interval: weekly
+    ignore:
+      # cpal must match the version rodio depends on, so a single cpal is linked.
+      - dependency-name: "cpal"
     groups:
       minor-and-patch:
         update-types: ["minor", "patch"]
