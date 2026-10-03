@@ -5,14 +5,14 @@
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { createSidecarForwarder } from './forward.js';
 import { createJarvisMcpServer } from './server.js';
-import { type ConnectionSource, fileConnectionSource, SidecarClient } from './sidecar.js';
+import { type ConnectionSource, envConnectionSource, fileConnectionSource, SidecarClient } from './sidecar.js';
 
 export interface StdioOptions {
   connection?: ConnectionSource;
 }
 
 export async function runStdio(options: StdioOptions = {}): Promise<void> {
-  const sidecar = new SidecarClient(options.connection ?? fileConnectionSource());
+  const sidecar = new SidecarClient(options.connection ?? envConnectionSource() ?? fileConnectionSource());
   const server = createJarvisMcpServer({ forward: createSidecarForwarder(sidecar, 'stdio') });
   const transport = new StdioServerTransport();
 

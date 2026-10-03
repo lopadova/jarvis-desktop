@@ -57,6 +57,18 @@ export function defaultConnectionFilePath(
   return join(dataDir(os, env, home), DATA_FILES.connection);
 }
 
+/**
+ * Inside a Jarvis agent session the bridge gets JARVIS_MCP_PORT + JARVIS_MCP_SESSION_TOKEN in its env: the sidecar
+ * derives the caller session from that token. Outside a session (Claude Desktop, Codex, …) it falls back to the
+ * connection file's `mcpToken` and is treated as an external app.
+ */
+export function envConnectionSource(env: Record<string, string | undefined> = process.env): ConnectionSource | null {
+  const port = Number(env.JARVIS_MCP_PORT);
+  const token = env.JARVIS_MCP_SESSION_TOKEN;
+  if (!token || !Number.isInteger(port) || port <= 0 || port > 65535) return null;
+  return async () => ({ port, mcpToken: token });
+}
+
 /** Reads `run/agent-host.json`; any problem (missing, partial write, bad JSON) means "offline". */
 export function fileConnectionSource(path: string = defaultConnectionFilePath()): ConnectionSource {
   return async () => {
@@ -133,7 +145,7 @@ export class SidecarClient {
     const info = await this.source();
     if (!info) throw new JarvisOfflineError();
     const host = this.options.host ?? '127.0.0.1';
-    const ws = new WebSocket(`ws://${host}:${info.port}`, [`jarvis.${info.mcpToken}`], {
+    const ws = new WebSocket(`ws://${host}:${info.port}/?role=mcp`, [`jarvis.${info.mcpToken}`], {
       handshakeTimeout: this.options.connectTimeoutMs ?? 5_000,
       perMessageDeflate: false,
     });

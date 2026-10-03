@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import {
   createSidecarForwarder,
   defaultConnectionFilePath,
+  envConnectionSource,
   fileConnectionSource,
   OFFLINE_MESSAGE,
   SidecarClient,
@@ -31,6 +32,17 @@ describe('connection file', () => {
     await writeFile(file, JSON.stringify({ port: 1234, mcpToken: 'abc', pid: 1, version: '0.1.0', startedAt: 0 }));
     expect(await fileConnectionSource(file)()).toEqual({ port: 1234, mcpToken: 'abc' });
     expect(await fileConnectionSource(join(dir, 'missing.json'))()).toBeNull();
+  });
+});
+
+describe('session-token connection source', () => {
+  it('uses JARVIS_MCP_PORT + JARVIS_MCP_SESSION_TOKEN when present', async () => {
+    expect(await envConnectionSource({ JARVIS_MCP_PORT: '4321', JARVIS_MCP_SESSION_TOKEN: 'sess' })?.()).toEqual({
+      port: 4321,
+      mcpToken: 'sess',
+    });
+    expect(envConnectionSource({ JARVIS_MCP_PORT: '4321' })).toBeNull();
+    expect(envConnectionSource({ JARVIS_MCP_PORT: 'x', JARVIS_MCP_SESSION_TOKEN: 's' })).toBeNull();
   });
 });
 

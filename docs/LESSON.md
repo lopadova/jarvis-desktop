@@ -12,6 +12,13 @@ A running log of non-obvious findings, newest first. Consolidate into docs and r
 
 ## 2026-10-03 — security
 - A denylist shell-risk classifier will always have bypasses (quoting, newlines, exec flags). The real control is defense in depth: in the default `safe` level every shell command asks the user, and the classifier only decides what `trusted` / `full-auto` may auto-allow.
+## 2026-10-03 (agent-host)
+- **Bun ignores the `lookup` option** of `node:http(s).request`. To pin a vetted IP (DNS-rebinding defence), connect to the IP itself and set the `Host` header plus `servername` (TLS SNI and certificate check). This works in both Node and Bun.
+- **WebSocket auth from a webview:** browsers cannot set headers, so the launch token travels as the subprotocol `jarvis.<token>`. The server must echo the chosen protocol back, or the browser drops the connection.
+- **Claude Agent SDK:** `spawnClaudeCodeProcess` lets the host spawn the CLI itself, using a process group and recording PID and start time for orphan reaping (R7). The `env` passed to the SDK is what the child gets, so it must be allowlisted.
+- **Codex SDK 0.160** has no approval callback. Until `codex app-server` approvals are wired, use a fail-safe mapping: safe → read-only; trusted → workspace-write only where the OS sandbox is strong.
+- **Smart App Control** on Windows 11 can block a freshly compiled, unsigned `bun --compile` binary ("application control policy"). The first build ran; a rebuild with the same name was blocked. Plan code signing for releases.
+- **`node:sqlite`** (Node 25) and **`bun:sqlite`** share prepare/run/all/get, so a small adapter covers both. Import them through a computed specifier so Vite never tries to resolve the other runtime's module.
 
 ## 2026-10-03
 - **ChatGPT plan tokens:** Sign in with ChatGPT tokens work only with the **Responses API** (`store:false`, `stream:true`). They do **not** cover audio endpoints, so voice must use separate providers.

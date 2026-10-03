@@ -11,7 +11,7 @@
 | 5 | Voice in (PTT, wake word, VAD, Whisper, cloud STT, AEC) | — |
 | 6 | MCP & interop (.mcpb, Cowork plugin, Cloudflare relay for ChatGPT) | — |
 | 7 | Everyday features + suggestion chips | — |
-| 8 | Release v0.1.0, README, docs-site | — |
+| 8 | Release v0.1.0, README, docs-site — **real app screenshots taken while testing** (home, pill states, approval card, sessions, onboarding, settings) added to README and docs-site "See it" | — |
 
 ## Log
 - 2026-10-03 — Phase 0 docs written:
@@ -27,3 +27,9 @@
   - Workflows: `ci.yml`, `release.yml` (draft release, unsigned installers, `.mcpb`, checksums), `docs.yml` (Cloudflare Pages), all actions SHA-pinned
   - `docs-site/` docmd site (WOW landing, 28 pages, semantic search, raw-HTML guard)
 - 2026-10-03 — Claude Design handoff received and versioned in `docs/design/handoff/` (main: `Jarvis Desktop.dc.html` + component prototypes). To be implemented pixel-perfect in `apps/desktop/src` as phase 1b.
+- 2026-10-03 — `packages/agent-host` (sidecar):
+  - loopback JSON-RPC server, SQLite store, turn orchestrator, sessions
+  - Claude/Codex/Home drivers, approvals, voice output, reminders
+  - MCP handler, relay link client
+  - 103 vitest tests covering R1–R12
+  - Bun-compiled binary verified on Windows

@@ -18,7 +18,9 @@ export async function startFakeSidecar(token: string, reply: (call: ReceivedCall
       const offered = String(info.req.headers['sec-websocket-protocol'] ?? '')
         .split(',')
         .map((p) => p.trim());
-      if (offered.includes(`jarvis.${token}`)) done(true);
+      // Mirrors the real agent-host: the role comes from `?role=`, and without it the client would be treated as `ui`.
+      const role = new URL(info.req.url ?? '/', 'http://127.0.0.1').searchParams.get('role');
+      if (offered.includes(`jarvis.${token}`) && role === 'mcp') done(true);
       else done(false, 401, 'Unauthorized');
     },
   });
