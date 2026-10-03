@@ -1,0 +1,237 @@
+name: Release
+
+# On a v* tag: build unsigned installers for every target and the MCP bundles with a read-only
+# token, then a single "publish" job (the only one allowed to write) creates the DRAFT release,
+# uploads every asset plus SHA256SUMS.txt. A maintainer publishes the draft after testing.
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing tag to (re)build, e.g. v0.1.0"
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.event.inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: "24"
+  RELEASE_TAG: ${{ github.event.inputs.tag || github.ref_name }}
+
+jobs:
+  build-tauri:
+    name: Build ${{ matrix.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: macOS arm64
+            os: macos-latest
+            target: aarch64-apple-darwin
+            bun_target: bun-darwin-arm64
+          - name: macOS x64
+            os: macos-latest
+            target: x86_64-apple-darwin
+            bun_target: bun-darwin-x64
+          - name: Windows x64
+            os: windows-latest
+            target: x86_64-pc-windows-msvc
+            bun_target: bun-windows-x64
+          - name: Linux x64
+            os: ubuntu-22.04
+            target: x86_64-unknown-linux-gnu
+            bun_target: bun-linux-x64
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 90
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.RELEASE_TAG }}
+          persist-credentials: false
+
+      - name: Install Linux system dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential curl wget file pkg-config cmake clang libclang-dev \
+            libssl-dev libxdo-dev \
+            libwebkit2gtk-4.1-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            libasound2-dev \
+            patchelf rpm
+
+      - uses: dtolnay/rust-toolchain@89b12181fb390509a0842a86cc55eeb8eb928c1d # stable
+        with:
+          toolchain: stable
+          targets: ${{ matrix.target }}
+
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        with:
+          workspaces: apps/desktop/src-tauri -> target
+          key: ${{ matrix.target }}
+
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Tauri externalBin naming: binaries/agent-host-<target-triple>[.exe]
+      - name: Build the sidecar (${{ matrix.target }})
+        env:
+          JARVIS_SIDECAR_TARGET: ${{ matrix.target }}
+          BUN_TARGET: ${{ matrix.bun_target }}
+        run: |
+          set -euo pipefail
+          pnpm sidecar:build
+          EXT=""
+          if [ "$RUNNER_OS" = "Windows" ]; then EXT=".exe"; fi
+          BIN="apps/desktop/src-tauri/binaries/agent-host-${JARVIS_SIDECAR_TARGET}${EXT}"
+          test -f "$BIN" || { echo "::error::Expected sidecar $BIN was not produced"; exit 1; }
+          ls -la apps/desktop/src-tauri/binaries
+
+      # Build only (no releaseId/tagName): uploading happens in the publish job.
+      # Unsigned v0.1 builds: no APPLE_* / Windows signing secrets are set on purpose.
+      - name: Build installers
+        uses: tauri-apps/tauri-action@1deb371b0cd8bd54025b384f1cd735e725c4060f # v1.0.0
+        with:
+          projectPath: apps/desktop
+          args: --target ${{ matrix.target }}
+
+      - name: Collect installers
+        env:
+          TARGET: ${{ matrix.target }}
+        run: |
+          set -euo pipefail
+          mkdir -p dist-installers
+          find apps/desktop/src-tauri/target "$PWD/target" -path "*/${TARGET}/release/bundle/*" -type f \
+            \( -name '*.dmg' -o -name '*-setup.exe' -o -name '*.msi' -o -name '*.AppImage' -o -name '*.deb' -o -name '*.rpm' \) \
+            -exec cp {} dist-installers/ \; 2>/dev/null || true
+          ls -la dist-installers
+          if [ -z "$(ls -A dist-installers)" ]; then echo "::error::No installers found for $TARGET"; exit 1; fi
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: installers-${{ matrix.target }}
+          path: dist-installers/
+          if-no-files-found: error
+          retention-days: 7
+
+  mcp-bundles:
+    name: MCP bundles (.mcpb + jarvis-mcp)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.RELEASE_TAG }}
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build jarvis-mcp and pack the Claude Desktop extension
+        run: |
+          set -euo pipefail
+          pnpm --filter @jarvis/mcp build
+          pnpm --filter @jarvis/mcp pack:mcpb
+
+      - name: Collect assets
+        run: |
+          set -euo pipefail
+          mkdir -p release-assets
+          mapfile -t MCPB < <(find packages/mcp -name '*.mcpb' -not -path '*/node_modules/*')
+          if [ "${#MCPB[@]}" -eq 0 ]; then echo "::error::No .mcpb produced"; exit 1; fi
+          cp "${MCPB[0]}" release-assets/jarvis.mcpb
+          (cd packages/mcp && zip -r ../../release-assets/jarvis-mcp-bundle.zip dist README.md)
+          ls -la release-assets
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: mcp-bundles
+          path: release-assets/
+          if-no-files-found: error
+          retention-days: 7
+
+  publish:
+    name: Publish draft release
+    needs: [build-tauri, mcp-bundles]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write # the only job allowed to create/modify the release
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          path: assets
+          merge-multiple: true
+
+      - name: Checksums
+        working-directory: assets
+        run: |
+          set -euo pipefail
+          sha256sum * > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+      - name: Create the draft release and upload assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          # RELEASE_TAG is only used as a shell variable, never interpolated into the script text.
+          printf '## Jarvis %s\n\n' "$RELEASE_TAG" > release-notes.md
+          cat >> release-notes.md <<'EOF'
+          > **These installers are not code-signed yet.** The first time you open Jarvis:
+          > - **macOS:** right-click Jarvis in Applications › **Open**, or *System Settings › Privacy & Security › Open Anyway*.
+          > - **Windows:** SmartScreen › **More info** › **Run anyway**.
+          > - **Linux:** `chmod +x` the AppImage, or install the `.deb` / `.rpm` with your package manager.
+          >
+          > Only download Jarvis from this page and compare the file with `SHA256SUMS.txt`. Install guide: https://github.com/lopadova/jarvis-desktop/blob/main/docs/guides/install.md
+
+          | Your computer | File |
+          |---|---|
+          | Mac with Apple chip | `Jarvis_*_aarch64.dmg` |
+          | Mac with Intel | `Jarvis_*_x64.dmg` |
+          | Windows 10/11 | `Jarvis_*_x64-setup.exe` or `.msi` |
+          | Linux | `.AppImage`, `.deb` or `.rpm` |
+          | Claude Desktop extension | `jarvis.mcpb` |
+          | MCP bridge for other clients | `jarvis-mcp-bundle.zip` |
+
+          See [CHANGELOG.md](https://github.com/lopadova/jarvis-desktop/blob/main/CHANGELOG.md) for what's new.
+          EOF
+          if gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "Release $RELEASE_TAG exists; updating its assets."
+          else
+            PRERELEASE=""
+            case "$RELEASE_TAG" in v0.*|*-*) PRERELEASE="--prerelease" ;; esac
+            gh release create "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --draft $PRERELEASE \
+              --title "Jarvis $RELEASE_TAG" --notes-file release-notes.md --verify-tag
+          fi
+          gh release upload "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" assets/* --clobber
+          echo "Draft release is ready for review: publish it manually after testing the installers."
