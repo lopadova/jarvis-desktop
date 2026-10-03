@@ -1,6 +1,6 @@
 # Relay protocol (desktop ⇄ remote MCP relay)
 
-The relay is a public HTTPS endpoint that ChatGPT (or any remote MCP client) calls. The desktop never accepts inbound connections: it keeps **one outbound WebSocket** to the relay, and the relay forwards tool calls through it. Reference implementation: `packages/relay` (Cloudflare Worker + Durable Object). The Vercel variant uses the same messages over long-polling.
+The relay is a public HTTPS endpoint that ChatGPT (or any remote MCP client) calls. The desktop never accepts inbound connections: it keeps **one outbound WebSocket** to the relay, and the relay forwards tool calls through it. Reference implementation: `packages/relay` (Cloudflare Worker + Durable Object). The Vercel variant uses the same messages over long-polling (§6; the desktop client for it is not implemented in v0.1, only the relay side).
 
 ## 1. Pairing
 

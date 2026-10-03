@@ -12,7 +12,7 @@ in a **session**, inside a **project**, with **approvals** going through you.
 
 | Concept | What it is |
 |---|---|
-| **Agent** | Claude Code (Agent SDK), Codex (Codex SDK / app-server) or the built-in **Home agent** (a tool loop with curated tools and your MCP servers) |
+| **Agent** | Claude Code (Agent SDK), Codex (the `codex app-server`, with an SDK fallback) or the built-in **Home agent** (a tool loop with curated tools and your MCP servers) |
 | **Project** | A folder with a name, aliases, a default agent and a permission level (Safe / Trusted / Full auto) |
 | **General workspace** | Where non-project work runs (finding files, research) — `generalWorkspace` |
 | **Session** | One agent run: status, live activity, result, log. Supports follow-ups |

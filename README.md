@@ -221,7 +221,7 @@ ChatGPT can only reach **remote HTTPS** MCP servers, and Jarvis never opens inbo
 2. In Jarvis: *Settings › Integrations › ChatGPT* → paste your relay URL → you get a **pairing code** and QR code.
 3. In ChatGPT, add a custom connector pointing to `https://<your-worker>.<your-account>.workers.dev/mcp` and enter the pairing code when asked.
 
-Only read-only tools are exposed by default; every relayed call shows up on your desktop and risky ones still need a local click. Alternatives: **Vercel** (free tier, long-polling) or **Cloudflare Tunnel** (no code). Custom connector availability depends on your ChatGPT plan — check the current OpenAI documentation. Guide: [ChatGPT](docs/guides/chatgpt.md).
+Only read-only tools are exposed by default; every relayed call shows up on your desktop and risky ones still need a local click. Alternative: **Cloudflare Tunnel** (no code). A Vercel long-poll relay is included too, but the desktop client for it is not ready in v0.1. Custom connector availability depends on your ChatGPT plan — check the current OpenAI documentation. Guide: [ChatGPT](docs/guides/chatgpt.md).
 
 ### h. Developers: build from source
 

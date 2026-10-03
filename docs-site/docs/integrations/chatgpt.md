@@ -42,8 +42,10 @@ Then:
 3. ChatGPT opens the relay's sign-in page: type the **pairing code**. Done.
 
 == tab "Vercel"
-For people who already use Vercel. Vercel Functions cannot hold a WebSocket, so the desktop
-**long-polls** a queue on Upstash Redis (free tier). It works, with a bit more latency. Deploy the
+**Not usable in v0.1:** the relay side is ready, but the desktop app only connects over WebSocket, so it can't pair with this variant yet (the long-poll client is planned). Use Cloudflare or a Tunnel today.
+
+Vercel Functions cannot hold a WebSocket, so the desktop
+**long-polls** a queue on Upstash Redis (free tier). Deploy the
 Vercel variant in [`packages/relay/vercel`](https://github.com/lopadova/jarvis-desktop/tree/main/packages/relay/vercel) and set `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN`,
 then pair exactly as with Cloudflare.
 

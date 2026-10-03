@@ -26,7 +26,7 @@ Key facts for assistants:
 - [Everyday features](https://github.com/lopadova/jarvis-desktop/blob/main/docs/guides/everyday.md): suggestion categories and phrases in English and Italian
 - [Developers and agents](https://github.com/lopadova/jarvis-desktop/blob/main/docs/guides/developers-agents.md): projects, sessions, follow-ups, Claude Code and Codex
 - [Claude Desktop and Cowork](https://github.com/lopadova/jarvis-desktop/blob/main/docs/guides/cowork-claude-desktop.md): .mcpb extension and plugin
-- [ChatGPT](https://github.com/lopadova/jarvis-desktop/blob/main/docs/guides/chatgpt.md): Cloudflare relay, Vercel and tunnel alternatives
+- [ChatGPT](https://github.com/lopadova/jarvis-desktop/blob/main/docs/guides/chatgpt.md): Cloudflare relay (recommended), Cloudflare Tunnel (Vercel long-poll relay exists, desktop client not yet)
 - [Memory and privacy](https://github.com/lopadova/jarvis-desktop/blob/main/docs/guides/memory-privacy.md)
 - [Troubleshooting](https://github.com/lopadova/jarvis-desktop/blob/main/docs/guides/troubleshooting.md)
 - [FAQ](https://github.com/lopadova/jarvis-desktop/blob/main/docs/guides/faq.md)
