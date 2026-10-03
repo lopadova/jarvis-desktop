@@ -13,26 +13,34 @@ The Jarvis desktop app must be running. The MCP server only talks to it over loo
 
 The marketplace file is `.claude-plugin/marketplace.json` at the repository root.
 
-## Variant: use a local build instead of npx
+## How the server runs
 
-By default `.mcp.json` starts the server with `npx -y @jarvis/mcp`. To use a bundle you built yourself (`pnpm --filter @jarvis/mcp build`), or the copy shipped inside the app, point `.mcp.json` at the file:
+`.mcp.json` runs the server bundled **inside** the plugin:
+
+```json
+{ "command": "node", "args": ["${CLAUDE_PLUGIN_ROOT}/server/jarvis-mcp.mjs"] }
+```
+
+Nothing is downloaded from npm when the server starts, so a third party can't swap the code you run. `server/jarvis-mcp.mjs` is a build artefact that is committed on purpose, because plugins installed from a GitHub marketplace are used exactly as they are in the repository. `pnpm --filter @jarvis/mcp build` regenerates it, and `test/bundle.test.ts` fails in CI if the committed copy doesn't match the sources.
+
+Node.js 20 or later must be on your `PATH`.
+
+## Variant: point at another local build
+
+To run a bundle from somewhere else, such as a checkout you build yourself or the copy in a release zip, edit `.mcp.json`:
 
 ```json
 {
   "mcpServers": {
     "jarvis": {
       "command": "node",
-      "args": ["/absolute/path/to/jarvis-desktop/packages/mcp/dist/jarvis-mcp.mjs"]
+      "args": ["/absolute/path/to/jarvis-mcp.mjs"]
     }
   }
 }
 ```
 
-If `jarvis-mcp` is on your `PATH` (`npm i -g @jarvis/mcp`), use `"command": "jarvis-mcp"` with no arguments.
-
-On Windows, if the server fails to start through `npx`, use `"command": "cmd", "args": ["/c", "npx", "-y", "@jarvis/mcp"]`.
-
-To try the plugin without installing it:
+To try the plugin from a checkout without installing it:
 
 ```bash
 claude --plugin-dir ./packages/mcp/integrations/claude-plugin
@@ -41,5 +49,5 @@ claude --plugin-dir ./packages/mcp/integrations/claude-plugin
 ## Without the plugin
 
 ```bash
-claude mcp add jarvis -- jarvis-mcp
+claude mcp add jarvis -- node /absolute/path/to/jarvis-mcp.mjs
 ```

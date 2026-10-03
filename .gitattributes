@@ -4,3 +4,4 @@
 *.icns binary
 *.onnx binary
 *.bin binary
+packages/mcp/integrations/claude-plugin/server/jarvis-mcp.mjs linguist-generated=true -diff

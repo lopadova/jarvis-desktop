@@ -1,32 +1,17 @@
-// Bundles the `jarvis-mcp` CLI into a single dependency-free ESM file (Node ≥ 20).
-import { chmod } from 'node:fs/promises';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+// Bundles the `jarvis-mcp` CLI into a single dependency-free ESM file (Node ≥ 20) and writes it to
+// dist/ and into the Claude plugin (integrations/claude-plugin/server/, committed so the plugin
+// installs straight from the GitHub marketplace without downloading anything from npm).
+import { chmod, mkdir, writeFile } from 'node:fs/promises';
+import { dirname } from 'node:path';
 import { build } from 'esbuild';
+import { bundleOptions, bundleOutputs } from './bundle-options.mjs';
 
-const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const outfile = join(root, 'dist', 'jarvis-mcp.mjs');
+const result = await build({ ...bundleOptions, write: false, outfile: bundleOutputs[0] });
+const code = result.outputFiles[0].contents;
 
-await build({
-  entryPoints: [join(root, 'src', 'cli.ts')],
-  outfile,
-  bundle: true,
-  platform: 'node',
-  format: 'esm',
-  target: 'node20',
-  minify: true,
-  sourcemap: false,
-  legalComments: 'none',
-  // `ws` optionally loads native accelerators; they are not needed.
-  external: ['bufferutil', 'utf-8-validate'],
-  banner: {
-    // Some bundled CommonJS dependencies call require() for Node built-ins.
-    js: [
-      '#!/usr/bin/env node',
-      "import { createRequire as __jarvisCreateRequire } from 'node:module';",
-      'const require = __jarvisCreateRequire(import.meta.url);',
-    ].join('\n'),
-  },
-  logLevel: 'info',
-});
-await chmod(outfile, 0o755);
+for (const outfile of bundleOutputs) {
+  await mkdir(dirname(outfile), { recursive: true });
+  await writeFile(outfile, code);
+  await chmod(outfile, 0o755);
+  console.log(`Wrote ${outfile} (${Math.round(code.byteLength / 1024)} KB)`);
+}

@@ -1,20 +1,16 @@
-# Jarvis for Codex — add this to ~/.codex/config.toml
-# The Jarvis desktop app must be running; the server only talks to it over loopback.
+# Jarvis for Codex: add this to ~/.codex/config.toml
+# The Jarvis desktop app must be running. The server only talks to it over loopback.
+#
+# jarvis-mcp.mjs is a single self-contained file (Node ≥ 20). Get it from the release asset
+# jarvis-mcp-bundle.zip, or build it with `pnpm --filter @jarvis/mcp build` (packages/mcp/dist/).
+# Keep it at a fixed local path. Nothing is downloaded when Codex starts the server.
 
 [mcp_servers.jarvis]
-command = "jarvis-mcp"          # installed with `npm i -g @jarvis/mcp`
-args = []
-# jarvis_ask_user waits for a spoken answer for up to 10 minutes.
+command = "node"
+args = ["/absolute/path/to/jarvis-mcp.mjs"]   # Windows: 'C:\Users\you\Jarvis\jarvis-mcp.mjs'
+# jarvis_ask_user waits up to 10 minutes for a spoken answer.
 startup_timeout_sec = 20
 tool_timeout_sec = 620
 
-# Without a global install:
-# command = "npx"
-# args = ["-y", "@jarvis/mcp"]
-#
-# With a local build of this repository:
-# command = "node"
-# args = ["/absolute/path/to/jarvis-desktop/packages/mcp/dist/jarvis-mcp.mjs"]
-#
-# Custom data directory (only if you set one for the app):
+# Only needed if the app uses a custom data directory:
 # env = { JARVIS_DATA_DIR = "/path/to/Jarvis" }

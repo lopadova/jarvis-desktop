@@ -21,13 +21,17 @@ Names, descriptions and argument schemas come from `@jarvis/core` (`McpTools`). 
 
 ## Install in your client
 
+The server is one self-contained file, `jarvis-mcp.mjs` (Node ≥ 20). It ships in the `.mcpb` extension and in the Claude plugin, and as the release asset `jarvis-mcp-bundle.zip`. You can also build it with `pnpm --filter @jarvis/mcp build`. Every recipe below runs that **local file**. None downloads code from npm at launch.
+
 | Client | How |
 |---|---|
 | Claude Desktop | Double-click `jarvis.mcpb` (from the release, or `pnpm --filter @jarvis/mcp pack:mcpb`) |
-| Claude Code / Cowork | `/plugin marketplace add lopadova/jarvis-desktop`, then `/plugin install jarvis@jarvis-desktop`. Or run `claude mcp add jarvis -- jarvis-mcp` |
+| Claude Code / Cowork | `/plugin marketplace add lopadova/jarvis-desktop`, then `/plugin install jarvis@jarvis-desktop`. The plugin bundles the server. Without the plugin: `claude mcp add jarvis -- node /path/to/jarvis-mcp.mjs` |
 | Codex | Copy [`integrations/codex/config.toml.example`](integrations/codex/config.toml.example) into `~/.codex/config.toml` |
-| Anything else (stdio) | Command `jarvis-mcp`, or `npx -y @jarvis/mcp`, or `node dist/jarvis-mcp.mjs` |
-| HTTP clients / Cloudflare Tunnel | `JARVIS_MCP_HTTP_TOKEN=<secret> jarvis-mcp --http --port 8765` serves `http://127.0.0.1:8765/mcp`. See [`docs/guides/chatgpt-tunnel.md`](../../docs/guides/chatgpt-tunnel.md) |
+| Anything else (stdio) | `node /path/to/jarvis-mcp.mjs` |
+| HTTP clients / Cloudflare Tunnel | `JARVIS_MCP_HTTP_TOKEN=<secret> node jarvis-mcp.mjs --http --port 8765` serves `http://127.0.0.1:8765/mcp`. See [`docs/guides/chatgpt-tunnel.md`](../../docs/guides/chatgpt-tunnel.md) |
+
+This workspace package is `private`: it is not published to npm, and the `@jarvis` npm scope is not ours. Never configure a client with `npx @jarvis/mcp`.
 
 ## Library API
 
@@ -45,7 +49,7 @@ const http = await createHttpMcpServer({ port: 8765, bearerToken, forward });
 ## Build
 
 ```bash
-pnpm --filter @jarvis/mcp build       # dist/jarvis-mcp.mjs: one file, all dependencies bundled, Node ≥ 20
+pnpm --filter @jarvis/mcp build       # dist/jarvis-mcp.mjs + the plugin copy (commit it): one file, Node ≥ 20
 pnpm --filter @jarvis/mcp pack:mcpb   # dist/jarvis.mcpb (Claude Desktop extension, MCPB manifest 0.3)
 pnpm --filter @jarvis/mcp gen:relay   # regenerate the relay's tool catalogue after changing McpTools
 ```

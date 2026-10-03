@@ -1,8 +1,8 @@
 {
   "mcpServers": {
     "jarvis": {
-      "command": "npx",
-      "args": ["-y", "@jarvis/mcp"]
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/server/jarvis-mcp.mjs"]
     }
   }
 }

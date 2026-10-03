@@ -16,12 +16,10 @@ rmSync(serverDir, { recursive: true, force: true });
 mkdirSync(serverDir, { recursive: true });
 copyFileSync(bundle, join(serverDir, 'jarvis-mcp.mjs'));
 
-// Prefer the locally installed @anthropic-ai/mcpb CLI; fall back to `npx @anthropic-ai/mcpb`.
+// Use the pinned, locally installed @anthropic-ai/mcpb CLI (devDependency); never fetch one at pack time.
 const localCli = join(root, 'node_modules', '@anthropic-ai', 'mcpb', 'dist', 'cli', 'cli.js');
-const run = (...args) =>
-  existsSync(localCli)
-    ? execFileSync(process.execPath, [localCli, ...args], { stdio: 'inherit', cwd: root })
-    : execFileSync('npx', ['-y', '@anthropic-ai/mcpb', ...args], { stdio: 'inherit', cwd: root, shell: true });
+if (!existsSync(localCli)) throw new Error('@anthropic-ai/mcpb is not installed: run `pnpm install` first');
+const run = (...args) => execFileSync(process.execPath, [localCli, ...args], { stdio: 'inherit', cwd: root });
 
 run('validate', join(extensionDir, 'manifest.json'));
 rmSync(output, { force: true });
