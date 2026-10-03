@@ -53,7 +53,27 @@ pub struct Launch {
 
 /// The bundled binary sits next to the app executable (Tauri `externalBin` strips the target
 /// triple). Debug builds fall back to running the TypeScript entry point with Bun.
-pub fn resolve_launch(exe_dir: &Path, repo_root: Option<&Path>) -> Option<Launch> {
+///
+/// `prefer_repo` (set by `JARVIS_SIDECAR_REPO`) runs the TypeScript entry point with Bun even when the bundled
+/// binary exists. This is for developers and for computers whose application control (e.g. Windows Smart App
+/// Control) blocks unsigned binaries but allows the signed `bun` runtime.
+pub fn resolve_launch(
+    exe_dir: &Path,
+    repo_root: Option<&Path>,
+    prefer_repo: bool,
+) -> Option<Launch> {
+    let from_repo = || {
+        let root = repo_root?;
+        let entry = root.join("packages/agent-host/src/main.ts");
+        entry.is_file().then(|| Launch {
+            program: PathBuf::from("bun"),
+            args: vec!["run".into(), entry.to_string_lossy().into_owned()],
+            cwd: Some(root.to_path_buf()),
+        })
+    };
+    if prefer_repo && let Some(l) = from_repo() {
+        return Some(l);
+    }
     let bin = exe_dir.join(format!("agent-host{}", std::env::consts::EXE_SUFFIX));
     if bin.is_file() {
         return Some(Launch {
@@ -62,13 +82,15 @@ pub fn resolve_launch(exe_dir: &Path, repo_root: Option<&Path>) -> Option<Launch
             cwd: None,
         });
     }
-    let root = repo_root?;
-    let entry = root.join("packages/agent-host/src/main.ts");
-    entry.is_file().then(|| Launch {
-        program: PathBuf::from("bun"),
-        args: vec!["run".into(), entry.to_string_lossy().into_owned()],
-        cwd: Some(root.to_path_buf()),
-    })
+    from_repo()
+}
+
+/// A repo checkout named by `JARVIS_SIDECAR_REPO` (must contain `packages/agent-host/src/main.ts`).
+pub fn repo_override() -> Option<PathBuf> {
+    let p = PathBuf::from(std::env::var_os("JARVIS_SIDECAR_REPO")?);
+    p.join("packages/agent-host/src/main.ts")
+        .is_file()
+        .then_some(p)
 }
 
 pub fn dev_repo_root() -> Option<PathBuf> {
@@ -216,14 +238,25 @@ mod tests {
     fn launch_falls_back_to_bun_only_with_a_repo() {
         let tmp = std::env::temp_dir().join(format!("jarvis-launch-{}", new_token()));
         std::fs::create_dir_all(tmp.join("packages/agent-host/src")).unwrap();
-        assert_eq!(resolve_launch(&tmp, None), None);
+        assert_eq!(resolve_launch(&tmp, None, false), None);
         std::fs::write(tmp.join("packages/agent-host/src/main.ts"), "").unwrap();
-        let l = resolve_launch(&tmp, Some(&tmp)).unwrap();
+        let l = resolve_launch(&tmp, Some(&tmp), false).unwrap();
         assert_eq!(l.program, PathBuf::from("bun"));
         assert_eq!(l.args[0], "run");
         let bin = tmp.join(format!("agent-host{}", std::env::consts::EXE_SUFFIX));
         std::fs::write(&bin, "").unwrap();
-        assert_eq!(resolve_launch(&tmp, Some(&tmp)).unwrap().program, bin);
+        // The bundled binary wins by default …
+        assert_eq!(
+            resolve_launch(&tmp, Some(&tmp), false).unwrap().program,
+            bin
+        );
+        // … unless the repo is explicitly preferred (JARVIS_SIDECAR_REPO).
+        assert_eq!(
+            resolve_launch(&tmp, Some(&tmp), true).unwrap().program,
+            PathBuf::from("bun")
+        );
+        // Preferring a repo that doesn't exist still falls back to the binary.
+        assert_eq!(resolve_launch(&tmp, None, true).unwrap().program, bin);
         let _ = std::fs::remove_dir_all(&tmp);
     }
 }

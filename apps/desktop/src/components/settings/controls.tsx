@@ -1,6 +1,6 @@
 /** Settings controls (handoff `Settings.dc.html`): Row/Section, PermissionLevelControl (R1), ShortcutRecorder, PairingQR. */
 import { Check, Info, type LucideIcon, Shield, ShieldAlert, ShieldCheck, TriangleAlert } from 'lucide-react';
-import QRCode from 'qrcode';
+import { renderSVG } from 'uqr';
 import { type CSSProperties, type KeyboardEvent, type ReactNode, useEffect, useId, useRef, useState } from 'react';
 import { type MessageKey, useT } from '../../i18n';
 import { cn } from '../../lib/cn';
@@ -321,9 +321,14 @@ export function PairingQR({ relay }: { relay: RelayState }) {
       setSrc(null);
       return;
     }
-    QRCode.toDataURL(relay.qr, { margin: 0, errorCorrectionLevel: 'M', width: 264, color: { dark: '#111111' } })
-      .then((s) => alive && setSrc(s))
-      .catch(() => alive && setSrc(null));
+    // uqr, not `qrcode`: that package assigns `toString` on plain objects, which throws once Tauri freezes
+    // Object.prototype (security.freezePrototype) and blanked the whole Settings window.
+    try {
+      const svg = renderSVG(relay.qr, { border: 0, ecc: 'M', blackColor: '#111111', whiteColor: '#ffffff' });
+      if (alive) setSrc(`data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`);
+    } catch {
+      if (alive) setSrc(null);
+    }
     return () => {
       alive = false;
     };

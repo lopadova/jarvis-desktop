@@ -34,4 +34,35 @@
   <ellipse cx="180" cy="261" rx="41" ry="29" fill="url(#hi)" opacity="0.9"/>
   <text x="408" y="330" fill="#eef1f6" font-family="Inter, 'Inter Variable', system-ui, sans-serif" font-size="104" font-weight="650" letter-spacing="-4">Jarvis</text>
   <text x="410" y="392" fill="#eef1f6" fill-opacity="0.75" font-family="Inter, 'Inter Variable', system-ui, sans-serif" font-size="34">Calm by default. Alive when spoken to.</text>
+  <!-- What it connects: pills (text only, no logos) -->
+  <g font-family="Inter, 'Inter Variable', system-ui, sans-serif" font-size="22" font-weight="500" fill="#eef1f6">
+    <g transform="translate(410 440)">
+      <rect width="196" height="44" rx="22" fill="#10a37f" fill-opacity="0.22" stroke="#10a37f" stroke-opacity="0.7"/>
+      <text x="98" y="29" text-anchor="middle">ChatGPT plan</text>
+    </g>
+    <g transform="translate(622 440)">
+      <rect width="168" height="44" rx="22" fill="#d97757" fill-opacity="0.22" stroke="#d97757" stroke-opacity="0.7"/>
+      <text x="84" y="29" text-anchor="middle">Claude Code</text>
+    </g>
+    <g transform="translate(806 440)">
+      <rect width="120" height="44" rx="22" fill="#ffffff" fill-opacity="0.1" stroke="#ffffff" stroke-opacity="0.45"/>
+      <text x="60" y="29" text-anchor="middle">Codex</text>
+    </g>
+    <g transform="translate(942 440)">
+      <rect width="168" height="44" rx="22" fill="#f5a524" fill-opacity="0.2" stroke="#f5a524" stroke-opacity="0.7"/>
+      <text x="84" y="29" text-anchor="middle">ElevenLabs</text>
+    </g>
+    <g transform="translate(410 500)">
+      <rect width="196" height="44" rx="22" fill="#00c8d1" fill-opacity="0.16" stroke="#00c8d1" stroke-opacity="0.65"/>
+      <text x="98" y="29" text-anchor="middle">Claude Cowork</text>
+    </g>
+    <g transform="translate(622 500)">
+      <rect width="168" height="44" rx="22" fill="#00c8d1" fill-opacity="0.16" stroke="#00c8d1" stroke-opacity="0.65"/>
+      <text x="84" y="29" text-anchor="middle">via ChatGPT</text>
+    </g>
+    <g transform="translate(806 500)">
+      <rect width="304" height="44" rx="22" fill="#34c77b" fill-opacity="0.18" stroke="#34c77b" stroke-opacity="0.7"/>
+      <text x="152" y="29" text-anchor="middle">100% local mode</text>
+    </g>
+  </g>
 </svg>

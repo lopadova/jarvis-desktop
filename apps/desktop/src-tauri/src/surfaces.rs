@@ -153,6 +153,15 @@ pub fn get_or_create(app: &AppHandle, s: Surface) -> Option<WebviewWindow> {
 }
 
 pub fn show(app: &AppHandle, s: Surface, tab: Option<&str>) {
+    // Creating a WebView2 window on the thread that runs Tauri's event loop (a synchronous command, a tray or
+    // deep-link handler) deadlocks on Windows: the window appears but its page never loads (about:blank).
+    // Do the work on a dedicated thread; Tauri dispatches the actual creation to the main thread and waits.
+    let app = app.clone();
+    let tab = tab.map(str::to_owned);
+    std::thread::spawn(move || show_blocking(&app, s, tab.as_deref()));
+}
+
+fn show_blocking(app: &AppHandle, s: Surface, tab: Option<&str>) {
     match s {
         Surface::Pill => return show_pill(app),
         Surface::Sessions => return show_sessions(app),
@@ -215,7 +224,7 @@ pub fn toggle_sessions(app: &AppHandle) {
         Some(w) if w.is_visible().unwrap_or(false) => {
             let _ = w.hide();
         }
-        _ => show_sessions(app),
+        _ => show(app, Surface::Sessions, None),
     }
 }
 
