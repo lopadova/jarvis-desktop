@@ -357,14 +357,69 @@ pub const MAX_SCREENSHOT_BYTES: usize = 2 * 1024 * 1024;
 
 /// Captures the primary monitor in memory (never written to disk) and returns a PNG ≤ `MAX_SCREENSHOT_BYTES`.
 fn screenshot_primary() -> anyhow::Result<Vec<u8>> {
+    png_within(capture_primary()?, MAX_SCREENSHOT_BYTES)
+}
+
+#[cfg(not(target_os = "linux"))]
+fn capture_primary() -> anyhow::Result<image::DynamicImage> {
     let monitors = xcap::Monitor::all()?;
     let m = monitors
         .iter()
         .find(|m| m.is_primary().unwrap_or(false))
         .or(monitors.first())
         .ok_or_else(|| anyhow::anyhow!("no monitor"))?;
-    let img = image::DynamicImage::ImageRgba8(m.capture_image()?);
-    png_within(img, MAX_SCREENSHOT_BYTES)
+    Ok(image::DynamicImage::ImageRgba8(m.capture_image()?))
+}
+
+/// Screenshot tools a Linux desktop commonly has, tried in order. `{}` is replaced by the output path.
+/// Arguments are passed as a vector (never through a shell).
+#[cfg(any(target_os = "linux", test))]
+const LINUX_SCREENSHOT_TOOLS: &[(&str, &[&str])] = &[
+    ("gnome-screenshot", &["-f", "{}"]),
+    ("spectacle", &["-b", "-n", "-f", "-o", "{}"]),
+    ("grim", &["{}"]),
+    ("scrot", &["-o", "{}"]),
+    ("import", &["-window", "root", "{}"]),
+];
+
+#[cfg(any(target_os = "linux", test))]
+fn linux_screenshot_args(args: &[&str], path: &str) -> Vec<String> {
+    args.iter().map(|a| a.replace("{}", path)).collect()
+}
+
+/// Linux: capture with an installed screenshot tool into a private (0700) temp folder that is removed right
+/// after the PNG is read, so nothing is left on disk.
+#[cfg(target_os = "linux")]
+fn capture_primary() -> anyhow::Result<image::DynamicImage> {
+    use std::os::unix::fs::DirBuilderExt;
+    let nanos = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_nanos())
+        .unwrap_or(0);
+    let dir = std::env::temp_dir().join(format!("jarvis-shot-{}-{nanos}", std::process::id()));
+    std::fs::DirBuilder::new().mode(0o700).create(&dir)?;
+    let file = dir.join("screen.png");
+    let path = file.to_string_lossy().to_string();
+    let result = (|| {
+        for (tool, args) in LINUX_SCREENSHOT_TOOLS {
+            let ok = std::process::Command::new(tool)
+                .args(linux_screenshot_args(args, &path))
+                .stdin(std::process::Stdio::null())
+                .stdout(std::process::Stdio::null())
+                .stderr(std::process::Stdio::null())
+                .status()
+                .map(|s| s.success())
+                .unwrap_or(false);
+            if ok && file.is_file() {
+                return Ok(image::open(&file)?);
+            }
+        }
+        Err(anyhow::anyhow!(
+            "no screenshot tool found: install gnome-screenshot, spectacle, grim or scrot"
+        ))
+    })();
+    let _ = std::fs::remove_dir_all(&dir);
+    result
 }
 
 /// Encodes `img` as PNG, halving its longest side (from at most 2560 px) until it fits in `max_bytes`.
@@ -456,6 +511,18 @@ pub fn on_notification(shell: &ShellRef, method: &str, params: Option<&Value>) {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn linux_screenshot_commands_use_argument_vectors() {
+        for (_tool, args) in super::LINUX_SCREENSHOT_TOOLS {
+            let v = super::linux_screenshot_args(args, "/tmp/a b;c.png");
+            assert!(
+                v.iter().any(|a| a == "/tmp/a b;c.png"),
+                "path stays one argument: {v:?}"
+            );
+            assert!(v.iter().all(|a| !a.contains("{}")));
+        }
+    }
+
     use super::*;
 
     #[test]

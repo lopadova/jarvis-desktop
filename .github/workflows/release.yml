@@ -69,7 +69,6 @@ jobs:
             libayatana-appindicator3-dev \
             librsvg2-dev \
             libasound2-dev \
-            libpipewire-0.3-dev libspa-0.2-dev \
             patchelf rpm
 
       - uses: dtolnay/rust-toolchain@89b12181fb390509a0842a86cc55eeb8eb928c1d # stable
@@ -132,10 +131,24 @@ jobs:
         if: runner.os == 'macOS'
         shell: bash
         env:
-          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          IN_APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          IN_APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          IN_APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          IN_APPLE_ID: ${{ secrets.APPLE_ID }}
+          IN_APPLE_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          IN_APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
-          if [ -z "${APPLE_CERTIFICATE}" ]; then echo "Apple signing secrets not set: building unsigned."; exit 0; fi
-          echo "JARVIS_MAC_SIGNED=1" >> "$GITHUB_ENV"
+          # The Tauri bundler treats an APPLE_CERTIFICATE variable that merely EXISTS (even empty) as "sign this",
+          # so the APPLE_* variables are exported only when the certificate secret is really present.
+          if [ -z "${IN_APPLE_CERTIFICATE}" ]; then echo "Apple signing secrets not set: building unsigned."; exit 0; fi
+          {
+            echo "APPLE_CERTIFICATE=${IN_APPLE_CERTIFICATE}"
+            echo "APPLE_CERTIFICATE_PASSWORD=${IN_APPLE_CERTIFICATE_PASSWORD}"
+            echo "APPLE_SIGNING_IDENTITY=${IN_APPLE_SIGNING_IDENTITY}"
+            echo "APPLE_ID=${IN_APPLE_ID}"
+            echo "APPLE_PASSWORD=${IN_APPLE_PASSWORD}"
+            echo "APPLE_TEAM_ID=${IN_APPLE_TEAM_ID}"
+          } >> "$GITHUB_ENV"
 
       # Build only (no releaseId/tagName): uploading happens in the publish job.
       - name: Build installers
@@ -145,13 +158,7 @@ jobs:
           AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
           AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
           AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-          # Read by the Tauri bundler (macOS) — only passed when the certificate secret exists.
-          APPLE_CERTIFICATE: ${{ env.JARVIS_MAC_SIGNED == '1' && secrets.APPLE_CERTIFICATE || '' }}
-          APPLE_CERTIFICATE_PASSWORD: ${{ env.JARVIS_MAC_SIGNED == '1' && secrets.APPLE_CERTIFICATE_PASSWORD || '' }}
-          APPLE_SIGNING_IDENTITY: ${{ env.JARVIS_MAC_SIGNED == '1' && secrets.APPLE_SIGNING_IDENTITY || '' }}
-          APPLE_ID: ${{ env.JARVIS_MAC_SIGNED == '1' && secrets.APPLE_ID || '' }}
-          APPLE_PASSWORD: ${{ env.JARVIS_MAC_SIGNED == '1' && secrets.APPLE_APP_SPECIFIC_PASSWORD || '' }}
-          APPLE_TEAM_ID: ${{ env.JARVIS_MAC_SIGNED == '1' && secrets.APPLE_TEAM_ID || '' }}
+          # macOS: the APPLE_* variables come from the signing step above (only when the secrets exist).
         with:
           projectPath: apps/desktop
           args: --target ${{ matrix.target }} ${{ env.TAURI_EXTRA_CONFIG }}
