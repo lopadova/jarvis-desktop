@@ -335,6 +335,7 @@ export class SessionManager {
       ...(this.deps.tokens ? { mcpSessionToken: this.deps.tokens.issue(s.id) } : {}),
       onProcess: (pid, startTime) => {
         rt.pid = pid;
+        this.deps.inspector.adopt?.(pid);
         this.deps.store.setSessionProcess(s.id, pid, startTime);
       },
       requestApproval: async (req) => {
@@ -375,6 +376,7 @@ export class SessionManager {
     }
     write({ type: 'end' });
     this.deps.store.setSessionProcess(s.id, null, null);
+    if (rt.pid && !abort.signal.aborted) this.deps.inspector.release?.(rt.pid);
     rt.pid = undefined;
 
     if (abort.signal.aborted || s.status === 'cancelled') {

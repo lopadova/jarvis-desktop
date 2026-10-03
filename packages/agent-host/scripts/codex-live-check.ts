@@ -8,9 +8,9 @@
 import { mkdtempSync, readdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { defaultSettings } from '@jarvis/core';
 import { CodexDriver } from '../src/agents/codex.js';
 import { OsProcessInspector } from '../src/process/proc.js';
-import { defaultSettings } from '@jarvis/core';
 
 const cwd = mkdtempSync(join(tmpdir(), 'jarvis-codex-live-'));
 const inspector = new OsProcessInspector();
