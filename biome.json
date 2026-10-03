@@ -12,7 +12,9 @@
       "!**/integrations/claude-plugin/server",
       "!.claude",
       "!docs/design/handoff",
-      "!docs-site/docs/_docmd-search"
+      "!docs-site/docs/_docmd-search",
+      "!dist-sandbox",
+      "!dist-windows"
     ]
   },
   "formatter": {
