@@ -159,3 +159,15 @@ export const SECRET_KEYS = {
   chatgptClient: 'chatgpt-plan-client',
   relaySecret: 'relay-pairing-secret',
 } as const;
+
+// ───────────────────────────── Logging ─────────────────────────────
+
+/** Structured logger; implementations must redact secrets (security-model R6). */
+export interface Logger {
+  debug(msg: string, data?: Record<string, unknown>): void;
+  info(msg: string, data?: Record<string, unknown>): void;
+  warn(msg: string, data?: Record<string, unknown>): void;
+  error(msg: string, data?: Record<string, unknown>): void;
+}
+
+export const silentLogger: Logger = { debug() {}, info() {}, warn() {}, error() {} };
