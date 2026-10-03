@@ -58,7 +58,9 @@ run('docker', [
   '-v',
   `${out}:/out`,
   // JARVIS_XWIN_SDK: an existing `xwin splat` output on the host → offline build, no SDK download in Docker.
-  ...(process.env.JARVIS_XWIN_SDK ? ['-v', `${process.env.JARVIS_XWIN_SDK}:/xwin-sdk:ro`, '-v', 'jarvis-xbuild-sdk:/opt/xwin'] : []),
+  ...(process.env.JARVIS_XWIN_SDK
+    ? ['-v', `${process.env.JARVIS_XWIN_SDK}:/xwin-sdk:ro`, '-v', 'jarvis-xbuild-sdk:/opt/xwin']
+    : []),
   image,
   '/src/scripts/windows-xbuild/build.sh',
   profile,

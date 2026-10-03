@@ -70,6 +70,8 @@ export interface StartRequest {
   permissionCap?: PermissionLevel;
   /** Special-purpose run whose result is announced by `SessionDeps.announcePurpose` instead of a summary. */
   purpose?: SessionPurpose;
+  /** Only reads are allowed (see AgentRunOptions.readOnly). Persists across resumes. */
+  readOnly?: boolean;
 }
 
 export type SessionPurpose = 'briefing';
@@ -184,6 +186,7 @@ export class SessionManager {
     };
     this.sessions.set(session.id, session);
     if (req.purpose) this.purposes.set(session.id, req.purpose);
+    if (req.readOnly) this.deps.store.kvSet(`session-readonly:${session.id}`, '1');
     if (req.permissionCap) {
       this.caps.set(session.id, req.permissionCap);
       this.deps.store.kvSet(`session-cap:${session.id}`, req.permissionCap); // survives restarts/resume
@@ -340,6 +343,7 @@ export class SessionManager {
       signal: abort.signal,
       sessionId: s.id,
       coding: s.coding,
+      readOnly: this.deps.store.kvGet(`session-readonly:${s.id}`) === '1',
       locale: settings.locale,
       ...(this.deps.tokens ? { mcpSessionToken: this.deps.tokens.issue(s.id) } : {}),
       onProcess: (pid, startTime) => {

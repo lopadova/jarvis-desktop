@@ -229,11 +229,29 @@ export function describeClaudeTool(
   }
 }
 
+/** Requests a read-only run may perform (never prompts the user; anything else is refused). */
+export function isReadOnlyRequest(req: ToolRequest, risk: RiskLevel): boolean {
+  if (req.forceAsk) return false;
+  switch (req.kind) {
+    case 'shell':
+      return risk === 'low';
+    case 'network':
+      return /^GET\s/i.test(req.detail.trim()) && risk !== 'high';
+    case 'mcp-tool':
+      return req.risk.readOnlyHint === true && req.risk.destructiveHint !== true;
+    default:
+      return false;
+  }
+}
+
 export type ToolVerdict = { allow: true } | { allow: false; message: string };
 
 /** classifyRisk → gate → (ask the user). Shared by every driver. */
 export async function decideTool(req: ToolRequest, opts: AgentRunOptions): Promise<ToolVerdict> {
   const risk = maxRisk(classifyRisk(req.risk), req.minRisk);
+  if (opts.readOnly && !isReadOnlyRequest(req, risk)) {
+    return { allow: false, message: 'This task is read-only: only reading is allowed. Report what you found instead.' };
+  }
   const g = req.forceAsk ? 'ask' : gate(opts.permission, risk, req.risk, req.skipAllowlist ? [] : opts.allowlist);
   if (g === 'allow') return { allow: true };
   if (g === 'deny') return { allow: false, message: 'Blocked by the project permission policy.' };

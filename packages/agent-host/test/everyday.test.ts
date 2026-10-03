@@ -375,6 +375,9 @@ describe('morning briefing', () => {
     expect(run?.task).toMatch(/morning briefing/);
     expect(run?.task).toMatch(/I live in Milan/);
     expect(run?.task).toMatch(/read-only/);
+    // Enforced in code, not only in the prompt: capped at safe and read-only.
+    expect(run?.permission).toBe('safe');
+    expect(run?.readOnly).toBe(true);
     await until(() => messages(t.ui).some((m) => m.role === 'system' && m.card.type === 'briefing'));
     const card = messages(t.ui).find((m) => m.role === 'system' && m.card.type === 'briefing');
     expect(card).toMatchObject({
