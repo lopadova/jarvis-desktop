@@ -86,6 +86,23 @@ textarea,
   outline-offset: 2px;
 }
 
+/* Horizontal scrollers (category tabs): no native scrollbar, soft fade at the trailing edge. */
+.scroll-x {
+  overflow-x: auto;
+  scrollbar-width: none;
+  mask-image: linear-gradient(to right, black calc(100% - 32px), transparent);
+}
+.scroll-x::-webkit-scrollbar {
+  display: none;
+}
+
+/* Thin, token-coloured scrollbars for vertical panes. */
+.scroll-y {
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border-strong) transparent;
+}
+
 .font-mono {
   font-family: var(--font-mono);
 }

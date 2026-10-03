@@ -70,6 +70,14 @@ fn handle_deep_link(app: &AppHandle, raw: &str) {
 
 pub fn run() {
     if std::env::args().any(|a| a == "--self-test") {
+        // Release builds use the GUI subsystem: attach to the parent console so the report is visible.
+        #[cfg(windows)]
+        // SAFETY: no pointers; failure (no parent console) is harmless.
+        unsafe {
+            let _ = windows::Win32::System::Console::AttachConsole(
+                windows::Win32::System::Console::ATTACH_PARENT_PROCESS,
+            );
+        }
         std::process::exit(selftest::run());
     }
 

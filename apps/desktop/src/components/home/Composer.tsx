@@ -6,6 +6,7 @@ import { cn } from '../../lib/cn';
 import type { BrainId, Platform, ProviderStatus } from '../../types/ui';
 import { KeyHint } from '../common/common';
 import { Button } from '../ui/button';
+import { NativeSelect } from '../ui/primitives';
 
 export interface ComposerProps {
   providers: ProviderStatus[];
@@ -58,7 +59,7 @@ export function Composer({
     <form onSubmit={submit} className="flex flex-col gap-1.5">
       <div
         className={cn(
-          'flex items-end gap-2 rounded-xl border bg-surface p-2 shadow-sm',
+          'flex items-center gap-2 rounded-[28px] border bg-surface py-1.5 ps-1.5 pe-1.5 shadow-md transition-colors',
           recording ? 'border-accent' : 'border-border',
         )}
       >
@@ -91,11 +92,11 @@ export function Composer({
         <label className="sr-only" htmlFor="brain-select">
           {t('composer.brain')}
         </label>
-        <select
+        <NativeSelect
           id="brain-select"
           value={primary ?? ''}
           onChange={(e) => onPrimaryChange(e.target.value as BrainId)}
-          className="h-9 rounded-md border border-border bg-surface-sunken px-2 text-xs text-muted"
+          className="shrink-0 [&>select]:rounded-pill [&>select]:text-xs [&>select]:text-muted"
         >
           {primary === null ? <option value="">{t('composer.noBrain')}</option> : null}
           {(connected.length ? connected : providers).map((p) => (
@@ -103,7 +104,7 @@ export function Composer({
               {t(`brain.${p.id}` as MessageKey)}
             </option>
           ))}
-        </select>
+        </NativeSelect>
         <Button
           type="submit"
           variant="primary"

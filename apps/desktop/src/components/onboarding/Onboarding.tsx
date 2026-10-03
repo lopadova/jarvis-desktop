@@ -11,7 +11,7 @@ import { ListeningPill } from '../pill/ListeningPill';
 import type { SecretKey } from '../settings/Settings';
 import { LevelMeter } from '../settings/Settings';
 import { Button } from '../ui/button';
-import { Input } from '../ui/primitives';
+import { Input, NativeSelect } from '../ui/primitives';
 
 type TtsId = SettingsData['tts'];
 export const ONBOARDING_STEPS = ['welcome', 'microphone', 'brain', 'voice', 'try'] as const;
@@ -51,7 +51,7 @@ export function Onboarding(p: OnboardingProps) {
   return (
     <div className="flex h-full flex-col">
       <div data-tauri-drag-region className="h-8 shrink-0" />
-      <main className="flex min-h-0 flex-1 flex-col items-center overflow-y-auto px-10" aria-live="polite">
+      <main className="scroll-y flex min-h-0 flex-1 flex-col items-center px-10" aria-live="polite">
         {step === 'welcome' ? (
           <Step title={t('onboarding.welcome.title')} body={t('onboarding.welcome.body')}>
             <Orb size={160} state="idle" />
@@ -120,7 +120,7 @@ function Card({ icon, title, body, children }: { icon: ReactNode; title: string;
         {title}
       </div>
       <p className="text-xs text-muted">{body}</p>
-      {children}
+      {children ? <div className="flex flex-wrap items-center gap-2 pt-1">{children}</div> : null}
     </div>
   );
 }
@@ -132,7 +132,7 @@ function BrainStep(p: OnboardingProps) {
   const claude = p.providers.find((x) => x.id === 'claude');
   const chatgpt = p.providers.find((x) => x.id === 'chatgpt');
   return (
-    <section className="flex w-full flex-col gap-4 py-4">
+    <section className="flex w-full flex-col gap-3 py-2">
       <h1 className="text-center text-2xl font-semibold">{t('onboarding.brain.title')}</h1>
       <div className="grid grid-cols-2 gap-3">
         <div className="flex flex-col gap-2 rounded-lg border border-border bg-surface p-4">
@@ -145,7 +145,11 @@ function BrainStep(p: OnboardingProps) {
             {t('onboarding.brain.chatgpt')}
           </button>
           <p className="text-xs text-muted">{t('onboarding.brain.chatgpt.sub')}</p>
-          {chatgpt ? <ProviderBadge provider={chatgpt} /> : null}
+          {chatgpt ? (
+            <div className="flex">
+              <ProviderBadge provider={chatgpt} />
+            </div>
+          ) : null}
         </div>
         <Card
           icon={<Terminal size={16} />}
@@ -167,7 +171,7 @@ function BrainStep(p: OnboardingProps) {
         </Card>
         <Card icon={<KeyRound size={16} />} title={t('onboarding.brain.api')} body={t('onboarding.brain.api.sub')}>
           <form
-            className="flex flex-col gap-2"
+            className="flex w-full flex-col gap-2"
             onSubmit={(e) => {
               e.preventDefault();
               if (!key.trim()) return;
@@ -175,15 +179,15 @@ function BrainStep(p: OnboardingProps) {
               setKey('');
             }}
           >
-            <select
+            <NativeSelect
               aria-label={t('onboarding.brain.api.provider')}
               value={provider}
               onChange={(e) => setProvider(e.target.value as typeof provider)}
-              className="h-8 rounded-md border border-border bg-surface-sunken px-2 text-sm"
+              className="w-full"
             >
               <option value="anthropic-api-key">Anthropic</option>
               <option value="openai-api-key">OpenAI</option>
-            </select>
+            </NativeSelect>
             <Input
               type="password"
               autoComplete="off"
@@ -212,7 +216,7 @@ const TTS_OPTIONS: TtsId[] = ['elevenlabs', 'fish', 'openai', 'kokoro', 'system'
 function VoiceStep(p: OnboardingProps) {
   const t = useT();
   return (
-    <section className="flex w-full flex-col gap-4 py-4">
+    <section className="flex w-full flex-col gap-3 py-2">
       <h1 className="text-center text-2xl font-semibold">{t('onboarding.voice.title')}</h1>
       <div className="grid grid-cols-3 gap-3" role="radiogroup" aria-label={t('onboarding.voice.title')}>
         {TTS_OPTIONS.map((id) => (

@@ -73,7 +73,7 @@ export function SuggestionGrid({
 
   return (
     <section aria-label={t('home.suggestions')} className="flex flex-col gap-3">
-      <div role="tablist" aria-label={t('home.categories')} className="flex gap-1 overflow-x-auto pb-1">
+      <div role="tablist" aria-label={t('home.categories')} className="scroll-x -mx-1 flex gap-1 px-1 pb-1">
         {tabs.map((c) => (
           <button
             key={c}

@@ -7,7 +7,7 @@ import { cn } from '../../lib/cn';
 import type { BrainId, ModelStatus, PermissionLevel, Platform, ProviderStatus, RelayState } from '../../types/ui';
 import { AgentMark, brainKey, brainMark, ProviderBadge, UsageMeter, WindowControls } from '../common/common';
 import { Button } from '../ui/button';
-import { Field, Input, Progress, Switch } from '../ui/primitives';
+import { Field, Input, NativeSelect, Progress, Switch } from '../ui/primitives';
 import { PairingQR, PermissionLevelControl, ShortcutRecorder } from './controls';
 
 export type SecretKey = 'openai-api-key' | 'anthropic-api-key' | 'elevenlabs-api-key' | 'fish-audio-api-key';
@@ -82,7 +82,7 @@ export function Settings(p: SettingsProps) {
             </button>
           ))}
         </nav>
-        <main className="min-w-0 flex-1 overflow-y-auto px-6 py-4">
+        <main className="scroll-y min-w-0 flex-1 px-6 py-4">
           <h1 className="mb-3 text-xl font-semibold">{t(`settings.tab.${p.tab}` as MessageKey)}</h1>
           <TabBody {...p} />
         </main>
@@ -114,18 +114,13 @@ function Select<V extends string>({
   label: string;
 }) {
   return (
-    <select
-      aria-label={label}
-      value={value}
-      onChange={(e) => onChange(e.target.value as V)}
-      className="h-8 rounded-md border border-border bg-surface-sunken px-2 text-sm"
-    >
+    <NativeSelect aria-label={label} value={value} onChange={(e) => onChange(e.target.value as V)}>
       {options.map((o) => (
         <option key={o.value} value={o.value}>
           {o.label}
         </option>
       ))}
-    </select>
+    </NativeSelect>
   );
 }
 

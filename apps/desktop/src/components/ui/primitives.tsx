@@ -1,6 +1,8 @@
 /** shadcn-style primitives on Radix, themed with the §4 tokens. */
+
+import { ChevronDown } from 'lucide-react';
 import { Dialog as DialogPrimitive, Switch as SwitchPrimitive, Tabs as TabsPrimitive } from 'radix-ui';
-import type { ComponentProps, InputHTMLAttributes, ReactNode } from 'react';
+import type { ComponentProps, InputHTMLAttributes, ReactNode, SelectHTMLAttributes } from 'react';
 import { cn } from '../../lib/cn';
 
 // ── Input ──
@@ -13,6 +15,25 @@ export function Input({ className, ...props }: InputHTMLAttributes<HTMLInputElem
       )}
       {...props}
     />
+  );
+}
+
+// ── NativeSelect ── a themed <select> (keeps native keyboard/a11y behaviour).
+export function NativeSelect({ className, children, ...props }: SelectHTMLAttributes<HTMLSelectElement>) {
+  return (
+    <span className={cn('relative inline-flex', className)}>
+      <select
+        className="h-8 w-full cursor-default appearance-none rounded-md border border-border bg-surface-sunken py-0 ps-3 pe-8 text-sm text-text hover:border-border-strong focus-visible:border-accent"
+        {...props}
+      >
+        {children}
+      </select>
+      <ChevronDown
+        size={14}
+        aria-hidden="true"
+        className="pointer-events-none absolute end-2.5 top-1/2 -translate-y-1/2 text-subtle"
+      />
+    </span>
   );
 }
 

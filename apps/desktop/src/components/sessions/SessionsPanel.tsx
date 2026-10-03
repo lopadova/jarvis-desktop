@@ -64,7 +64,7 @@ export function SessionsPanel({ sessions, locale, onClearFinished, onClose, ...h
           </Button>
         ) : null}
       </header>
-      <div className="flex flex-col gap-2 overflow-y-auto p-3">
+      <div className="scroll-y flex flex-col gap-2 p-3">
         {visible.length === 0 ? (
           <EmptyState title={t('sessions.empty.title')} hint={t('sessions.empty.hint')} />
         ) : (

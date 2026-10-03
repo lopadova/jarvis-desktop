@@ -19,8 +19,9 @@ export function orbStateFor(state: PillState): OrbState {
     case 'speaking':
       return 'speaking';
     case 'approval':
-    case 'clarify':
       return 'approval';
+    case 'clarify':
+      return 'listening';
     case 'error':
       return 'error';
     case 'muted':
@@ -37,10 +38,7 @@ export function isExpanded(state: PillState): boolean {
 /** Partial words in subtle colour, committed words in full text colour; edges fade on overflow. */
 export function LiveTranscript({ committed, partial }: { committed: string; partial: string }) {
   return (
-    <p
-      aria-live="polite"
-      className="line-clamp-2 min-w-0 flex-1 text-sm leading-tight [mask-image:linear-gradient(to_right,transparent,black_12px,black_calc(100%-12px),transparent)]"
-    >
+    <p aria-live="polite" className="line-clamp-2 min-w-0 flex-1 text-sm leading-tight">
       <span className="text-text">{committed}</span>
       {committed && partial ? ' ' : null}
       <span className="text-subtle">{partial}</span>
@@ -92,7 +90,7 @@ export function ListeningPill({
           )}
         >
           <div className="flex items-center gap-3">
-            <Orb size={40} state={orbStateFor(state)} level={level} privateMode={privateMode} />
+            <Orb size={40} state={orbStateFor(state)} level={level} privateMode={privateMode} className="mx-1" />
             <PillBody state={state} platform={platform} />
             {privateMode ? (
               <Badge tone="private">
@@ -114,7 +112,13 @@ export function ListeningPill({
           {state.kind === 'clarify' ? (
             <div className="flex flex-wrap items-center gap-2">
               {state.quickReplies.map((r) => (
-                <Button key={r} variant="secondary" size="sm" onClick={() => onQuickReply?.(r)}>
+                <Button
+                  key={r}
+                  variant="secondary"
+                  size="sm"
+                  className="rounded-pill"
+                  onClick={() => onQuickReply?.(r)}
+                >
                   {r}
                 </Button>
               ))}

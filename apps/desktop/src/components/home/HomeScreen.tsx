@@ -109,7 +109,7 @@ export function HomeScreen(p: HomeScreenProps) {
         </nav>
 
         <main className="flex min-w-0 flex-1 flex-col">
-          <div className="min-h-0 flex-1 overflow-y-auto">
+          <div className="scroll-y min-h-0 flex-1">
             <div className="mx-auto flex max-w-[760px] flex-col gap-6 px-6 py-6">
               <section className="flex items-center gap-5">
                 <Orb size={96} state="idle" privateMode={p.privateMode} />

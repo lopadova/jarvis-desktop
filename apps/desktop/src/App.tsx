@@ -129,7 +129,9 @@ export function App() {
     };
   }, []);
 
-  useAppearance(surface, osMaterial);
+  // In mock mode (browser) there is no OS material; allow previewing glass via ?material=glass.
+  const settingsMaterial = useApp((s) => s.settings.material);
+  useAppearance(surface, isMockMode() && settingsMaterial === 'glass' ? 'glass' : osMaterial);
 
   return (
     <LocaleProvider locale={locale}>

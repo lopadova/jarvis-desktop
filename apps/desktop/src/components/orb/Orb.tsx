@@ -30,7 +30,7 @@ export function Orb({
 }: OrbProps) {
   const lv = Math.max(0, Math.min(1, level));
   const reactive = state === 'listening' || state === 'speaking';
-  const glowScale = reactive ? 1 + lv * 0.35 : 1;
+  const glowScale = reactive ? 1 + lv * 0.2 : 1;
   const core =
     state === 'approval'
       ? 'var(--color-ember)'
@@ -51,7 +51,7 @@ export function Orb({
     >
       {/* glow */}
       <span
-        className="absolute inset-[-20%] rounded-full blur-md transition-transform duration-75"
+        className="absolute inset-[-14%] rounded-full blur-sm transition-transform duration-75"
         style={{
           background: `radial-gradient(circle, ${state === 'approval' ? 'var(--color-ember)' : 'var(--orb-glow)'} 0%, transparent 70%)`,
           transform: `scale(${glowScale})`,
@@ -81,7 +81,7 @@ export function Orb({
       {state === 'listening' ? (
         <span
           className="absolute inset-[-12%] rounded-full border-2 transition-transform duration-75"
-          style={{ borderColor: 'var(--orb-ring)', transform: `scale(${1 + lv * 0.25})` }}
+          style={{ borderColor: 'var(--orb-ring)', transform: `scale(${1 + lv * 0.12})` }}
         />
       ) : null}
       {state === 'error' ? <span className="absolute inset-[-8%] rounded-full border-2 border-danger" /> : null}

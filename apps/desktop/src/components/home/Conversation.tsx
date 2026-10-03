@@ -88,7 +88,7 @@ export function SystemCard({
   const t = useT();
   const locale = useLocale();
   const shell = (icon: ReactNode, title: string, body?: ReactNode, action?: ReactNode) => (
-    <div className="mx-auto flex w-full max-w-[560px] items-start gap-3 rounded-lg border border-border bg-surface-sunken p-3">
+    <div className="ms-8 flex items-start gap-3 rounded-lg border border-border bg-surface-raised p-3 shadow-sm">
       <span className="mt-0.5 text-accent">{icon}</span>
       <div className="min-w-0 flex-1">
         <div className="text-sm font-medium">{title}</div>
@@ -144,7 +144,7 @@ export function SystemCard({
       );
     case 'briefing':
       return (
-        <div className="mx-auto w-full max-w-[560px] rounded-lg border border-border bg-surface-sunken p-3 text-sm">
+        <div className="ms-8 rounded-lg border border-border bg-surface-raised p-3 text-sm shadow-sm">
           <div className="mb-2 font-medium">{t('card.briefing')}</div>
           {card.weather ? (
             <p className="flex items-center gap-2 text-muted">
