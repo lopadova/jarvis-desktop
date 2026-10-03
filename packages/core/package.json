@@ -1,0 +1,20 @@
+{
+  "name": "@jarvis/core",
+  "version": "0.1.0",
+  "description": "Jarvis domain model, schemas, router, policy and provider contracts (pure TypeScript, no I/O).",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "zod": "^4.6.5"
+  }
+}
