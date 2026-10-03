@@ -56,6 +56,59 @@ $p = Start-Process -FilePath $exe -PassThru
 Start-Sleep -Seconds 8;  Shot 'sandbox-01-start'
 Start-Sleep -Seconds 12; Shot 'sandbox-02-running'
 Start-Sleep -Seconds ([Math]::Max(1, $Seconds - 20)); Shot 'sandbox-03-later'
+# ── Walkthrough: click through the onboarding and capture ONLY the app window (never the whole screen) ──
+Add-Type @'
+using System; using System.Runtime.InteropServices;
+public class Win32 {
+  [DllImport("user32.dll")] public static extern bool SetProcessDPIAware();
+  [DllImport("user32.dll")] public static extern bool GetWindowRect(IntPtr h, out RECT r);
+  [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr h);
+  [DllImport("user32.dll")] public static extern bool SetCursorPos(int x, int y);
+  [DllImport("user32.dll")] public static extern void mouse_event(uint f, uint dx, uint dy, uint d, UIntPtr e);
+  [StructLayout(LayoutKind.Sequential)] public struct RECT { public int L, T, R, B; }
+}
+'@
+[void][Win32]::SetProcessDPIAware()
+function AppRect {
+  $p.Refresh()
+  $h = $p.MainWindowHandle
+  if ($h -eq [IntPtr]::Zero) { return $null }
+  $r = New-Object Win32+RECT
+  [void][Win32]::GetWindowRect($h, [ref]$r)
+  return @{ H = $h; R = $r }
+}
+function ShotApp([string]$name) {
+  $w = AppRect
+  if (-not $w) { "no window for $name" | Add-Content "$out\self-test.txt"; return }
+  $r = $w.R; $pad = 16
+  $x = [Math]::Max(0, $r.L - $pad); $y = [Math]::Max(0, $r.T - $pad)
+  $width = ($r.R - $r.L) + 2 * $pad; $height = ($r.B - $r.T) + 2 * $pad
+  $bmp = New-Object System.Drawing.Bitmap $width, $height
+  $g = [System.Drawing.Graphics]::FromImage($bmp)
+  $g.CopyFromScreen($x, $y, 0, 0, (New-Object System.Drawing.Size $width, $height))
+  $bmp.Save("$out\$name.png", [System.Drawing.Imaging.ImageFormat]::Png)
+  $g.Dispose(); $bmp.Dispose()
+}
+function ClickRel([double]$fx, [double]$fy) {
+  $w = AppRect
+  if (-not $w) { return }
+  [void][Win32]::SetForegroundWindow($w.H)
+  $r = $w.R
+  $x = [int]($r.L + ($r.R - $r.L) * $fx); $y = [int]($r.T + ($r.B - $r.T) * $fy)
+  [void][Win32]::SetCursorPos($x, $y)
+  Start-Sleep -Milliseconds 300
+  [Win32]::mouse_event(0x0002, 0, 0, 0, [UIntPtr]::Zero); Start-Sleep -Milliseconds 80
+  [Win32]::mouse_event(0x0004, 0, 0, 0, [UIntPtr]::Zero)
+}
+ShotApp 'real-onboarding-1'
+for ($i = 2; $i -le 6; $i++) {
+  ClickRel 0.867 0.934            # the primary "Next" / "Get started" / "Finish" button (bottom right)
+  Start-Sleep -Seconds 3
+  ShotApp "real-onboarding-$i"
+}
+Start-Sleep -Seconds 4
+ShotApp 'real-after-onboarding'
+
 "app still running: $(-not $p.HasExited)" | Add-Content "$out\self-test.txt"
 Get-Process | Where-Object { $_.Name -match 'jarvis|agent-host' } | Select-Object Name, Id | Out-String | Add-Content "$out\self-test.txt"
 Get-ChildItem "$env:APPDATA\dev.lopadova.jarvis", "$env:APPDATA\Jarvis" -Recurse -File -ErrorAction SilentlyContinue | Where-Object { $_.Length -lt 2MB } | Copy-Item -Destination $out -Force
