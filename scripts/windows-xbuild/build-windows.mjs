@@ -32,10 +32,20 @@ run(pnpm, ['sidecar:build'], {
   env: { ...process.env, JARVIS_SIDECAR_TARGET: triple, BUN_TARGET: 'bun-windows-x64' },
 });
 
-run('docker', ['build', '-t', 'jarvis-xbuild', join(root, 'scripts/windows-xbuild')]);
+// JARVIS_XBUILD_IMAGE reuses any image that already has rustup's windows-msvc target + cargo-xwin.
+const image = process.env.JARVIS_XBUILD_IMAGE ?? 'jarvis-xbuild';
+if (!process.env.JARVIS_XBUILD_IMAGE) run('docker', ['build', '-t', image, join(root, 'scripts/windows-xbuild')]);
 run('docker', [
   'run',
   '--rm',
+  '-e',
+  'XWIN_ACCEPT_LICENSE=1',
+  '-e',
+  'CARGO_TARGET_DIR=/target',
+  '-w',
+  '/src/apps/desktop/src-tauri',
+  '--entrypoint',
+  'bash',
   '-v',
   `${root}:/src`,
   '-v',
@@ -46,7 +56,8 @@ run('docker', [
   'jarvis-xbuild-xwin:/root/.cache/cargo-xwin',
   '-v',
   `${out}:/out`,
-  'jarvis-xbuild',
+  image,
+  '/src/scripts/windows-xbuild/build.sh',
   profile,
 ]);
 
