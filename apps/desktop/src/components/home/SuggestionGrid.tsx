@@ -47,7 +47,9 @@ export function SuggestionChip({
       <span className="min-w-0">
         <span className="block text-sm font-medium">{suggestion.label}</span>
         {compact ? null : (
-          <span className="block truncate text-xs text-subtle">{t('chip.say', { utterance: suggestion.utterance })}</span>
+          <span className="block truncate text-xs text-subtle">
+            {t('chip.say', { utterance: suggestion.utterance })}
+          </span>
         )}
       </span>
     </button>
@@ -65,7 +67,9 @@ export function SuggestionGrid({
   const present = useMemo(() => new Set(suggestions.map((s) => s.category)), [suggestions]);
   const tabs: (SuggestionCategory | 'for-you')[] = ['for-you', ...CATEGORIES.filter((c) => present.has(c))];
   const shown =
-    activeCategory === 'for-you' ? (forYou ?? suggestions).slice(0, 12) : suggestions.filter((s) => s.category === activeCategory);
+    activeCategory === 'for-you'
+      ? (forYou ?? suggestions).slice(0, 12)
+      : suggestions.filter((s) => s.category === activeCategory);
 
   return (
     <section aria-label={t('home.suggestions')} className="flex flex-col gap-3">

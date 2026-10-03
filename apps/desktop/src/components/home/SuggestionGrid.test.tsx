@@ -8,7 +8,15 @@ import { SuggestionGrid } from './SuggestionGrid';
 
 function Harness({ onPick, forYou }: { onPick(s: Suggestion): void; forYou?: Suggestion[] }) {
   const [cat, setCat] = useState<SuggestionCategory | 'for-you'>('for-you');
-  return <SuggestionGrid suggestions={allSuggestions('en')} forYou={forYou} activeCategory={cat} onCategoryChange={setCat} onPick={onPick} />;
+  return (
+    <SuggestionGrid
+      suggestions={allSuggestions('en')}
+      forYou={forYou}
+      activeCategory={cat}
+      onCategoryChange={setCat}
+      onPick={onPick}
+    />
+  );
 }
 
 describe('SuggestionGrid', () => {
@@ -46,13 +54,20 @@ describe('SuggestionGrid', () => {
       </LocaleProvider>,
     );
     fireEvent.click(screen.getByRole('button', { name: /Set a timer/ }));
-    expect(onPick).toHaveBeenCalledWith(expect.objectContaining({ id: 'timer', utterance: 'Jarvis, timer for 10 minutes' }));
+    expect(onPick).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'timer', utterance: 'Jarvis, timer for 10 minutes' }),
+    );
   });
 
   it('renders Italian labels', () => {
     render(
       <LocaleProvider locale="it">
-        <SuggestionGrid suggestions={allSuggestions('it')} activeCategory="reminders" onCategoryChange={vi.fn()} onPick={vi.fn()} />
+        <SuggestionGrid
+          suggestions={allSuggestions('it')}
+          activeCategory="reminders"
+          onCategoryChange={vi.fn()}
+          onPick={vi.fn()}
+        />
       </LocaleProvider>,
     );
     expect(screen.getByRole('tab', { name: 'Per te' })).toBeInTheDocument();

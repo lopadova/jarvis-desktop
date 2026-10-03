@@ -34,7 +34,11 @@ export function PermissionLevelControl({
   };
   return (
     <>
-      <div role="radiogroup" aria-label={label} className="inline-flex rounded-md border border-border bg-surface-sunken p-0.5">
+      <div
+        role="radiogroup"
+        aria-label={label}
+        className="inline-flex rounded-md border border-border bg-surface-sunken p-0.5"
+      >
         {LEVELS.map(({ id, icon: I }) => (
           <button
             key={id}
@@ -57,7 +61,11 @@ export function PermissionLevelControl({
         ))}
       </div>
       <Dialog open={confirming} onOpenChange={setConfirming}>
-        <DialogContent role="alertdialog" title={t('permission.confirm.title')} description={t('permission.confirm.body')}>
+        <DialogContent
+          role="alertdialog"
+          title={t('permission.confirm.title')}
+          description={t('permission.confirm.body')}
+        >
           <div className="flex justify-end gap-2">
             <DialogClose asChild>
               <Button autoFocus>{t('common.cancel')}</Button>
@@ -82,7 +90,10 @@ export function PermissionLevelControl({
 const MODIFIERS = new Set(['Control', 'Shift', 'Alt', 'Meta']);
 
 /** Convert a keyboard event to a Tauri accelerator ("CommandOrControl+Shift+J"), or null if only modifiers. */
-export function accelFromEvent(e: Pick<KeyboardEvent, 'key' | 'code' | 'ctrlKey' | 'metaKey' | 'altKey' | 'shiftKey'>, platform: Platform): string | null {
+export function accelFromEvent(
+  e: Pick<KeyboardEvent, 'key' | 'code' | 'ctrlKey' | 'metaKey' | 'altKey' | 'shiftKey'>,
+  platform: Platform,
+): string | null {
   if (MODIFIERS.has(e.key)) return null;
   const parts: string[] = [];
   const primary = platform === 'mac' ? e.metaKey : e.ctrlKey;
@@ -153,7 +164,11 @@ export function ShortcutRecorder({
           <KeyHint keys={value.split('+')} platform={platform} />
         )}
       </button>
-      {conflict ? <Badge tone="warning">{t('shortcut.conflict')}</Badge> : saved ? <Badge tone="success">{t('shortcut.saved')}</Badge> : null}
+      {conflict ? (
+        <Badge tone="warning">{t('shortcut.conflict')}</Badge>
+      ) : saved ? (
+        <Badge tone="success">{t('shortcut.saved')}</Badge>
+      ) : null}
     </div>
   );
 }
@@ -178,9 +193,7 @@ export function PairingQR({ relay }: { relay: RelayState }) {
   const tone = relay.status === 'connected' ? 'success' : relay.status === 'offline' ? 'danger' : 'neutral';
   return (
     <div className="flex items-center gap-4">
-      {svg ? (
-        <img src={svg} alt={t('relay.qr')} className="h-32 w-32 rounded-md bg-white p-1" />
-      ) : null}
+      {svg ? <img src={svg} alt={t('relay.qr')} className="h-32 w-32 rounded-md bg-white p-1" /> : null}
       <div className="flex flex-col gap-2">
         <Badge tone={tone}>{t(`relay.status.${relay.status}` as MessageKey)}</Badge>
         {relay.code ? (

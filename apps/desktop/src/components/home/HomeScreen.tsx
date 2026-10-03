@@ -1,16 +1,20 @@
 /** S3 — Home: rail · greeting + orb · suggestion chips · conversation · composer · footer status. */
-import { History, House, Lock, Mic, MicOff, Settings as SettingsIcon, Brain, FolderGit2, Wifi, WifiOff } from 'lucide-react';
+import {
+  Brain,
+  FolderGit2,
+  History,
+  House,
+  Lock,
+  Mic,
+  MicOff,
+  Settings as SettingsIcon,
+  Wifi,
+  WifiOff,
+} from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { type MessageKey, useT } from '../../i18n';
 import { cn } from '../../lib/cn';
-import type {
-  BrainId,
-  ChatMessage,
-  Platform,
-  ProviderStatus,
-  Suggestion,
-  SuggestionCategory,
-} from '../../types/ui';
+import type { BrainId, ChatMessage, Platform, ProviderStatus, Suggestion, SuggestionCategory } from '../../types/ui';
 import { UsageMeter, WindowControls } from '../common/common';
 import { Orb } from '../orb/Orb';
 import { Composer } from './Composer';
@@ -70,7 +74,10 @@ export function HomeScreen(p: HomeScreenProps) {
 
   return (
     <div className="flex h-full flex-col">
-      <header data-tauri-drag-region className={cn('flex h-9 shrink-0 items-center', p.platform === 'mac' ? 'justify-start' : 'justify-end')}>
+      <header
+        data-tauri-drag-region
+        className={cn('flex h-9 shrink-0 items-center', p.platform === 'mac' ? 'justify-start' : 'justify-end')}
+      >
         <WindowControls
           platform={p.platform}
           onMinimize={() => p.onWindow('minimize')}
@@ -79,7 +86,10 @@ export function HomeScreen(p: HomeScreenProps) {
         />
       </header>
       <div className="flex min-h-0 flex-1">
-        <nav aria-label={t('rail.label')} className="flex w-16 shrink-0 flex-col items-center gap-1 border-r border-border py-2">
+        <nav
+          aria-label={t('rail.label')}
+          className="flex w-16 shrink-0 flex-col items-center gap-1 border-r border-border py-2"
+        >
           {rail.map(({ id, icon: I, label }) => (
             <button
               key={id}
@@ -109,7 +119,9 @@ export function HomeScreen(p: HomeScreenProps) {
                   </h1>
                   <p className="text-sm text-muted">
                     {[
-                      primary ? t('home.status.brain', { brain: primary.plan ?? t(`brain.${primary.id}` as MessageKey) }) : t('home.status.noBrain'),
+                      primary
+                        ? t('home.status.brain', { brain: primary.plan ?? t(`brain.${primary.id}` as MessageKey) })
+                        : t('home.status.noBrain'),
                       t('home.status.sessions', { n: p.sessionsToday }),
                       p.privateMode ? t('home.status.local') : null,
                     ]
@@ -134,7 +146,12 @@ export function HomeScreen(p: HomeScreenProps) {
 
               <section aria-label={t('home.conversation')} aria-live="polite" className="flex flex-col gap-3">
                 {p.chat.map((m) => (
-                  <ChatBubble key={m.id} message={m} onOpenSession={p.onOpenSession} onReviewApproval={p.onReviewApproval} />
+                  <ChatBubble
+                    key={m.id}
+                    message={m}
+                    onOpenSession={p.onOpenSession}
+                    onReviewApproval={p.onReviewApproval}
+                  />
                 ))}
                 <div ref={endRef} />
               </section>
@@ -156,7 +173,9 @@ export function HomeScreen(p: HomeScreenProps) {
           </div>
 
           <footer className="flex items-center gap-4 border-t border-border px-6 py-2 text-xs text-subtle">
-            {primary ? <UsageMeter pct={primary.usagePct} label={primary.plan ?? t(`brain.${primary.id}` as MessageKey)} /> : null}
+            {primary ? (
+              <UsageMeter pct={primary.usagePct} label={primary.plan ?? t(`brain.${primary.id}` as MessageKey)} />
+            ) : null}
             <div className="flex-1" />
             {p.privateMode ? (
               <span className="inline-flex items-center gap-1 text-private">
@@ -165,7 +184,10 @@ export function HomeScreen(p: HomeScreenProps) {
               </span>
             ) : null}
             {/* R11: visible microphone state. */}
-            <span className={cn('inline-flex items-center gap-1', p.micLive ? 'text-danger' : '')} data-testid="mic-indicator">
+            <span
+              className={cn('inline-flex items-center gap-1', p.micLive ? 'text-danger' : '')}
+              data-testid="mic-indicator"
+            >
               {p.micLive ? <Mic size={12} aria-hidden="true" /> : <MicOff size={12} aria-hidden="true" />}
               {p.micLive ? t('footer.micLive') : t('footer.micOff')}
             </span>

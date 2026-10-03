@@ -8,8 +8,8 @@ import type { Locale, PillState, Platform, ProviderStatus } from '../../types/ui
 import { ProviderBadge } from '../common/common';
 import { Orb } from '../orb/Orb';
 import { ListeningPill } from '../pill/ListeningPill';
-import { LevelMeter } from '../settings/Settings';
 import type { SecretKey } from '../settings/Settings';
+import { LevelMeter } from '../settings/Settings';
 import { Button } from '../ui/button';
 import { Input } from '../ui/primitives';
 
@@ -73,7 +73,11 @@ export function Onboarding(p: OnboardingProps) {
         {step === 'voice' ? <VoiceStep {...p} /> : null}
         {step === 'try' ? (
           <Step title={t('onboarding.try.title')} body={t('onboarding.try.body')}>
-            <ListeningPill state={p.pill.kind === 'hidden' ? { kind: 'idle-hint', shortcut: ['Alt', 'Space'] } : p.pill} privateMode={p.privateMode} platform={p.platform} />
+            <ListeningPill
+              state={p.pill.kind === 'hidden' ? { kind: 'idle-hint', shortcut: ['Alt', 'Space'] } : p.pill}
+              privateMode={p.privateMode}
+              platform={p.platform}
+            />
           </Step>
         ) : null}
       </main>
@@ -83,7 +87,11 @@ export function Onboarding(p: OnboardingProps) {
         </Button>
         <ol className="flex gap-2" aria-label={t('onboarding.progress', { n: i + 1, total: ONBOARDING_STEPS.length })}>
           {ONBOARDING_STEPS.map((s, idx) => (
-            <li key={s} aria-current={idx === i ? 'step' : undefined} className={cn('h-2 w-2 rounded-full', idx === i ? 'bg-accent' : 'bg-border-strong')} />
+            <li
+              key={s}
+              aria-current={idx === i ? 'step' : undefined}
+              className={cn('h-2 w-2 rounded-full', idx === i ? 'bg-accent' : 'bg-border-strong')}
+            />
           ))}
         </ol>
         <Button variant="primary" size="lg" onClick={() => (last ? p.onFinish() : setI((x) => x + 1))}>
@@ -139,9 +147,17 @@ function BrainStep(p: OnboardingProps) {
           <p className="text-xs text-muted">{t('onboarding.brain.chatgpt.sub')}</p>
           {chatgpt ? <ProviderBadge provider={chatgpt} /> : null}
         </div>
-        <Card icon={<Terminal size={16} />} title={t('onboarding.brain.claude')} body={t('onboarding.brain.claude.sub')}>
+        <Card
+          icon={<Terminal size={16} />}
+          title={t('onboarding.brain.claude')}
+          body={t('onboarding.brain.claude.sub')}
+        >
           <div className="flex items-center gap-2">
-            {claude ? <ProviderBadge provider={claude} /> : <span className="text-xs text-subtle">{t('onboarding.brain.detecting')}</span>}
+            {claude ? (
+              <ProviderBadge provider={claude} />
+            ) : (
+              <span className="text-xs text-subtle">{t('onboarding.brain.detecting')}</span>
+            )}
             {claude?.connected ? (
               <Button size="sm" onClick={p.onUseClaude}>
                 {t('onboarding.brain.use')}
@@ -168,7 +184,14 @@ function BrainStep(p: OnboardingProps) {
               <option value="anthropic-api-key">Anthropic</option>
               <option value="openai-api-key">OpenAI</option>
             </select>
-            <Input type="password" autoComplete="off" value={key} onChange={(e) => setKey(e.target.value)} aria-label={t('onboarding.brain.api.key')} placeholder={t('onboarding.brain.api.key')} />
+            <Input
+              type="password"
+              autoComplete="off"
+              value={key}
+              onChange={(e) => setKey(e.target.value)}
+              aria-label={t('onboarding.brain.api.key')}
+              placeholder={t('onboarding.brain.api.key')}
+            />
             <Button type="submit" size="sm" variant="primary" disabled={!key.trim()}>
               {t('common.save')}
             </Button>
@@ -193,11 +216,28 @@ function VoiceStep(p: OnboardingProps) {
       <h1 className="text-center text-2xl font-semibold">{t('onboarding.voice.title')}</h1>
       <div className="grid grid-cols-3 gap-3" role="radiogroup" aria-label={t('onboarding.voice.title')}>
         {TTS_OPTIONS.map((id) => (
-          <div key={id} className={cn('flex items-center gap-2 rounded-lg border bg-surface p-3', p.tts === id ? 'border-accent' : 'border-border')}>
-            <button type="button" role="radio" aria-checked={p.tts === id} className="flex-1 text-left text-sm font-medium" onClick={() => p.onTts(id)}>
+          <div
+            key={id}
+            className={cn(
+              'flex items-center gap-2 rounded-lg border bg-surface p-3',
+              p.tts === id ? 'border-accent' : 'border-border',
+            )}
+          >
+            <button
+              type="button"
+              role="radio"
+              aria-checked={p.tts === id}
+              className="flex-1 text-left text-sm font-medium"
+              onClick={() => p.onTts(id)}
+            >
               {t(`tts.${id}` as MessageKey)}
             </button>
-            <Button size="icon" variant="ghost" aria-label={t('voice.previewOf', { name: t(`tts.${id}` as MessageKey) })} onClick={() => p.onPreview(id)}>
+            <Button
+              size="icon"
+              variant="ghost"
+              aria-label={t('voice.previewOf', { name: t(`tts.${id}` as MessageKey) })}
+              onClick={() => p.onPreview(id)}
+            >
               <Play size={12} aria-hidden="true" />
             </Button>
           </div>
@@ -206,7 +246,13 @@ function VoiceStep(p: OnboardingProps) {
       <div className="flex items-center justify-center gap-2">
         <span className="text-sm text-muted">{t('settings.language')}</span>
         {(['en', 'it'] as const).map((l) => (
-          <Button key={l} size="sm" variant={p.locale === l ? 'primary' : 'secondary'} onClick={() => p.onLocale(l)} aria-pressed={p.locale === l}>
+          <Button
+            key={l}
+            size="sm"
+            variant={p.locale === l ? 'primary' : 'secondary'}
+            onClick={() => p.onLocale(l)}
+            aria-pressed={p.locale === l}
+          >
             {l === 'en' ? 'English' : 'Italiano'}
           </Button>
         ))}

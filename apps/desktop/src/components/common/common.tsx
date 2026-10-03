@@ -120,9 +120,19 @@ export function WindowControls({
     return (
       <div className="flex items-center gap-2 px-3">
         <button type="button" aria-label={t('window.close')} onClick={onClose} className={cn(dot, 'bg-[#ff5f57]')} />
-        <button type="button" aria-label={t('window.minimize')} onClick={onMinimize} className={cn(dot, 'bg-[#febc2e]')} />
+        <button
+          type="button"
+          aria-label={t('window.minimize')}
+          onClick={onMinimize}
+          className={cn(dot, 'bg-[#febc2e]')}
+        />
         {onMaximize ? (
-          <button type="button" aria-label={t('window.maximize')} onClick={onMaximize} className={cn(dot, 'bg-[#28c840]')} />
+          <button
+            type="button"
+            aria-label={t('window.maximize')}
+            onClick={onMaximize}
+            className={cn(dot, 'bg-[#28c840]')}
+          />
         ) : null}
       </div>
     );
@@ -138,7 +148,12 @@ export function WindowControls({
           <Square size={12} />
         </button>
       ) : null}
-      <button type="button" aria-label={t('window.close')} onClick={onClose} className={cn(btn, 'hover:bg-danger hover:text-inverse')}>
+      <button
+        type="button"
+        aria-label={t('window.close')}
+        onClick={onClose}
+        className={cn(btn, 'hover:bg-danger hover:text-inverse')}
+      >
         <X size={14} />
       </button>
     </div>

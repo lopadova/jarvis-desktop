@@ -103,9 +103,7 @@ export function ApprovalCard({ request, onDecision, now }: ApprovalCardProps) {
             </span>
             {request.project ? <span>{t('approval.project', { project: request.project })}</span> : null}
             {request.cwd ? <span className="font-mono">{request.cwd}</span> : null}
-            {left !== null ? (
-              <span aria-live="off">{t('approval.expires', { s: Math.ceil(left / 1000) })}</span>
-            ) : null}
+            {left !== null ? <span aria-live="off">{t('approval.expires', { s: Math.ceil(left / 1000) })}</span> : null}
           </div>
           {request.reason ? <p className="mt-2 text-sm text-muted">{request.reason}</p> : null}
         </div>

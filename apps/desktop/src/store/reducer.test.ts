@@ -18,7 +18,10 @@ describe('reducer', () => {
 
   it('handles ui.pill / ui.sessions / ui.approval / ui.providers / ui.settings / ui.relay', () => {
     let s = initialState();
-    s = applyUiEvent(s, 'ui.pill', { state: { kind: 'listening', level: 0.5, partial: 'ti', committed: 'what' }, privateMode: true });
+    s = applyUiEvent(s, 'ui.pill', {
+      state: { kind: 'listening', level: 0.5, partial: 'ti', committed: 'what' },
+      privateMode: true,
+    });
     expect(s.pill.state.kind).toBe('listening');
     expect(s.pill.privateMode).toBe(true);
     s = applyUiEvent(s, 'ui.sessions', { sessions: mockSessions('en', 0) });
@@ -76,8 +79,12 @@ describe('mock backend', () => {
     const pending = mock.snapshot.pending[0];
     expect(pending?.risk).toBe('high');
     // High risk refuses voice approval (R2), accepts a click.
-    expect(await mock.call('approval.decide', { id: pending?.id ?? '', decision: 'allow-once', via: 'voice' })).toMatchObject({ ok: false });
-    expect(await mock.call('approval.decide', { id: pending?.id ?? '', decision: 'allow-once', via: 'click' })).toEqual({ ok: true });
+    expect(
+      await mock.call('approval.decide', { id: pending?.id ?? '', decision: 'allow-once', via: 'voice' }),
+    ).toMatchObject({ ok: false });
+    expect(await mock.call('approval.decide', { id: pending?.id ?? '', decision: 'allow-once', via: 'click' })).toEqual(
+      { ok: true },
+    );
     mock.stop();
   });
 });

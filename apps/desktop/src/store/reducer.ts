@@ -3,6 +3,7 @@
  * Kept free of React/zustand so it is trivially unit-testable.
  */
 import { defaultSettings, type Reminder, type Settings } from '@jarvis/core';
+import type { ConnectionStatus } from '../ipc/client';
 import type {
   ApprovalRequest,
   ChatMessage,
@@ -15,7 +16,6 @@ import type {
   ToastData,
   ToastLevel,
 } from '../types/ui';
-import type { ConnectionStatus } from '../ipc/client';
 
 export interface UiState {
   connection: ConnectionStatus;
@@ -35,6 +35,8 @@ export interface UiState {
   micLevel: number;
   /** True while the user holds push-to-talk (global shortcut or composer mic). */
   pushToTalk: boolean;
+  /** The shell has the microphone open (R11 indicator). */
+  micOpen: boolean;
 }
 
 export const initialState = (): UiState => ({
@@ -54,6 +56,7 @@ export const initialState = (): UiState => ({
   models: [],
   micLevel: 0,
   pushToTalk: false,
+  micOpen: false,
 });
 
 export interface AppStateSnapshot {

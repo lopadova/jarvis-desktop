@@ -1,5 +1,5 @@
 /** S5 — Settings (sidebar tabs). Data in via props, changes out via `onPatch` / callbacks. */
-import { SETTINGS_TABS, type Project, type Settings as SettingsData, type SettingsTab } from '@jarvis/core';
+import { type Project, SETTINGS_TABS, type Settings as SettingsData, type SettingsTab } from '@jarvis/core';
 import { Copy, Download, Play, Trash2 } from 'lucide-react';
 import { type ReactNode, useState } from 'react';
 import { type MessageKey, useT } from '../../i18n';
@@ -47,12 +47,26 @@ export function Settings(p: SettingsProps) {
   const t = useT();
   return (
     <div className="flex h-full flex-col">
-      <header data-tauri-drag-region className={cn('flex h-9 shrink-0 items-center', p.platform === 'mac' ? 'justify-start' : 'justify-between')}>
-        {p.platform === 'mac' ? null : <span data-tauri-drag-region className="px-4 text-sm font-medium">{t('settings.title')}</span>}
-        <WindowControls platform={p.platform} onMinimize={() => p.onWindow('minimize')} onClose={() => p.onWindow('close')} />
+      <header
+        data-tauri-drag-region
+        className={cn('flex h-9 shrink-0 items-center', p.platform === 'mac' ? 'justify-start' : 'justify-between')}
+      >
+        {p.platform === 'mac' ? null : (
+          <span data-tauri-drag-region className="px-4 text-sm font-medium">
+            {t('settings.title')}
+          </span>
+        )}
+        <WindowControls
+          platform={p.platform}
+          onMinimize={() => p.onWindow('minimize')}
+          onClose={() => p.onWindow('close')}
+        />
       </header>
       <div className="flex min-h-0 flex-1">
-        <nav aria-label={t('settings.title')} className="flex w-52 shrink-0 flex-col gap-0.5 border-r border-border p-2">
+        <nav
+          aria-label={t('settings.title')}
+          className="flex w-52 shrink-0 flex-col gap-0.5 border-r border-border p-2"
+        >
           {SETTINGS_TABS.map((tab) => (
             <button
               key={tab}
@@ -79,14 +93,26 @@ export function Settings(p: SettingsProps) {
 
 function Section({ title, children, danger }: { title?: string; children: ReactNode; danger?: boolean }) {
   return (
-    <section className={cn('mb-5 rounded-lg border bg-surface px-4 py-1', danger ? 'border-danger/60' : 'border-border')}>
+    <section
+      className={cn('mb-5 rounded-lg border bg-surface px-4 py-1', danger ? 'border-danger/60' : 'border-border')}
+    >
       {title ? <h2 className={cn('pt-3 text-sm font-semibold', danger && 'text-danger')}>{title}</h2> : null}
       {children}
     </section>
   );
 }
 
-function Select<V extends string>({ value, options, onChange, label }: { value: V; options: { value: V; label: string }[]; onChange(v: V): void; label: string }) {
+function Select<V extends string>({
+  value,
+  options,
+  onChange,
+  label,
+}: {
+  value: V;
+  options: { value: V; label: string }[];
+  onChange(v: V): void;
+  label: string;
+}) {
   return (
     <select
       aria-label={label}
@@ -103,7 +129,17 @@ function Select<V extends string>({ value, options, onChange, label }: { value: 
   );
 }
 
-function SecretField({ secretKey, label, onSave, onDelete }: { secretKey: SecretKey; label: string; onSave(k: SecretKey, v: string): void; onDelete(k: SecretKey): void }) {
+function SecretField({
+  secretKey,
+  label,
+  onSave,
+  onDelete,
+}: {
+  secretKey: SecretKey;
+  label: string;
+  onSave(k: SecretKey, v: string): void;
+  onDelete(k: SecretKey): void;
+}) {
   const t = useT();
   const [value, setValue] = useState('');
   return (
@@ -117,7 +153,14 @@ function SecretField({ secretKey, label, onSave, onDelete }: { secretKey: Secret
           setValue(''); // never kept in UI state or storage after sending (R6)
         }}
       >
-        <Input type="password" autoComplete="off" value={value} onChange={(e) => setValue(e.target.value)} aria-label={label} className="w-56" />
+        <Input
+          type="password"
+          autoComplete="off"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          aria-label={label}
+          className="w-56"
+        />
         <Button type="submit" size="sm" variant="primary" disabled={!value.trim()}>
           {t('common.save')}
         </Button>
@@ -140,11 +183,18 @@ export function ModelList({ models, onDownload }: { models: ModelStatus[]; onDow
           <li key={m.id} className="flex flex-col gap-1">
             <div className="flex items-center justify-between text-sm">
               <span>{m.label}</span>
-              <span className={cn('text-xs', m.state === 'ready' ? 'text-success' : m.state === 'error' ? 'text-danger' : 'text-subtle')}>
+              <span
+                className={cn(
+                  'text-xs',
+                  m.state === 'ready' ? 'text-success' : m.state === 'error' ? 'text-danger' : 'text-subtle',
+                )}
+              >
                 {t(`models.state.${m.state}` as MessageKey)}
               </span>
             </div>
-            {m.state === 'downloading' && m.total > 0 ? <Progress value={(m.received / m.total) * 100} label={m.label} /> : null}
+            {m.state === 'downloading' && m.total > 0 ? (
+              <Progress value={(m.received / m.total) * 100} label={m.label} />
+            ) : null}
             {m.error ? <span className="text-xs text-danger">{m.error}</span> : null}
           </li>
         ))}
@@ -168,7 +218,11 @@ function TabBody(p: SettingsProps) {
   const s = p.settings;
   const sw = (key: keyof SettingsData, label: MessageKey, hint?: MessageKey) => (
     <Field label={t(label)} hint={hint ? t(hint) : undefined}>
-      <Switch checked={Boolean(s[key])} onCheckedChange={(v) => p.onPatch({ [key]: v } as Partial<SettingsData>)} aria-label={t(label)} />
+      <Switch
+        checked={Boolean(s[key])}
+        onCheckedChange={(v) => p.onPatch({ [key]: v } as Partial<SettingsData>)}
+        aria-label={t(label)}
+      />
     </Field>
   );
 
@@ -177,17 +231,34 @@ function TabBody(p: SettingsProps) {
       return (
         <Section>
           <Field label={t('settings.name')}>
-            <Input defaultValue={s.userName} maxLength={80} className="w-56" aria-label={t('settings.name')} onBlur={(e) => p.onPatch({ userName: e.target.value })} />
+            <Input
+              defaultValue={s.userName}
+              maxLength={80}
+              className="w-56"
+              aria-label={t('settings.name')}
+              onBlur={(e) => p.onPatch({ userName: e.target.value })}
+            />
           </Field>
           <Field label={t('settings.language')}>
-            <Select label={t('settings.language')} value={s.locale} onChange={(locale) => p.onPatch({ locale })} options={[{ value: 'en', label: 'English' }, { value: 'it', label: 'Italiano' }]} />
+            <Select
+              label={t('settings.language')}
+              value={s.locale}
+              onChange={(locale) => p.onPatch({ locale })}
+              options={[
+                { value: 'en', label: 'English' },
+                { value: 'it', label: 'Italiano' },
+              ]}
+            />
           </Field>
           <Field label={t('settings.theme')}>
             <Select
               label={t('settings.theme')}
               value={s.theme}
               onChange={(theme) => p.onPatch({ theme })}
-              options={(['system', 'dark', 'light'] as const).map((v) => ({ value: v, label: t(`settings.theme.${v}` as MessageKey) }))}
+              options={(['system', 'dark', 'light'] as const).map((v) => ({
+                value: v,
+                label: t(`settings.theme.${v}` as MessageKey),
+              }))}
             />
           </Field>
           <Field label={t('settings.material')} hint={t('settings.material.hint')}>
@@ -195,11 +266,21 @@ function TabBody(p: SettingsProps) {
               label={t('settings.material')}
               value={s.material}
               onChange={(material) => p.onPatch({ material })}
-              options={(['auto', 'glass', 'solid'] as const).map((v) => ({ value: v, label: t(`settings.material.${v}` as MessageKey) }))}
+              options={(['auto', 'glass', 'solid'] as const).map((v) => ({
+                value: v,
+                label: t(`settings.material.${v}` as MessageKey),
+              }))}
             />
           </Field>
           <Field label={t('settings.accent')}>
-            <input type="range" min={0} max={360} defaultValue={s.accentHue} aria-label={t('settings.accent')} onChange={(e) => p.onPatch({ accentHue: Number(e.target.value) })} />
+            <input
+              type="range"
+              min={0}
+              max={360}
+              defaultValue={s.accentHue}
+              aria-label={t('settings.accent')}
+              onChange={(e) => p.onPatch({ accentHue: Number(e.target.value) })}
+            />
           </Field>
           {sw('launchAtLogin', 'settings.launchAtLogin')}
         </Section>
@@ -218,7 +299,9 @@ function TabBody(p: SettingsProps) {
                   </div>
                   <div className="text-xs text-subtle">{[pr.account, pr.plan].filter(Boolean).join(' · ') || '—'}</div>
                 </div>
-                {pr.usagePct !== undefined ? <UsageMeter pct={pr.usagePct} label={pr.plan ?? t(brainKey(pr.id))} /> : null}
+                {pr.usagePct !== undefined ? (
+                  <UsageMeter pct={pr.usagePct} label={pr.plan ?? t(brainKey(pr.id))} />
+                ) : null}
                 <ProviderBadge provider={pr} />
                 {pr.connected && !pr.primary ? (
                   <Button size="sm" onClick={() => p.onSetPrimary(pr.id)}>
@@ -240,15 +323,35 @@ function TabBody(p: SettingsProps) {
             ))}
           </Section>
           <Section title={t('settings.apiKeys')}>
-            <SecretField secretKey="anthropic-api-key" label={t('secret.anthropic')} onSave={p.onSecret} onDelete={p.onDeleteSecret} />
-            <SecretField secretKey="openai-api-key" label={t('secret.openai')} onSave={p.onSecret} onDelete={p.onDeleteSecret} />
+            <SecretField
+              secretKey="anthropic-api-key"
+              label={t('secret.anthropic')}
+              onSave={p.onSecret}
+              onDelete={p.onDeleteSecret}
+            />
+            <SecretField
+              secretKey="openai-api-key"
+              label={t('secret.openai')}
+              onSave={p.onSecret}
+              onDelete={p.onDeleteSecret}
+            />
           </Section>
           <Section title={t('settings.local')}>
             <Field label={t('settings.local.url')}>
-              <Input defaultValue={s.localBrain.baseUrl} className="w-64" aria-label={t('settings.local.url')} onBlur={(e) => p.onPatch({ localBrain: { ...s.localBrain, baseUrl: e.target.value } })} />
+              <Input
+                defaultValue={s.localBrain.baseUrl}
+                className="w-64"
+                aria-label={t('settings.local.url')}
+                onBlur={(e) => p.onPatch({ localBrain: { ...s.localBrain, baseUrl: e.target.value } })}
+              />
             </Field>
             <Field label={t('settings.local.model')}>
-              <Input defaultValue={s.localBrain.model} className="w-64" aria-label={t('settings.local.model')} onBlur={(e) => p.onPatch({ localBrain: { ...s.localBrain, model: e.target.value } })} />
+              <Input
+                defaultValue={s.localBrain.model}
+                className="w-64"
+                aria-label={t('settings.local.model')}
+                onBlur={(e) => p.onPatch({ localBrain: { ...s.localBrain, model: e.target.value } })}
+              />
             </Field>
           </Section>
         </>
@@ -262,22 +365,39 @@ function TabBody(p: SettingsProps) {
                 label={t('settings.defaultAgent')}
                 value={s.defaultAgent}
                 onChange={(defaultAgent) => p.onPatch({ defaultAgent })}
-                options={(['claude', 'codex', 'home'] as const).map((v) => ({ value: v, label: t(`agent.${v}` as MessageKey) }))}
+                options={(['claude', 'codex', 'home'] as const).map((v) => ({
+                  value: v,
+                  label: t(`agent.${v}` as MessageKey),
+                }))}
               />
             </Field>
             <Field label={t('settings.maxSessions')}>
-              <Input type="number" min={1} max={12} defaultValue={s.maxConcurrentSessions} className="w-20" aria-label={t('settings.maxSessions')} onBlur={(e) => p.onPatch({ maxConcurrentSessions: Number(e.target.value) })} />
+              <Input
+                type="number"
+                min={1}
+                max={12}
+                defaultValue={s.maxConcurrentSessions}
+                className="w-20"
+                aria-label={t('settings.maxSessions')}
+                onBlur={(e) => p.onPatch({ maxConcurrentSessions: Number(e.target.value) })}
+              />
             </Field>
           </Section>
           <Section title={t('settings.projects')}>
-            {p.projects.length === 0 ? <p className="py-3 text-xs text-subtle">{t('settings.projects.empty')}</p> : null}
+            {p.projects.length === 0 ? (
+              <p className="py-3 text-xs text-subtle">{t('settings.projects.empty')}</p>
+            ) : null}
             {p.projects.map((pr) => (
               <div key={pr.id} className="flex items-center gap-3 border-b border-border py-3 last:border-b-0">
                 <div className="min-w-0 flex-1">
                   <div className="text-sm font-medium">{pr.name}</div>
                   <div className="truncate font-mono text-xs text-subtle">{pr.path}</div>
                 </div>
-                <PermissionLevelControl value={pr.permission} label={t('permission.label', { project: pr.name })} onChange={(lvl) => p.onProjectPermission(pr, lvl)} />
+                <PermissionLevelControl
+                  value={pr.permission}
+                  label={t('permission.label', { project: pr.name })}
+                  onChange={(lvl) => p.onProjectPermission(pr, lvl)}
+                />
               </div>
             ))}
           </Section>
@@ -293,7 +413,10 @@ function TabBody(p: SettingsProps) {
                   label={t('settings.tts')}
                   value={s.tts}
                   onChange={(tts) => p.onPatch({ tts })}
-                  options={(['system', 'elevenlabs', 'fish', 'openai', 'kokoro', 'piper'] as const).map((v) => ({ value: v, label: t(`tts.${v}` as MessageKey) }))}
+                  options={(['system', 'elevenlabs', 'fish', 'openai', 'kokoro', 'piper'] as const).map((v) => ({
+                    value: v,
+                    label: t(`tts.${v}` as MessageKey),
+                  }))}
                 />
                 <Button size="sm" onClick={() => p.onTtsPreview(s.tts)} aria-label={t('voice.preview')}>
                   <Play size={12} aria-hidden="true" />
@@ -301,7 +424,15 @@ function TabBody(p: SettingsProps) {
               </div>
             </Field>
             <Field label={t('settings.rate')}>
-              <input type="range" min={0.5} max={2} step={0.1} defaultValue={s.speakingRate} aria-label={t('settings.rate')} onChange={(e) => p.onPatch({ speakingRate: Number(e.target.value) })} />
+              <input
+                type="range"
+                min={0.5}
+                max={2}
+                step={0.1}
+                defaultValue={s.speakingRate}
+                aria-label={t('settings.rate')}
+                onChange={(e) => p.onPatch({ speakingRate: Number(e.target.value) })}
+              />
             </Field>
             {sw('speakReplies', 'settings.speakReplies')}
             {sw('speakProgress', 'settings.speakProgress')}
@@ -309,8 +440,18 @@ function TabBody(p: SettingsProps) {
             {sw('muteDuringFocus', 'settings.muteDuringFocus')}
           </Section>
           <Section title={t('settings.apiKeys')}>
-            <SecretField secretKey="elevenlabs-api-key" label={t('secret.elevenlabs')} onSave={p.onSecret} onDelete={p.onDeleteSecret} />
-            <SecretField secretKey="fish-audio-api-key" label={t('secret.fish')} onSave={p.onSecret} onDelete={p.onDeleteSecret} />
+            <SecretField
+              secretKey="elevenlabs-api-key"
+              label={t('secret.elevenlabs')}
+              onSave={p.onSecret}
+              onDelete={p.onDeleteSecret}
+            />
+            <SecretField
+              secretKey="fish-audio-api-key"
+              label={t('secret.fish')}
+              onSave={p.onSecret}
+              onDelete={p.onDeleteSecret}
+            />
           </Section>
         </>
       );
@@ -322,7 +463,15 @@ function TabBody(p: SettingsProps) {
           <Section>
             {sw('privateMode', 'settings.privateMode', 'settings.privateMode.hint')}
             <Field label={t('settings.retention')}>
-              <Input type="number" min={0} max={3650} defaultValue={s.historyRetentionDays} className="w-24" aria-label={t('settings.retention')} onBlur={(e) => p.onPatch({ historyRetentionDays: Number(e.target.value) })} />
+              <Input
+                type="number"
+                min={0}
+                max={3650}
+                defaultValue={s.historyRetentionDays}
+                className="w-24"
+                aria-label={t('settings.retention')}
+                onBlur={(e) => p.onPatch({ historyRetentionDays: Number(e.target.value) })}
+              />
             </Field>
             {sw('openResults', 'settings.openResults')}
           </Section>
@@ -401,7 +550,11 @@ function MicrophoneTab(p: SettingsProps) {
   };
   const sw = (key: keyof SettingsData, label: MessageKey) => (
     <Field label={t(label)}>
-      <Switch checked={Boolean(s[key])} onCheckedChange={(v) => p.onPatch({ [key]: v } as Partial<SettingsData>)} aria-label={t(label)} />
+      <Switch
+        checked={Boolean(s[key])}
+        onCheckedChange={(v) => p.onPatch({ [key]: v } as Partial<SettingsData>)}
+        aria-label={t(label)}
+      />
     </Field>
   );
   return (
@@ -411,12 +564,18 @@ function MicrophoneTab(p: SettingsProps) {
         {sw('wakeOnClap', 'settings.wakeOnClap')}
         {sw('conversationMode', 'settings.conversationMode')}
         {sw('echoCancellation', 'settings.echoCancellation')}
-        <Field label={t('settings.stt')} hint={s.stt === 'local-whisper' ? t('settings.stt.local') : t('settings.stt.cloud')}>
+        <Field
+          label={t('settings.stt')}
+          hint={s.stt === 'local-whisper' ? t('settings.stt.local') : t('settings.stt.cloud')}
+        >
           <Select
             label={t('settings.stt')}
             value={s.stt}
             onChange={(stt) => p.onPatch({ stt })}
-            options={(['local-whisper', 'openai', 'elevenlabs'] as const).map((v) => ({ value: v, label: t(`stt.${v}` as MessageKey) }))}
+            options={(['local-whisper', 'openai', 'elevenlabs'] as const).map((v) => ({
+              value: v,
+              label: t(`stt.${v}` as MessageKey),
+            }))}
           />
         </Field>
         <Field label={t('settings.whisperModel')}>
@@ -424,7 +583,10 @@ function MicrophoneTab(p: SettingsProps) {
             label={t('settings.whisperModel')}
             value={s.whisperModel}
             onChange={(whisperModel) => p.onPatch({ whisperModel })}
-            options={(['tiny', 'base', 'small', 'medium', 'large-v3-turbo'] as const).map((v) => ({ value: v, label: v }))}
+            options={(['tiny', 'base', 'small', 'medium', 'large-v3-turbo'] as const).map((v) => ({
+              value: v,
+              label: v,
+            }))}
           />
         </Field>
         <Field label={t('settings.micTest')}>
@@ -467,7 +629,12 @@ function IntegrationsTab(p: SettingsProps) {
               <code className="rounded-sm bg-surface-sunken px-2 py-1 font-mono text-xs" data-selectable>
                 {MCP_COMMANDS[k]}
               </code>
-              <Button size="icon" variant="ghost" aria-label={t('common.copy')} onClick={() => p.onCopy(MCP_COMMANDS[k])}>
+              <Button
+                size="icon"
+                variant="ghost"
+                aria-label={t('common.copy')}
+                onClick={() => p.onCopy(MCP_COMMANDS[k])}
+              >
                 <Copy size={12} aria-hidden="true" />
               </Button>
             </div>
@@ -477,10 +644,21 @@ function IntegrationsTab(p: SettingsProps) {
       <Section title={t('integrations.chatgpt')}>
         <p className="pt-2 text-xs text-subtle">{t('integrations.chatgpt.hint')}</p>
         <Field label={t('integrations.relayUrl')}>
-          <Input value={relayUrl} onChange={(e) => setRelayUrl(e.target.value)} placeholder="https://relay.example.workers.dev" className="w-72" aria-label={t('integrations.relayUrl')} />
+          <Input
+            value={relayUrl}
+            onChange={(e) => setRelayUrl(e.target.value)}
+            placeholder="https://relay.example.workers.dev"
+            className="w-72"
+            aria-label={t('integrations.relayUrl')}
+          />
         </Field>
         <div className="flex gap-2 py-3">
-          <Button size="sm" variant="primary" disabled={!/^https:\/\//.test(relayUrl)} onClick={() => p.onPair(relayUrl)}>
+          <Button
+            size="sm"
+            variant="primary"
+            disabled={!/^https:\/\//.test(relayUrl)}
+            onClick={() => p.onPair(relayUrl)}
+          >
             {t('integrations.pair')}
           </Button>
           {p.relay.status !== 'unpaired' ? (
@@ -493,7 +671,11 @@ function IntegrationsTab(p: SettingsProps) {
           <PairingQR relay={p.relay} />
         </div>
         <Field label={t('integrations.writeTools')} hint={t('integrations.writeTools.hint')}>
-          <Switch checked={p.settings.relayExposeWriteTools} onCheckedChange={(v) => p.onPatch({ relayExposeWriteTools: v })} aria-label={t('integrations.writeTools')} />
+          <Switch
+            checked={p.settings.relayExposeWriteTools}
+            onCheckedChange={(v) => p.onPatch({ relayExposeWriteTools: v })}
+            aria-label={t('integrations.writeTools')}
+          />
         </Field>
       </Section>
     </>

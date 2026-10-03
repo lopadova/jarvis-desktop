@@ -138,7 +138,15 @@ export class MockTransport implements Transport {
       case 'projects.list':
         return {
           projects: [
-            { id: 'p1', name: 'shop', path: '~/Projects/shop', aliases: [], defaultAgent: 'claude', permission: 'safe', allowlist: [] },
+            {
+              id: 'p1',
+              name: 'shop',
+              path: '~/Projects/shop',
+              aliases: [],
+              defaultAgent: 'claude',
+              permission: 'safe',
+              allowlist: [],
+            },
           ],
         };
       case 'memory.list':
@@ -191,8 +199,7 @@ export class MockTransport implements Transport {
         this.pushChat({ id: uid('c'), role: 'system', card: { type: 'approval-needed', request }, at: Date.now() });
         return;
       }
-      const reply =
-        locale === 'it' ? `Ok — (demo) ho ricevuto: "${text}".` : `Okay — (demo) I heard: "${text}".`;
+      const reply = locale === 'it' ? `Ok — (demo) ho ricevuto: "${text}".` : `Okay — (demo) I heard: "${text}".`;
       this.pushChat({ id: uid('j'), role: 'jarvis', text: reply, at: Date.now(), spoken: true });
       this.setPill({ ...s.pill, state: { kind: 'speaking', text: reply, progress: 0, level: 0.4 } });
       this.later(() => this.setPill({ ...s.pill, state: { kind: 'hidden' } }), 2500);

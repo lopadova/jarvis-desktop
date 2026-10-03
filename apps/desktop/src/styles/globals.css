@@ -1,5 +1,5 @@
-@import 'tailwindcss';
-@import './tokens.css';
+@import "tailwindcss";
+@import "./tokens.css";
 
 /* Tailwind v4 mapping of the §4 tokens: bg-surface, text-muted, rounded-lg, shadow-glow … */
 @theme inline {
@@ -69,9 +69,9 @@ body {
 }
 
 /* Opaque window backgrounds; floating surfaces (pill, sessions) paint their own card. */
-html[data-surface='home'] body,
-html[data-surface='settings'] body,
-html[data-surface='onboarding'] body {
+html[data-surface="home"] body,
+html[data-surface="settings"] body,
+html[data-surface="onboarding"] body {
   background: var(--color-bg);
 }
 
@@ -134,7 +134,7 @@ textarea,
 }
 
 /* Animations pause when the document is hidden (set by main.tsx on visibilitychange). */
-html[data-hidden='true'] * {
+html[data-hidden="true"] * {
   animation-play-state: paused !important;
 }
 

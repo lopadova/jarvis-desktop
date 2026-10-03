@@ -131,9 +131,7 @@ export function ListeningPill({
             </div>
           ) : null}
 
-          {state.kind === 'approval' ? (
-            <ApprovalCard request={state.request} onDecision={onApprovalDecision} />
-          ) : null}
+          {state.kind === 'approval' ? <ApprovalCard request={state.request} onDecision={onApprovalDecision} /> : null}
         </motion.section>
       ) : null}
     </AnimatePresence>
@@ -157,7 +155,10 @@ function PillBody({ state, platform }: { state: PillState; platform: ListeningPi
       );
     case 'thinking':
       return (
-        <p aria-live="polite" className="line-clamp-2 min-w-0 flex-1 text-sm text-muted [animation:shimmer_1.6s_ease-in-out_infinite]">
+        <p
+          aria-live="polite"
+          className="line-clamp-2 min-w-0 flex-1 text-sm text-muted [animation:shimmer_1.6s_ease-in-out_infinite]"
+        >
           {state.transcript || t('pill.thinking')}
         </p>
       );

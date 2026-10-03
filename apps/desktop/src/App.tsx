@@ -3,7 +3,7 @@ import { X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { LocaleProvider, useT } from './i18n';
 import { createTransport, isMockMode } from './ipc/connection';
-import { detectPlatform, onShellEvent, SHELL_EVENTS, shellInfo, modelStatus } from './lib/tauri';
+import { detectPlatform, modelStatus, onShellEvent, SHELL_EVENTS, shellInfo } from './lib/tauri';
 import { useApp } from './store/app';
 import { HomeSurface, OnboardingSurface, PillSurface, SessionsSurface, SettingsSurface } from './surfaces/Surfaces';
 import type { Material, ModelStatus, Platform } from './types/ui';
@@ -61,7 +61,10 @@ function Toasts() {
   }, [toasts, dismiss]);
   if (toasts.length === 0) return null;
   return (
-    <ol aria-live="polite" className="fixed right-4 bottom-4 z-50 flex w-[360px] max-w-[calc(100vw-32px)] flex-col gap-2">
+    <ol
+      aria-live="polite"
+      className="fixed right-4 bottom-4 z-50 flex w-[360px] max-w-[calc(100vw-32px)] flex-col gap-2"
+    >
       {toasts.map((toast) => (
         <li
           key={toast.id}
@@ -70,7 +73,13 @@ function Toasts() {
         >
           <span
             className={
-              toast.level === 'error' ? 'text-danger' : toast.level === 'warning' ? 'text-warning' : toast.level === 'success' ? 'text-success' : 'text-info'
+              toast.level === 'error'
+                ? 'text-danger'
+                : toast.level === 'warning'
+                  ? 'text-warning'
+                  : toast.level === 'success'
+                    ? 'text-success'
+                    : 'text-info'
             }
           >
             ●
@@ -79,7 +88,12 @@ function Toasts() {
             <div className="font-medium">{toast.title}</div>
             {toast.body ? <div className="text-xs text-muted">{toast.body}</div> : null}
           </div>
-          <button type="button" aria-label={t('common.dismiss')} onClick={() => dismiss(toast.id)} className="text-subtle hover:text-text">
+          <button
+            type="button"
+            aria-label={t('common.dismiss')}
+            onClick={() => dismiss(toast.id)}
+            className="text-subtle hover:text-text"
+          >
             <X size={14} aria-hidden="true" />
           </button>
         </li>
@@ -108,6 +122,7 @@ export function App() {
       onShellEvent<ModelStatus[]>(SHELL_EVENTS.models, (m) => useApp.getState().setModels(m)),
       onShellEvent<{ level: number }>(SHELL_EVENTS.micLevel, (e) => useApp.getState().setMicLevel(e.level)),
       onShellEvent<{ pressed: boolean }>(SHELL_EVENTS.pushToTalk, (e) => useApp.getState().setPushToTalk(e.pressed)),
+      onShellEvent<{ open: boolean }>(SHELL_EVENTS.micOpen, (e) => useApp.getState().setMicOpen(e.open)),
     ];
     return () => {
       for (const o of offs) void o.then((f) => f());
@@ -124,17 +139,27 @@ export function App() {
       {surface === 'settings' ? <SettingsSurface platform={platform} /> : null}
       {surface === 'onboarding' ? <OnboardingSurface platform={platform} /> : null}
       {surface !== 'pill' && surface !== 'sessions' ? <Toasts /> : null}
-      {surface !== 'pill' && surface !== 'sessions' ? <ConnectionBanner connection={connection} mock={isMockMode()} /> : null}
+      {surface !== 'pill' && surface !== 'sessions' ? (
+        <ConnectionBanner connection={connection} mock={isMockMode()} />
+      ) : null}
     </LocaleProvider>
   );
 }
 
 function ConnectionBanner({ connection, mock }: { connection: string; mock: boolean }) {
   const t = useT();
-  if (mock) return <div className="fixed top-1 left-1/2 -translate-x-1/2 rounded-pill bg-surface-raised px-2 py-0.5 text-xs text-subtle">{t('app.mock')}</div>;
+  if (mock)
+    return (
+      <div className="fixed top-1 left-1/2 -translate-x-1/2 rounded-pill bg-surface-raised px-2 py-0.5 text-xs text-subtle">
+        {t('app.mock')}
+      </div>
+    );
   if (connection === 'open') return null;
   return (
-    <div role="status" className="fixed top-1 left-1/2 -translate-x-1/2 rounded-pill bg-warning px-3 py-0.5 text-xs text-inverse">
+    <div
+      role="status"
+      className="fixed top-1 left-1/2 -translate-x-1/2 rounded-pill bg-warning px-3 py-0.5 text-xs text-inverse"
+    >
       {t('app.reconnecting')}
     </div>
   );

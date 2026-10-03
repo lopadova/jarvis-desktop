@@ -24,6 +24,7 @@ export type WindowLabel = 'pill' | 'sessions' | 'home' | 'settings' | 'onboardin
 export const SHELL_EVENTS = {
   models: 'voice://models',
   micLevel: 'voice://level',
+  micOpen: 'voice://mic',
   pushToTalk: 'voice://ptt',
   navigate: 'shell://navigate',
 } as const;

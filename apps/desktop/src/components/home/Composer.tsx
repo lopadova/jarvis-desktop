@@ -104,7 +104,14 @@ export function Composer({
             </option>
           ))}
         </select>
-        <Button type="submit" variant="primary" size="icon" className="h-9 w-9 rounded-pill" disabled={!text.trim() || disabled} aria-label={t('composer.send')}>
+        <Button
+          type="submit"
+          variant="primary"
+          size="icon"
+          className="h-9 w-9 rounded-pill"
+          disabled={!text.trim() || disabled}
+          aria-label={t('composer.send')}
+        >
           <SendHorizontal size={16} aria-hidden="true" />
         </Button>
       </div>

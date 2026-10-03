@@ -1,5 +1,17 @@
 /** ChatBubble + SystemCard (brief §6). */
-import { AlarmClock, CalendarDays, Check, CircleAlert, ExternalLink, Mail, Mic, Play, Rocket, Sun, Timer } from 'lucide-react';
+import {
+  AlarmClock,
+  CalendarDays,
+  Check,
+  CircleAlert,
+  ExternalLink,
+  Mail,
+  Mic,
+  Play,
+  Rocket,
+  Sun,
+  Timer,
+} from 'lucide-react';
 import type { ReactNode } from 'react';
 import { type MessageKey, useLocale, useT } from '../../i18n';
 import { cn } from '../../lib/cn';
@@ -125,7 +137,11 @@ export function SystemCard({
         `${card.text} · ${time(card.dueAt, locale)}`,
       );
     case 'timer':
-      return shell(<Timer size={16} aria-hidden="true" />, card.label, t('card.timerEnds', { time: time(card.endsAt, locale) }));
+      return shell(
+        <Timer size={16} aria-hidden="true" />,
+        card.label,
+        t('card.timerEnds', { time: time(card.endsAt, locale) }),
+      );
     case 'briefing':
       return (
         <div className="mx-auto w-full max-w-[560px] rounded-lg border border-border bg-surface-sunken p-3 text-sm">

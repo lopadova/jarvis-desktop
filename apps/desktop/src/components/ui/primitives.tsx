@@ -48,7 +48,15 @@ export function Badge({
 }
 
 // ── Progress ──
-export function Progress({ value, label, tone }: { value: number; label: string; tone?: 'accent' | 'warning' | 'danger' }) {
+export function Progress({
+  value,
+  label,
+  tone,
+}: {
+  value: number;
+  label: string;
+  tone?: 'accent' | 'warning' | 'danger';
+}) {
   const pct = Math.max(0, Math.min(100, value));
   const bar = tone === 'danger' ? 'bg-danger' : tone === 'warning' ? 'bg-warning' : 'bg-accent';
   return (
@@ -60,7 +68,10 @@ export function Progress({ value, label, tone }: { value: number; label: string;
       aria-valuenow={Math.round(pct)}
       className="h-1.5 w-full overflow-hidden rounded-pill bg-surface-sunken"
     >
-      <div className={cn('h-full origin-left rounded-pill transition-transform', bar)} style={{ transform: `scaleX(${pct / 100})` }} />
+      <div
+        className={cn('h-full origin-left rounded-pill transition-transform', bar)}
+        style={{ transform: `scaleX(${pct / 100})` }}
+      />
     </div>
   );
 }

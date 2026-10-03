@@ -51,7 +51,11 @@ const COPY = {
   },
 } as const;
 
-export function mockApproval(locale: Locale, risk: ApprovalRequest['risk'] = 'medium', now = Date.now()): ApprovalRequest {
+export function mockApproval(
+  locale: Locale,
+  risk: ApprovalRequest['risk'] = 'medium',
+  now = Date.now(),
+): ApprovalRequest {
   const c = COPY[locale];
   const high = risk === 'high';
   return {
@@ -106,7 +110,15 @@ export function mockSessions(locale: Locale, now = Date.now()): SessionView[] {
 
 export function mockProviders(): ProviderStatus[] {
   return [
-    { id: 'chatgpt', connected: true, account: 'lorenzo@example.com', plan: 'ChatGPT Plus', usagePct: 12, state: 'ok', primary: true },
+    {
+      id: 'chatgpt',
+      connected: true,
+      account: 'lorenzo@example.com',
+      plan: 'ChatGPT Plus',
+      usagePct: 12,
+      state: 'ok',
+      primary: true,
+    },
     { id: 'claude', connected: true, plan: 'Claude Max', state: 'ok', primary: false },
     { id: 'codex', connected: false, state: 'not-installed', primary: false },
     { id: 'api-anthropic', connected: false, state: 'needs-login', primary: false },
@@ -121,8 +133,18 @@ export function mockChat(locale: Locale, now = Date.now()): ChatMessage[] {
   return [
     { id: 'm1', role: 'user', text: c.user, at: now - 5 * MIN, viaVoice: true },
     { id: 'm2', role: 'jarvis', text: c.jarvis, at: now - 5 * MIN + 2000, spoken: true },
-    { id: 'm3', role: 'system', card: { type: 'session-started', session: sessions[0] as SessionView }, at: now - 3 * MIN },
-    { id: 'm4', role: 'system', card: { type: 'reminder-set', text: c.reminder, dueAt: now + 20 * MIN }, at: now - MIN },
+    {
+      id: 'm3',
+      role: 'system',
+      card: { type: 'session-started', session: sessions[0] as SessionView },
+      at: now - 3 * MIN,
+    },
+    {
+      id: 'm4',
+      role: 'system',
+      card: { type: 'reminder-set', text: c.reminder, dueAt: now + 20 * MIN },
+      at: now - MIN,
+    },
   ];
 }
 

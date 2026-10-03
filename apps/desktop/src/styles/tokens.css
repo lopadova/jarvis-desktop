@@ -30,8 +30,8 @@
   --space-12: 48px;
 
   /* type */
-  --font-sans: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-mono: 'JetBrains Mono Variable', ui-monospace, 'Cascadia Code', monospace;
+  --font-sans: "Inter Variable", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, "Cascadia Code", monospace;
   --text-xs: 11px;
   --text-sm: 13px;
   --text-base: 14px;
@@ -73,7 +73,7 @@
 
 /* ── dark (default) ── */
 :root,
-:root[data-theme='dark'] {
+:root[data-theme="dark"] {
   color-scheme: dark;
   --color-bg: oklch(0.17 0.012 260);
   --color-surface: oklch(0.21 0.012 260);
@@ -95,7 +95,7 @@
 }
 
 /* ── light ── */
-:root[data-theme='light'] {
+:root[data-theme="light"] {
   color-scheme: light;
   --color-bg: oklch(0.97 0.004 260);
   --color-surface: oklch(0.995 0.002 260);
@@ -123,13 +123,13 @@
 }
 
 /* ── materials ── the OS draws the blur behind a transparent window (vibrancy / Mica). */
-:root[data-material='glass'] {
+:root[data-material="glass"] {
   --color-bg: color-mix(in oklch, var(--glass-tint) calc(var(--glass-opacity) * 100%), transparent);
   --color-surface: color-mix(in oklch, var(--glass-tint) calc(var(--glass-opacity) * 100% + 10%), transparent);
 }
 
 @media (prefers-reduced-transparency: reduce) {
-  :root[data-material='glass'] {
+  :root[data-material="glass"] {
     --color-bg: var(--glass-tint);
     --color-surface: var(--glass-tint);
   }

@@ -2,7 +2,13 @@
  * Container components: wire the zustand store + IPC to the presentational surfaces.
  * This is the only layer that knows about RPC methods and Tauri commands.
  */
-import { type Project, type SettingsTab, SETTINGS_TABS, suggestionsFor, type SuggestionRequirement } from '@jarvis/core';
+import {
+  type Project,
+  SETTINGS_TABS,
+  type SettingsTab,
+  type SuggestionRequirement,
+  suggestionsFor,
+} from '@jarvis/core';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { HomeScreen } from '../components/home/HomeScreen';
 import { Onboarding } from '../components/onboarding/Onboarding';
@@ -10,7 +16,16 @@ import { ListeningPill } from '../components/pill/ListeningPill';
 import { SessionsPanel } from '../components/sessions/SessionsPanel';
 import { Settings } from '../components/settings/Settings';
 import { useT } from '../i18n';
-import { downloadModels, micMonitor, onShellEvent, pushToTalk, reloadShortcuts, SHELL_EVENTS, showWindow, windowAction } from '../lib/tauri';
+import {
+  downloadModels,
+  micMonitor,
+  onShellEvent,
+  pushToTalk,
+  reloadShortcuts,
+  SHELL_EVENTS,
+  showWindow,
+  windowAction,
+} from '../lib/tauri';
 import { send, useApp } from '../store/app';
 import type { Platform, SuggestionCategory } from '../types/ui';
 
@@ -84,7 +99,7 @@ export function HomeSurface({ platform }: { platform: Platform }) {
       userName={s.settings.userName}
       hour={hour}
       connected={s.connection === 'open'}
-      micLive={s.pushToTalk || s.pill.state.kind === 'listening'}
+      micLive={s.micOpen || s.pushToTalk || s.pill.state.kind === 'listening'}
       privateMode={s.pill.privateMode || s.settings.privateMode}
       sessionsToday={s.sessions.filter((x) => x.startedAt >= startOfDay || LIVE.has(x.status)).length}
       providers={s.providers}

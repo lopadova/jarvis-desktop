@@ -23,6 +23,7 @@ export interface AppActions {
   setModels(models: ModelStatus[]): void;
   setMicLevel(level: number): void;
   setPushToTalk(pressed: boolean): void;
+  setMicOpen(open: boolean): void;
 }
 
 let transport: Transport | null = null;
@@ -64,6 +65,9 @@ export const useApp = create<UiState & AppActions>()((set, get) => ({
   },
   setPushToTalk(pushToTalk) {
     set({ pushToTalk });
+  },
+  setMicOpen(micOpen) {
+    set({ micOpen });
   },
 }));
 

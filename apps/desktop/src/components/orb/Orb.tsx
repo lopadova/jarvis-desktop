@@ -19,7 +19,15 @@ export interface OrbProps {
   label?: string;
 }
 
-export function Orb({ size = 40, state = 'idle', level = 0, privateMode = false, animated = true, className, label }: OrbProps) {
+export function Orb({
+  size = 40,
+  state = 'idle',
+  level = 0,
+  privateMode = false,
+  animated = true,
+  className,
+  label,
+}: OrbProps) {
   const lv = Math.max(0, Math.min(1, level));
   const reactive = state === 'listening' || state === 'speaking';
   const glowScale = reactive ? 1 + lv * 0.35 : 1;

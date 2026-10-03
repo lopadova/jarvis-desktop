@@ -1,4 +1,16 @@
-import { Ban, Check, CircleAlert, CircleDot, ExternalLink, Hand, ScrollText, Send, Square, X, XCircle } from 'lucide-react';
+import {
+  Ban,
+  Check,
+  CircleAlert,
+  CircleDot,
+  ExternalLink,
+  Hand,
+  ScrollText,
+  Send,
+  Square,
+  X,
+  XCircle,
+} from 'lucide-react';
 import { type FormEvent, useEffect, useState } from 'react';
 import { type MessageKey, translate } from '../../i18n';
 import { cn } from '../../lib/cn';
@@ -36,7 +48,16 @@ function useNow(enabled: boolean): number {
   return now;
 }
 
-export function SessionCard({ session, locale, onOpen, onLog, onReply, onStop, onDismiss, compact }: SessionCardProps & { compact?: boolean }) {
+export function SessionCard({
+  session,
+  locale,
+  onOpen,
+  onLog,
+  onReply,
+  onStop,
+  onDismiss,
+  compact,
+}: SessionCardProps & { compact?: boolean }) {
   const t = (k: MessageKey, v?: Record<string, string | number>) => translate(locale, k, v);
   const live = LIVE.includes(session.status);
   const now = useNow(live);
