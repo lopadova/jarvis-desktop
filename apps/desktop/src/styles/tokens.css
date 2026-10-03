@@ -1,0 +1,136 @@
+/*
+ * Design tokens — names are the contract from docs/design/DESIGN-BRIEF.md §4.
+ * Values are provisional; the final design template replaces this file as-is.
+ * Axes: data-theme="dark|light" × data-material="glass|solid" on <html>.
+ */
+:root {
+  /* accent */
+  --accent-hue: 200;
+
+  /* radius */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-pill: 999px;
+
+  /* spacing (4px base) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 28px;
+  --space-8: 32px;
+  --space-9: 36px;
+  --space-10: 40px;
+  --space-11: 44px;
+  --space-12: 48px;
+
+  /* type */
+  --font-sans: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, 'Cascadia Code', monospace;
+  --text-xs: 11px;
+  --text-sm: 13px;
+  --text-base: 14px;
+  --text-lg: 16px;
+  --text-xl: 20px;
+  --text-2xl: 26px;
+  --text-display: 34px;
+  --leading-tight: 1.25;
+  --leading-normal: 1.5;
+
+  /* motion */
+  --duration-instant: 80ms;
+  --duration-fast: 140ms;
+  --duration-normal: 240ms;
+  --duration-slow: 420ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasized: cubic-bezier(0.3, 0, 0, 1.2);
+  --ease-spring-like: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* blur (enhancement only, never needed for legibility) */
+  --blur-sm: 8px;
+  --blur-md: 20px;
+
+  /* accent & semantic (theme-independent hues) */
+  --color-accent: oklch(0.72 0.14 var(--accent-hue));
+  --color-accent-contrast: oklch(0.18 0.03 var(--accent-hue));
+  --color-accent-soft: oklch(0.72 0.14 var(--accent-hue) / 0.16);
+  --color-ember: oklch(0.78 0.15 65);
+  --color-success: oklch(0.74 0.15 150);
+  --color-warning: oklch(0.8 0.15 80);
+  --color-danger: oklch(0.68 0.19 25);
+  --color-info: oklch(0.72 0.12 240);
+  --color-private: oklch(0.76 0.16 145);
+
+  --orb-core: oklch(0.86 0.1 var(--accent-hue));
+  --orb-glow: oklch(0.72 0.14 var(--accent-hue) / 0.55);
+  --orb-ring: oklch(0.72 0.14 var(--accent-hue) / 0.35);
+}
+
+/* ── dark (default) ── */
+:root,
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --color-bg: oklch(0.17 0.012 260);
+  --color-surface: oklch(0.21 0.012 260);
+  --color-surface-raised: oklch(0.25 0.013 260);
+  --color-surface-sunken: oklch(0.15 0.01 260);
+  --color-overlay: oklch(0.08 0.01 260 / 0.6);
+  --color-border: oklch(0.32 0.012 260);
+  --color-border-strong: oklch(0.42 0.015 260);
+  --color-text: oklch(0.96 0.005 260);
+  --color-text-muted: oklch(0.78 0.01 260);
+  --color-text-subtle: oklch(0.66 0.012 260);
+  --color-text-inverse: oklch(0.18 0.01 260);
+  --shadow-sm: 0 1px 2px oklch(0 0 0 / 0.4);
+  --shadow-md: 0 6px 18px oklch(0 0 0 / 0.45);
+  --shadow-lg: 0 18px 48px oklch(0 0 0 / 0.55);
+  --shadow-glow: 0 0 24px var(--orb-glow);
+  --glass-tint: oklch(0.2 0.012 260);
+  --glass-opacity: 0.72;
+}
+
+/* ── light ── */
+:root[data-theme='light'] {
+  color-scheme: light;
+  --color-bg: oklch(0.97 0.004 260);
+  --color-surface: oklch(0.995 0.002 260);
+  --color-surface-raised: oklch(1 0 0);
+  --color-surface-sunken: oklch(0.94 0.005 260);
+  --color-overlay: oklch(0.2 0.01 260 / 0.35);
+  --color-border: oklch(0.88 0.006 260);
+  --color-border-strong: oklch(0.78 0.01 260);
+  --color-text: oklch(0.2 0.012 260);
+  --color-text-muted: oklch(0.4 0.012 260);
+  --color-text-subtle: oklch(0.5 0.012 260);
+  --color-text-inverse: oklch(0.97 0.004 260);
+  --color-accent: oklch(0.52 0.14 var(--accent-hue));
+  --color-accent-contrast: oklch(0.99 0 0);
+  --color-ember: oklch(0.58 0.15 55);
+  --color-success: oklch(0.52 0.14 150);
+  --color-warning: oklch(0.58 0.14 75);
+  --color-danger: oklch(0.52 0.19 25);
+  --color-private: oklch(0.52 0.15 145);
+  --shadow-sm: 0 1px 2px oklch(0.2 0.02 260 / 0.12);
+  --shadow-md: 0 6px 18px oklch(0.2 0.02 260 / 0.14);
+  --shadow-lg: 0 18px 48px oklch(0.2 0.02 260 / 0.18);
+  --glass-tint: oklch(0.98 0.004 260);
+  --glass-opacity: 0.7;
+}
+
+/* ── materials ── the OS draws the blur behind a transparent window (vibrancy / Mica). */
+:root[data-material='glass'] {
+  --color-bg: color-mix(in oklch, var(--glass-tint) calc(var(--glass-opacity) * 100%), transparent);
+  --color-surface: color-mix(in oklch, var(--glass-tint) calc(var(--glass-opacity) * 100% + 10%), transparent);
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  :root[data-material='glass'] {
+    --color-bg: var(--glass-tint);
+    --color-surface: var(--glass-tint);
+  }
+}
