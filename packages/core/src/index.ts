@@ -2,6 +2,7 @@ export * from './deeplink.js';
 export * from './ipc.js';
 export * from './memory.js';
 export * from './model.js';
+export * from './paths.js';
 export * from './phrases.js';
 export * from './policy/content.js';
 export * from './policy/risk.js';
