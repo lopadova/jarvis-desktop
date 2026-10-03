@@ -1,0 +1,71 @@
+name: Feature request
+description: Suggest an idea or an everyday thing Jarvis should help with.
+title: "[Feature]: "
+labels: ["enhancement", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the idea! The best requests describe a real situation ("every morning I…") before the solution.
+  - type: textarea
+    id: problem
+    attributes:
+      label: The situation
+      description: What are you trying to do, and what gets in the way today?
+    validations:
+      required: true
+  - type: textarea
+    id: phrase
+    attributes:
+      label: What would you say to Jarvis?
+      description: The spoken request you have in mind (English or Italian).
+      placeholder: '"Jarvis, …"'
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: How should Jarvis behave? What should it say or show?
+  - type: dropdown
+    id: persona
+    attributes:
+      label: Who is it for?
+      multiple: true
+      options:
+        - Everyday / home user
+        - Knowledge worker
+        - Developer
+        - Power user (MCP, Claude Desktop, ChatGPT)
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      multiple: true
+      options:
+        - Everyday features / suggestion chips
+        - Voice in (wake word, transcription)
+        - Voice out (voices, expressiveness)
+        - Brains and subscriptions
+        - Agents, sessions and approvals
+        - Integrations (Claude Desktop, Cowork, ChatGPT, MCP)
+        - Privacy and memory
+        - UI / accessibility
+        - Mobile companion (roadmap)
+        - Docs
+        - Other
+  - type: textarea
+    id: safety
+    attributes:
+      label: Safety and privacy considerations
+      description: Could this let someone (or some content) trigger actions without the user's intent? Does it send data off the computer?
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: I searched existing issues and the roadmap.
+          required: true
+        - label: I'd be willing to help implement or test this.
