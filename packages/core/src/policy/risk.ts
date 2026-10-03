@@ -41,11 +41,23 @@ const SENSITIVE_PATHS: RegExp[] = [
 
 const NETWORK_SHELL: RegExp[] = [/\b(curl|wget|iwr|Invoke-WebRequest|nc|ncat|scp|rsync|ssh|ftp|sftp)\b/i];
 
+/** Commands that only read. Package scripts (`npm test`, `pnpm build`) run arbitrary code, so they are NOT here. */
 const READONLY_SHELL: RegExp[] = [
   /^\s*(ls|dir|pwd|cat|type|head|tail|wc|echo|which|where|whoami|date|tree|find|rg|grep|git\s+(status|log|diff|show|branch))\b/i,
-  /^\s*(node|python3?|bun|deno|php|ruby)\s+(-v|--version)\b/i,
-  /^\s*(npm|pnpm|yarn|bun)\s+(test|run\s+(test|lint|typecheck|build))\b/i,
+  /^\s*(node|python3?|bun|deno|php|ruby)\s+(-v|--version)\s*$/i,
 ];
+
+/**
+ * Shell syntax that chains, substitutes or redirects — newlines and carriage returns separate commands too.
+ * Any of these makes a command compound: it can never be low risk or allowlisted.
+ */
+const COMPOUND = /[;&|`\n\r<>]|\$\(|\$\{/;
+
+/** Flags that turn otherwise read-only tools into executors or writers (find -exec, rg --pre, git -c, tree -o …). */
+const EXEC_FLAGS =
+  /(^|\s)(-exec|-execdir|-ok|-okdir|-delete|-fprint\w*|-fls|--pre(=|\s)|--pre-glob|--output|-o\s|--ext-diff|--textconv|--upload-pack|--exec|-c\s|--config)/i;
+
+export const isCompoundCommand = (cmd: string): boolean => COMPOUND.test(cmd);
 
 export interface RiskInput {
   kind: ApprovalKind;
@@ -63,8 +75,8 @@ export function classifyRisk(input: RiskInput): RiskLevel {
     case 'shell': {
       if (HIGH_RISK_SHELL.some((r) => r.test(d))) return 'high';
       if (SENSITIVE_PATHS.some((r) => r.test(d))) return 'high';
-      if (/[;&|`]|\$\(/.test(d) && NETWORK_SHELL.some((r) => r.test(d))) return 'high';
-      if (READONLY_SHELL.some((r) => r.test(d)) && !/[;&|`]|\$\(|>/.test(d)) return 'low';
+      if (isCompoundCommand(d) && NETWORK_SHELL.some((r) => r.test(d))) return 'high';
+      if (READONLY_SHELL.some((r) => r.test(d)) && !isCompoundCommand(d) && !EXEC_FLAGS.test(d)) return 'low';
       return 'medium';
     }
     case 'file-delete':
@@ -108,7 +120,7 @@ export function gate(
 
 export function isAllowlisted(command: string, allowlist: readonly string[]): boolean {
   const c = command.trim();
-  if (/[;&|`]|\$\(|>|</.test(c)) return false; // never allowlist compound commands
+  if (isCompoundCommand(command)) return false; // never allowlist compound commands (incl. newline-separated)
   return allowlist.some((prefix) => {
     const p = prefix.trim();
     return p.length > 0 && (c === p || c.startsWith(`${p} `));

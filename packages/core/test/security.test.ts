@@ -46,7 +46,7 @@ describe('R2 — risk classification', () => {
     'terraform destroy',
   ])('%s is high risk', (cmd) => expect(shell(cmd)).toBe('high'));
 
-  it.each(['ls -la', 'git status', 'pnpm test', 'node --version'])('%s is low risk', (cmd) =>
+  it.each(['ls -la', 'git status', 'git log --oneline', 'node --version'])('%s is low risk', (cmd) =>
     expect(shell(cmd)).toBe('low'),
   );
   it('compound commands are never low', () => {
@@ -66,6 +66,33 @@ describe('R2 — risk classification', () => {
     expect(voiceApprovalAllowed('high')).toBe(false);
     expect(alwaysAllowOffered('high')).toBe(false);
     expect(voiceApprovalAllowed('medium')).toBe(true);
+  });
+});
+
+describe('R2 — bypass attempts found in review', () => {
+  const shell = (detail: string) => classifyRisk({ kind: 'shell', detail });
+  it('newline-separated commands are compound', () => {
+    expect(shell('ls\nrm -rf ~')).toBe('high');
+    expect(shell('git status\nnode evil.js')).toBe('medium');
+    expect(shell('echo hi\r\ntouch x')).toBe('medium');
+    expect(isAllowlisted('pnpm build\nnode evil.js', ['pnpm build'])).toBe(false);
+    expect(isAllowlisted('pnpm build\r\nnode evil.js', ['pnpm build'])).toBe(false);
+  });
+  it.each([
+    'find . -exec node evil.js {} ;',
+    'find . -execdir sh -c x {} +',
+    'find . -delete',
+    'rg --pre ./evil.sh pattern',
+    'git -c core.pager=evil log',
+    'git diff --ext-diff',
+    'git log --output=/tmp/x',
+    'tree -o out.txt',
+    'echo $(whoami)',
+    'cat ${HOME}/x',
+  ])('%s is not low risk', (cmd) => expect(shell(cmd)).not.toBe('low'));
+  it('package scripts run code, so they are not low risk', () => {
+    expect(shell('pnpm test')).toBe('medium');
+    expect(shell('npm run build')).toBe('medium');
   });
 });
 
