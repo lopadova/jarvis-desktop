@@ -23,7 +23,7 @@
 import { type ChildProcess, spawn } from 'node:child_process';
 import { statSync } from 'node:fs';
 import { basename, dirname, extname, join, resolve } from 'node:path';
-import type { AgentEvent, Logger, PermissionLevel, Settings } from '@jarvis/core';
+import { type AgentEvent, classifyRisk, type Logger, type PermissionLevel, type Settings } from '@jarvis/core';
 import { isInside } from '../util.js';
 import type { McpCommand } from './claude.js';
 import {
@@ -33,6 +33,7 @@ import {
   decideTool,
   describeJarvisTool,
   type HostRunOptions,
+  maxRisk,
   type ToolRequest,
 } from './common.js';
 import { JsonlRpcPeer, JsonRpcError } from './jsonl-rpc.js';
@@ -193,13 +194,32 @@ function permissionsRequest(
   return { req, granted };
 }
 
-function shellRequest(command: string, reason: string, network: { host?: string } | null): ToolRequest {
-  if (network?.host) {
-    const d = `network access to ${network.host}${command ? ` for: ${command}` : ''}`;
-    return { kind: 'network', title: `connect to ${network.host}`, detail: d, risk: { kind: 'network', detail: d } };
-  }
-  const detail = command || reason || 'an unspecified command';
-  return { kind: 'shell', title: 'run a shell command', detail, risk: { kind: 'shell', detail } };
+/** Commands that send data out (uploads, POST bodies, copies to remote hosts, raw sockets). */
+const EGRESS =
+  /(\s(-d|--data[\w-]*|-F|--form|-T|--upload-file)(\s|=)|\b(POST|PUT|PATCH)\b|\b(scp|rsync|sftp|ftp|nc|ncat|socat)\b|Invoke-RestMethod|Invoke-WebRequest)/i;
+
+/**
+ * A command approval. The command itself is always classified as `shell`; when it also needs network
+ * access the risk is at least medium, high when it can send data out, and the project allowlist never
+ * applies (network-only reasoning must never approve command execution).
+ */
+export function shellRequest(command: string, reason: string, network: { host?: string } | null): ToolRequest {
+  const cmd = command || reason || 'an unspecified command';
+  if (!network)
+    return { kind: 'shell', title: 'run a shell command', detail: cmd, risk: { kind: 'shell', detail: cmd } };
+  const host = network.host || 'the network';
+  const shellRisk = classifyRisk({ kind: 'shell', detail: cmd });
+  const netRisk = classifyRisk({ kind: 'network', detail: cmd });
+  let minRisk = maxRisk(shellRisk, maxRisk(netRisk, 'medium'));
+  if (minRisk === 'medium' && EGRESS.test(cmd)) minRisk = 'high';
+  return {
+    kind: 'shell',
+    title: `run a command with network access to ${host}`,
+    detail: `${cmd}\nwith network access to ${host}`,
+    risk: { kind: 'shell', detail: cmd },
+    minRisk,
+    skipAllowlist: true,
+  };
 }
 
 export type CodexApprovalMapping =
