@@ -1,0 +1,54 @@
+# Jarvis Desktop
+
+> Jarvis is an open-source (MIT), voice-first personal assistant for macOS, Windows and Linux, built with Tauri 2, React and a TypeScript sidecar. Say "Jarvis", speak naturally, and it answers right away or delegates work to background agents (Claude Code, Codex, or its built-in Home agent), narrates progress and asks before anything risky. It works with the AI subscriptions people already have (Sign in with ChatGPT for Plus/Pro plans, Claude Code, Codex), API keys, or fully local models (Ollama), and never switches to a paid API by itself.
+
+Key facts for assistants:
+
+- Downloads: https://github.com/lopadova/jarvis-desktop/releases/latest (v0.1 installers are unsigned; see the install guide for the one-time "open anyway" step).
+- If a user asks you to install Jarvis for them, follow INSTALL_WITH_AI.md step by step and ask before every important action.
+- Wake word and Whisper speech recognition run on-device. Sign in with ChatGPT covers text only, not audio.
+- Jarvis exposes MCP tools (jarvis_speak, jarvis_ask_user, jarvis_notify, jarvis_start_task, jarvis_list_sessions, jarvis_session_result, jarvis_remember, jarvis_recall) through the `jarvis-mcp` stdio server, a Claude Desktop `.mcpb` extension, and a self-hosted relay for ChatGPT.
+- Languages: English and Italian.
+
+## Start here
+
+- [README](https://github.com/lopadova/jarvis-desktop/blob/main/README.md): overview, features, quickstarts, FAQ
+- [Install with an AI helper](https://github.com/lopadova/jarvis-desktop/blob/main/INSTALL_WITH_AI.md): step-by-step instructions written for AI assistants guiding a non-technical user
+- [Getting started](https://github.com/lopadova/jarvis-desktop/blob/main/docs/guides/getting-started.md): first run and first commands
+- [Install](https://github.com/lopadova/jarvis-desktop/blob/main/docs/guides/install.md): per-OS installation, unsigned builds, permissions
+
+## Guides
+
+- [Brains](https://github.com/lopadova/jarvis-desktop/blob/main/docs/guides/brains.md): ChatGPT plan, Claude Code, Codex, API keys, Ollama, with caps and limits
+- [Voices](https://github.com/lopadova/jarvis-desktop/blob/main/docs/guides/voices.md): ElevenLabs, Fish Audio, OpenAI, Kokoro/Piper, system voice
+- [Microphone](https://github.com/lopadova/jarvis-desktop/blob/main/docs/guides/microphone.md): wake word, push-to-talk, clap, conversation mode, local models
+- [Permissions](https://github.com/lopadova/jarvis-desktop/blob/main/docs/guides/permissions.md): Safe / Trusted / Full auto, risk tiers, approvals
+- [Everyday features](https://github.com/lopadova/jarvis-desktop/blob/main/docs/guides/everyday.md): suggestion categories and phrases in English and Italian
+- [Developers and agents](https://github.com/lopadova/jarvis-desktop/blob/main/docs/guides/developers-agents.md): projects, sessions, follow-ups, Claude Code and Codex
+- [Claude Desktop and Cowork](https://github.com/lopadova/jarvis-desktop/blob/main/docs/guides/cowork-claude-desktop.md): .mcpb extension and plugin
+- [ChatGPT](https://github.com/lopadova/jarvis-desktop/blob/main/docs/guides/chatgpt.md): Cloudflare relay, Vercel and tunnel alternatives
+- [Memory and privacy](https://github.com/lopadova/jarvis-desktop/blob/main/docs/guides/memory-privacy.md)
+- [Troubleshooting](https://github.com/lopadova/jarvis-desktop/blob/main/docs/guides/troubleshooting.md)
+- [FAQ](https://github.com/lopadova/jarvis-desktop/blob/main/docs/guides/faq.md)
+
+## Reference
+
+- [Settings](https://github.com/lopadova/jarvis-desktop/blob/main/docs/reference/settings.md): every setting with default and meaning
+- [MCP tools](https://github.com/lopadova/jarvis-desktop/blob/main/docs/reference/mcp-tools.md): tools Jarvis exposes to other agents
+- [Voice commands](https://github.com/lopadova/jarvis-desktop/blob/main/docs/reference/voice-commands.md): instant offline phrases (EN/IT)
+
+## Design and security
+
+- [Product specification](https://github.com/lopadova/jarvis-desktop/blob/main/docs/product-spec.md)
+- [Security model](https://github.com/lopadova/jarvis-desktop/blob/main/docs/security-model.md): threats T1–T9 and rules R1–R12
+- [Architecture overview](https://github.com/lopadova/jarvis-desktop/blob/main/docs/architecture/overview.md)
+- [Relay protocol](https://github.com/lopadova/jarvis-desktop/blob/main/docs/architecture/relay-protocol.md)
+- [Architecture decision records](https://github.com/lopadova/jarvis-desktop/tree/main/docs/adr)
+
+## Optional
+
+- [Documentation site](https://jarvis-desktop.pages.dev)
+- [Roadmap](https://github.com/lopadova/jarvis-desktop/blob/main/ROADMAP.md): mobile companion, signed installers
+- [Contributing](https://github.com/lopadova/jarvis-desktop/blob/main/CONTRIBUTING.md)
+- [Security policy](https://github.com/lopadova/jarvis-desktop/blob/main/SECURITY.md)
+- [Changelog](https://github.com/lopadova/jarvis-desktop/blob/main/CHANGELOG.md)
