@@ -7,14 +7,32 @@ $out = 'C:\JarvisOut'
 Start-Transcript -Path "$out\sandbox-transcript.txt" -Force | Out-Null
 
 # WebView2 Evergreen bootstrapper (Microsoft's official link). Normal Windows 11 installs already have the runtime.
-$wv = Get-ItemProperty 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}' -ErrorAction SilentlyContinue
-if (-not $wv) {
+# A clean Windows can have the registry key with version 0.0.0.0 (placeholder): only a real version counts.
+$wvKey = 'SOFTWARE\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}'
+$wvVersion = @("HKLM:\SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}",
+               "HKCU:\$wvKey", "HKLM:\$wvKey") |
+  ForEach-Object { (Get-ItemProperty $_ -ErrorAction SilentlyContinue).pv } |
+  Where-Object { $_ -and $_ -ne '0.0.0.0' } | Select-Object -First 1
+"WebView2 registry version: $(if ($wvVersion) { $wvVersion } else { 'none' })" | Add-Content "$out\self-test.txt"
+# The registry alone is not trustworthy inside Sandbox (it can claim a runtime that is not usable by this account):
+# require the real msedgewebview2.exe on disk.
+$wvExe = Get-ChildItem "${env:ProgramFiles(x86)}\Microsoft\EdgeWebView\Application", "$env:ProgramFiles\Microsoft\EdgeWebView\Application" -Filter msedgewebview2.exe -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+"WebView2 runtime on disk: $(if ($wvExe) { $wvExe.FullName } else { 'none' })" | Add-Content "$out\self-test.txt"
+if (-not $wvExe) {
   "WebView2 not installed, installing…" | Add-Content "$out\self-test.txt"
   try {
     Invoke-WebRequest -UseBasicParsing -Uri 'https://go.microsoft.com/fwlink/p/?LinkId=2124703' -OutFile 'C:\wv2-setup.exe'
     Start-Process 'C:\wv2-setup.exe' -ArgumentList '/silent', '/install' -Wait
-    "WebView2 install finished" | Add-Content "$out\self-test.txt"
+    $wvExe = Get-ChildItem "${env:ProgramFiles(x86)}\Microsoft\EdgeWebView\Application", "$env:ProgramFiles\Microsoft\EdgeWebView\Application" -Filter msedgewebview2.exe -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+    "WebView2 install finished; on disk now: $(if ($wvExe) { $wvExe.FullName } else { 'STILL MISSING' })" | Add-Content "$out\self-test.txt"
   } catch { "WebView2 install failed: $_" | Add-Content "$out\self-test.txt" }
+}
+
+# The Sandbox base image can carry a registry version that differs from the runtime folder on disk, which makes
+# the WebView2 loader report "runtime not found". Point it at the folder explicitly (official override variable).
+if ($wvExe) {
+  $env:WEBVIEW2_BROWSER_EXECUTABLE_FOLDER = Split-Path $wvExe.FullName -Parent
+  "WEBVIEW2_BROWSER_EXECUTABLE_FOLDER=$env:WEBVIEW2_BROWSER_EXECUTABLE_FOLDER" | Add-Content "$out\self-test.txt"
 }
 
 Copy-Item C:\Jarvis -Destination C:\JarvisApp -Recurse -Force

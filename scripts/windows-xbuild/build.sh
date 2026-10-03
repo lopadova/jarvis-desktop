@@ -4,7 +4,7 @@
 #  - otherwise: cargo-xwin, which downloads the Microsoft CRT/SDK itself.
 set -euo pipefail
 PROFILE="${1:-release}"
-FLAGS=(--target x86_64-pc-windows-msvc)
+FLAGS=(--target x86_64-pc-windows-msvc --features custom-protocol)
 [ "$PROFILE" = "release" ] && FLAGS+=(--release)
 
 if [ -d /xwin-sdk/crt ] && [ -d /xwin-sdk/sdk ]; then
