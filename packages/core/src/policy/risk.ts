@@ -51,13 +51,33 @@ const READONLY_SHELL: RegExp[] = [
  * Shell syntax that chains, substitutes or redirects — newlines and carriage returns separate commands too.
  * Any of these makes a command compound: it can never be low risk or allowlisted.
  */
-const COMPOUND = /[;&|`\n\r<>]|\$\(|\$\{/;
+const COMPOUND = /[;&|`\n\r<>]|\$\(|\$\{|\$['"]/;
 
 /** Flags that turn otherwise read-only tools into executors or writers (find -exec, rg --pre, git -c, tree -o …). */
 const EXEC_FLAGS =
   /(^|\s)(-exec|-execdir|-ok|-okdir|-delete|-fprint\w*|-fls|--pre(=|\s)|--pre-glob|--output|-o\s|--ext-diff|--textconv|--upload-pack|--exec|-c\s|--config)/i;
 
+/** What the program receives after the shell strips quotes and backslash escapes. */
+export const deQuote = (cmd: string): string => cmd.replace(/["'\\]/g, '');
+const firstToken = (cmd: string): string => cmd.trim().split(/\s+/)[0] ?? '';
+
 export const isCompoundCommand = (cmd: string): boolean => COMPOUND.test(cmd);
+
+/**
+ * Read-only tools whose *arguments* can still mutate state: only listed argument forms stay read-only.
+ * `git branch -D x` deletes, `date -s …` sets the clock, `git show`/`log` accept `--output`, etc.
+ */
+function mutatingArgs(cmd: string): boolean {
+  const t = cmd.trim();
+  if (/^git\s+branch\b/i.test(t)) {
+    const args = t.split(/\s+/).slice(2);
+    return !args.every((a) =>
+      /^(-a|-r|-v|-vv|--all|--remotes|--list|--show-current|--verbose|--no-color|--color)$/.test(a),
+    );
+  }
+  if (/^date\b/i.test(t)) return /(^|\s)(-s|--set|-u\s+\d|\d{6,})/.test(t);
+  return false;
+}
 
 export interface RiskInput {
   kind: ApprovalKind;
@@ -73,10 +93,20 @@ export function classifyRisk(input: RiskInput): RiskLevel {
   const d = input.detail;
   switch (input.kind) {
     case 'shell': {
-      if (HIGH_RISK_SHELL.some((r) => r.test(d))) return 'high';
-      if (SENSITIVE_PATHS.some((r) => r.test(d))) return 'high';
-      if (isCompoundCommand(d) && NETWORK_SHELL.some((r) => r.test(d))) return 'high';
-      if (READONLY_SHELL.some((r) => r.test(d)) && !isCompoundCommand(d) && !EXEC_FLAGS.test(d)) return 'low';
+      // Quotes and backslashes are removed by the shell before a program sees its arguments, so `r""m -rf`,
+      // `-e"x"ec` or `'-exec'` must be judged as `rm -rf` / `-exec`. Classify the de-quoted form.
+      const n = deQuote(d);
+      if (HIGH_RISK_SHELL.some((r) => r.test(d) || r.test(n))) return 'high';
+      if (SENSITIVE_PATHS.some((r) => r.test(d) || r.test(n))) return 'high';
+      if (isCompoundCommand(d) && NETWORK_SHELL.some((r) => r.test(n))) return 'high';
+      if (
+        READONLY_SHELL.some((r) => r.test(n)) &&
+        !isCompoundCommand(d) &&
+        !EXEC_FLAGS.test(n) &&
+        !mutatingArgs(n) &&
+        !/[*?[\]]/.test(firstToken(d))
+      )
+        return 'low';
       return 'medium';
     }
     case 'file-delete':
