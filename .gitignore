@@ -16,3 +16,4 @@ docs-site/.docmd-search/*
 !docs-site/.docmd-search/config.json
 *.tsbuildinfo
 models/
+.claude/
