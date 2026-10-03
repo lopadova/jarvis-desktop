@@ -76,6 +76,9 @@ export interface SuggestionGridProps {
   onPick(s: Suggestion): void;
 }
 
+/** OS-keyring secret names the UI may set (values never stay in UI state — R6). */
+export type SecretKey = 'openai-api-key' | 'anthropic-api-key' | 'elevenlabs-api-key' | 'fish-audio-api-key';
+
 export type RelayStatus = 'unpaired' | 'connecting' | 'connected' | 'offline';
 
 /** `ui.relay` payload (agent-host). */

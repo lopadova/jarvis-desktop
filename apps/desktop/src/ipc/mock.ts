@@ -6,8 +6,8 @@
  * Demo hooks: a submitted text containing "delete"/"elimina" raises a high-risk approval, one
  * containing "build" a medium-risk approval.
  */
-import { type AppMethod, type AppParams, mergeSettings, type Settings } from '@jarvis/core';
-import { type MockSnapshot, mockApproval, mockSnapshot } from '../mocks';
+import { type AppMethod, type AppParams, type Memory, mergeSettings, type Project, type Settings } from '@jarvis/core';
+import { type MockSnapshot, mockApproval, mockMemories, mockProjects, mockSnapshot } from '../mocks';
 import type { ChatMessage, Locale, PillEvent } from '../types/ui';
 import type { ConnectionStatus, NotificationHandler, StatusHandler, Transport } from './client';
 
@@ -20,12 +20,15 @@ export class MockTransport implements Transport {
   private readonly statusHandlers = new Set<StatusHandler>();
   private status: ConnectionStatus = 'closed';
   private readonly timers = new Set<ReturnType<typeof setTimeout>>();
+  private memories: Memory[];
+  private projects: Project[] = mockProjects();
 
   constructor(
     locale: Locale = 'en',
     private readonly delayMs = 600,
   ) {
     this.state = mockSnapshot(locale);
+    this.memories = mockMemories(locale);
   }
 
   start(): void {
@@ -136,21 +139,20 @@ export class MockTransport implements Transport {
       case 'relay.status':
         return s.relay;
       case 'projects.list':
-        return {
-          projects: [
-            {
-              id: 'p1',
-              name: 'shop',
-              path: '~/Projects/shop',
-              aliases: [],
-              defaultAgent: 'claude',
-              permission: 'safe',
-              allowlist: [],
-            },
-          ],
-        };
+        return { projects: this.projects };
+      case 'projects.upsert': {
+        const project = p.project as Project;
+        this.projects = this.projects.map((x) => (x.id === project.id ? project : x));
+        return { project };
+      }
       case 'memory.list':
-        return { memories: [] };
+        return { memories: this.memories };
+      case 'memory.remove':
+        this.memories = this.memories.filter((m) => m.id !== p.id);
+        return { ok: true };
+      case 'memory.clear':
+        this.memories = [];
+        return { ok: true };
       case 'history.list':
         return { turns: [] };
       case 'reminders.list':
@@ -201,8 +203,18 @@ export class MockTransport implements Transport {
       }
       const reply = locale === 'it' ? `Ok — (demo) ho ricevuto: "${text}".` : `Okay — (demo) I heard: "${text}".`;
       this.pushChat({ id: uid('j'), role: 'jarvis', text: reply, at: Date.now(), spoken: true });
-      this.setPill({ ...s.pill, state: { kind: 'speaking', text: reply, progress: 0, level: 0.4 } });
-      this.later(() => this.setPill({ ...s.pill, state: { kind: 'hidden' } }), 2500);
+      // Karaoke-style progress, as the real TTS playback reports it.
+      const steps = 12;
+      for (let i = 0; i <= steps; i++)
+        this.later(
+          () =>
+            this.setPill({
+              ...s.pill,
+              state: { kind: 'speaking', text: reply, progress: i / steps, level: 0.3 + (0.5 * ((i * 7) % 5)) / 5 },
+            }),
+          i * 180,
+        );
+      this.later(() => this.setPill({ ...s.pill, state: { kind: 'hidden' } }), steps * 180 + 700);
     }, this.delayMs);
   }
 
