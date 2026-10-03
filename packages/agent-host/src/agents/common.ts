@@ -2,7 +2,15 @@
 import { existsSync, statSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { basename, delimiter, join, resolve } from 'node:path';
-import { type AgentRunOptions, type ApprovalKind, classifyRisk, gate, type Locale, type RiskInput } from '@jarvis/core';
+import {
+  type AgentRunOptions,
+  type ApprovalKind,
+  classifyRisk,
+  gate,
+  type Locale,
+  type RiskInput,
+  type RiskLevel,
+} from '@jarvis/core';
 import { AGENT_DROPPED_KEYS, safeChildEnv } from '../child-env.js';
 import { isInside } from '../util.js';
 
@@ -96,7 +104,14 @@ export interface ToolRequest {
   risk: RiskInput;
   /** Ask the user regardless of the project permission level (e.g. agents using Jarvis' own write tools). */
   forceAsk?: boolean;
+  /** Floor for the classified risk (e.g. a command that also asks for network access). */
+  minRisk?: RiskLevel;
+  /** Ignore the project's shell allowlist (an allowlisted command never implies extra permissions). */
+  skipAllowlist?: boolean;
 }
+
+const RISK_ORDER: Record<RiskLevel, number> = { low: 0, medium: 1, high: 2 };
+export const maxRisk = (a: RiskLevel, b?: RiskLevel): RiskLevel => (b && RISK_ORDER[b] > RISK_ORDER[a] ? b : a);
 
 /** Jarvis' own MCP tools an agent may use without asking (they cannot escalate privileges). */
 export const AGENT_SAFE_JARVIS_TOOLS = new Set([
@@ -218,8 +233,8 @@ export type ToolVerdict = { allow: true } | { allow: false; message: string };
 
 /** classifyRisk → gate → (ask the user). Shared by every driver. */
 export async function decideTool(req: ToolRequest, opts: AgentRunOptions): Promise<ToolVerdict> {
-  const risk = classifyRisk(req.risk);
-  const g = req.forceAsk ? 'ask' : gate(opts.permission, risk, req.risk, opts.allowlist);
+  const risk = maxRisk(classifyRisk(req.risk), req.minRisk);
+  const g = req.forceAsk ? 'ask' : gate(opts.permission, risk, req.risk, req.skipAllowlist ? [] : opts.allowlist);
   if (g === 'allow') return { allow: true };
   if (g === 'deny') return { allow: false, message: 'Blocked by the project permission policy.' };
   const decision = await opts.requestApproval({

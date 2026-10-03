@@ -4,7 +4,7 @@
 |---|---|---|
 | 0 | Foundations: design brief, product spec, security model, ADRs | ✅ in review |
 | 1 | Scaffold: monorepo, Tauri 2 shell, sidecar, CI | ⏳ next |
-| 1b | **UI pixel-perfect** from the Claude Design handoff in `docs/design/handoff/` (replaces the provisional UI) | ⏳ after desktop shell lands |
+| 1b | **UI pixel-perfect** from the Claude Design handoff in `docs/design/handoff/` (replaces the provisional UI) | ✅ branch `feat/ui-pixel` |
 | 2 | Brain & core (Sign in with ChatGPT, Claude, Codex, API keys, Ollama, router, memory, policy) | — |
 | 3 | Agents (Claude Agent SDK, Codex SDK, Home agent, approvals, SQLite) | — |
 | 4 | Voice out (ElevenLabs, Fish, OpenAI, local, cues, streaming) | — |
@@ -40,3 +40,19 @@
   - UI: React 19 / Tailwind v4 surfaces S1–S5 following the design brief contract, IPC client + mock mode, EN/IT.
   - Verified: vite build, tsc, vitest (27), cargo fmt/clippy/test on Linux (49 + 1 ignored model test),
     Windows cross-build (cargo-xwin) with 50 unit tests and `--self-test` passing on Windows 11.
+- 2026-10-03 — Sidecar hardening (branch `feat/host-followups`):
+  - Relay client now matches the Worker: unpairing calls `DELETE /pair/register`, and re-pairing revokes the old pairing first. It handles close codes `4000` (replaced, no reconnect loop), `4001` (pairing revoked) and `1009`/`1003` (backoff), and retries a `401` upgrade only at the slowest backoff. A pong watchdog drops dead links, results are capped at 64 KB by UTF-8 bytes, and stale-socket events are ignored.
+  - Conformance tests against `packages/relay/src/shared` and an end-to-end test, `pnpm e2e:relay`: `wrangler dev`, the real sidecar, OAuth with the pairing code, `/mcp` tools/list and tools/call, unpair. 14/14 checks pass.
+  - Codex runs through `codex app-server`. Command, file, permission, MCP-tool and legacy approvals go through classifyRisk → gate → approval. Also: thread resume, interrupt plus tree kill, the Jarvis MCP config sent over stdin, and the native `codex.exe` launched from npm shims. The SDK sandbox mapping remains as a fallback. Tests use a fake app-server process, and `scripts/codex-live-check.ts` verified a real turn.
+  - `jarvis_ask_user` puts the calling session in `needs-input` and sets it back to running afterwards. The session still counts as live.
+  - Router `answer`/`clarify`/`status` replies are spoken while they stream. An incremental JSON scan reads the brain deltas. Memory claims and invalid replies are never spoken early.
+  - Windows: agent trees run in Job Objects through `bun:ffi`, verified under `bun run` and as a compiled binary. The connection file is restricted to the current user's SID with `icacls`.
+  - Test counts: agent-host 159 vitest tests, relay 35, mcp 27. `pnpm e2e` passes 6/6.
+- 2026-10-03 — Phase 1b (branch `feat/ui-pixel`): UI rebuilt from the Claude Design handoff.
+  - `tokens.css` from the handoff's `tokens()` (dark/light × glass/solid, hue-driven accent, `--backdrop`, `--wallpaper`).
+  - Orb, Listening Pill (all states, hide animation), Approval Card (countdown ring, R2 rules kept), Session Card/Panel,
+    chat bubbles + system cards (inline approve/deny, timer countdown, briefing), Home (rail views: memory with undo,
+    history, projects), composer (brain menu, click/hold mic, waveform), footer (usage meter, R11 mic indicator),
+    Onboarding (5 steps, confetti), Settings (9 tabs, Full-auto confirm with checkbox), in-window toasts.
+  - Settings/Onboarding code-split: main chunk 681 kB → 308 kB. Browser preview draws windows on the wallpaper.
+  - New app icon and README banner from the handoff's Brand page; screenshots in `resources/screenshots/`.

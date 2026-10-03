@@ -1,42 +1,54 @@
 /**
  * Mock-mode preview switches (design QA without the sidecar):
- *   ?theme=dark|light  &locale=en|it  &material=glass|solid  &private=1
+ *   ?theme=dark|light  &locale=en|it  &material=glass|solid  &private=1  &hue=200
  *   &pill=idle-hint|listening|thinking|speaking|clarify|approval-low|approval-medium|approval-high|error|muted
  *   &sessions=0 (empty state)  &onboarding=1
+ * Sample copy mirrors the Claude Design handoff (docs/design/handoff/).
  */
 import type { PillState } from '../types/ui';
 import { type MockSnapshot, mockApproval } from './index';
 
-export function previewPill(kind: string, locale: 'en' | 'it'): PillState | null {
+export function previewPill(kind: string, locale: 'en' | 'it', privateMode = false): PillState | null {
   const it = locale === 'it';
   switch (kind) {
     case 'idle-hint':
       return { kind: 'idle-hint', shortcut: ['Alt', 'Space'] };
     case 'listening':
-      return {
-        kind: 'listening',
-        level: 0.6,
-        committed: it ? 'Jarvis, nel progetto shop' : 'Jarvis, in project shop',
-        partial: it ? 'aggiungi un footer' : 'add a footer',
-      };
+      return privateMode
+        ? {
+            kind: 'listening',
+            level: 0.6,
+            committed: it ? 'Jarvis, riassumi quello che' : 'Jarvis, summarise what I',
+            partial: '',
+          }
+        : {
+            kind: 'listening',
+            level: 0.6,
+            committed: it ? 'Jarvis, nel progetto shop aggiungi' : 'Jarvis, in project shop add a',
+            partial: it ? 'un fo' : 'foo',
+          };
     case 'thinking':
       return {
         kind: 'thinking',
-        transcript: it ? 'Nel progetto shop aggiungi un footer' : 'In project shop add a footer',
+        transcript: it ? 'Jarvis, nel progetto shop aggiungi un footer' : 'Jarvis, in project shop add a footer',
         brain: 'chatgpt',
       };
     case 'speaking':
       return {
         kind: 'speaking',
-        text: it ? 'Va bene, sto aggiungendo il footer allo shop.' : "Sure — I'm adding the footer to the shop now.",
+        text: it
+          ? 'Ci penso io — Claude Code parte in shop. Ti avviso quando ha finito.'
+          : 'On it — Claude Code is starting in shop. I’ll tell you when it’s done.',
         progress: 0.45,
         level: 0.5,
       };
     case 'clarify':
       return {
         kind: 'clarify',
-        question: it ? 'Quale progetto intendi?' : 'Which project do you mean?',
-        quickReplies: ['shop', 'blog', it ? 'Nessuno' : 'Neither'],
+        question: it ? 'Quali due portatili?' : 'Which two laptops?',
+        quickReplies: it
+          ? ['I due nelle schede aperte', 'MacBook Air vs XPS 13', 'Lascia stare']
+          : ['The two in my open tabs', 'MacBook Air vs XPS 13', 'Never mind'],
       };
     case 'approval-low':
     case 'approval-medium':
@@ -45,7 +57,9 @@ export function previewPill(kind: string, locale: 'en' | 'it'): PillState | null
     case 'error':
       return {
         kind: 'error',
-        message: it ? 'ChatGPT non risponde.' : 'ChatGPT is not responding.',
+        message: it
+          ? 'Non posso ancora cercare nella cartella Documenti.'
+          : 'I can’t search your Documents folder yet.',
         actionLabel: it ? 'Apri impostazioni' : 'Open settings',
       };
     case 'muted':
@@ -60,6 +74,7 @@ export function previewPatch(snap: MockSnapshot, search: string): Partial<MockSn
   const locale = q.get('locale') === 'it' ? 'it' : snap.settings.locale;
   const theme = q.get('theme');
   const material = q.get('material');
+  const hue = Number(q.get('hue'));
   const settings: MockSnapshot['settings'] = {
     ...snap.settings,
     locale,
@@ -67,12 +82,24 @@ export function previewPatch(snap: MockSnapshot, search: string): Partial<MockSn
     ...(material === 'glass' || material === 'solid' ? { material: material as 'glass' | 'solid' } : {}),
     ...(q.get('private') === '1' ? { privateMode: true } : {}),
     ...(q.get('onboarding') === '1' ? { onboardingComplete: false } : {}),
+    ...(Number.isFinite(hue) && hue > 0 && hue <= 360 ? { accentHue: hue } : {}),
   };
-  const pillState = previewPill(q.get('pill') ?? '', locale);
+  const pillState = previewPill(q.get('pill') ?? '', locale, settings.privateMode);
   return {
     settings,
     pill: { state: pillState ?? snap.pill.state, privateMode: settings.privateMode },
     pending: pillState?.kind === 'approval' ? [pillState.request] : snap.pending,
     sessions: q.get('sessions') === '0' ? [] : snap.sessions,
+    // First run: nothing is connected yet.
+    ...(q.get('onboarding') === '1'
+      ? {
+          providers: [
+            { id: 'chatgpt', connected: false, state: 'needs-login', primary: false },
+            { id: 'claude', connected: false, state: 'needs-login', primary: false },
+            { id: 'api-anthropic', connected: false, state: 'not-installed', primary: false },
+            { id: 'local', connected: false, state: 'not-installed', primary: false },
+          ],
+        }
+      : {}),
   };
 }

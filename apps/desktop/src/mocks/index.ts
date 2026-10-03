@@ -1,5 +1,8 @@
-/** Typed mock data for every surface (EN + IT). Used in mock mode (plain browser) and in tests. */
-import { allSuggestions, defaultSettings, type Reminder, type Settings } from '@jarvis/core';
+/**
+ * Typed mock data for every surface (EN + IT), mirroring the Claude Design handoff samples.
+ * Used in mock mode (plain browser) and in tests.
+ */
+import { allSuggestions, defaultSettings, type Memory, type Project, type Reminder, type Settings } from '@jarvis/core';
 import type {
   ApprovalRequest,
   ChatMessage,
@@ -26,28 +29,83 @@ export interface MockSnapshot {
   version: string;
 }
 
-const COPY = {
+export const COPY = {
   en: {
-    tasks: ['Add a footer to the shop homepage', 'Summarise my unread emails', 'Fix the failing checkout test'],
-    activity: ['Editing Footer.tsx', 'Reading 12 messages', 'Running pnpm test'],
-    result: 'Added a responsive footer with links and newsletter form. Preview at localhost:5173.',
-    approvalTitle: 'Run a shell command',
-    deleteTitle: 'Delete a folder',
-    reason: 'Clean the build output before a fresh build.',
-    user: 'What time is it?',
-    jarvis: "It's 9:41. You have a meeting with Giulia at 10:30.",
+    morning: 'Good morning, Lorenzo. 14° and clear. Three meetings today — the first is the pricing review at 9:30.',
+    tasks: [
+      'Compile competitor pricing for the Q4 briefing',
+      'Draft the Q4 strategic briefing outline',
+      'Update the Google Shopping product feed',
+    ],
+    activity: 'Reading 14 product pages',
+    resultDone:
+      'Six sections: market, pricing, channels, risks, roadmap, asks. Two open questions for Giulia are flagged.',
+    resultFailed: 'Feed upload rejected: 3 products are missing a GTIN.',
+    approval: {
+      low: ['Edit a file', 'src/components/Footer.tsx', undefined],
+      medium: [
+        'Run a shell command',
+        'pnpm add @radix-ui/react-separator',
+        'The new footer uses a separator component that isn’t installed yet.',
+      ],
+      high: ['Delete a folder', 'rm -rf dist', 'Cleaning up before a fresh build.'],
+    },
+    weather: '14° · clear',
+    events: [
+      { time: '09:30', title: 'Pricing review — shop' },
+      { time: '12:00', title: 'Lunch with Giulia' },
+      { time: '16:00', title: 'Q4 strategic briefing' },
+    ],
+    emails: [
+      { from: 'Giulia Romano', subject: 'Board deck — can you check slide 7?' },
+      { from: 'Shopify', subject: '3 orders need fulfilment' },
+    ],
+    greeting: 'Jarvis, good morning',
     reminder: 'Call Marco',
+    memories: [
+      ['Prefers short answers', 'said', 2],
+      ['Runs the shop e‑commerce and writes strategic briefings', 'inferred', 6],
+      ['Morning meetings start at 9:30', 'inferred', 10],
+      ['Giulia Romano is the board contact', 'said', 15],
+    ],
   },
   it: {
-    tasks: ['Aggiungi un footer alla home dello shop', 'Riassumi le email non lette', 'Sistema il test del checkout'],
-    activity: ['Modifica di Footer.tsx', 'Lettura di 12 messaggi', 'Esecuzione di pnpm test'],
-    result: 'Aggiunto un footer responsive con link e form newsletter. Anteprima su localhost:5173.',
-    approvalTitle: 'Esegui un comando shell',
-    deleteTitle: 'Elimina una cartella',
-    reason: 'Pulisce la cartella di build prima di una build nuova.',
-    user: 'Che ore sono?',
-    jarvis: 'Sono le 9:41. Alle 10:30 hai una riunione con Giulia.',
+    morning: 'Buongiorno, Lorenzo. 14° e sereno. Tre riunioni oggi — la prima è la revisione prezzi alle 9:30.',
+    tasks: [
+      'Raccogli i prezzi dei concorrenti per il briefing Q4',
+      'Bozza della scaletta del briefing strategico Q4',
+      'Aggiorna il feed prodotti Google Shopping',
+    ],
+    activity: 'Leggo 14 pagine prodotto',
+    resultDone: 'Sei sezioni: mercato, prezzi, canali, rischi, roadmap, richieste. Segnalate due domande per Giulia.',
+    resultFailed: 'Caricamento rifiutato: a 3 prodotti manca il GTIN.',
+    approval: {
+      low: ['Modifica un file', 'src/components/Footer.tsx', undefined],
+      medium: [
+        'Esegui un comando di shell',
+        'pnpm add @radix-ui/react-separator',
+        'Il nuovo footer usa un componente separatore non ancora installato.',
+      ],
+      high: ['Elimina una cartella', 'rm -rf dist', 'Pulizia prima di una build pulita.'],
+    },
+    weather: '14° · sereno',
+    events: [
+      { time: '09:30', title: 'Revisione prezzi — shop' },
+      { time: '12:00', title: 'Pranzo con Giulia' },
+      { time: '16:00', title: 'Briefing strategico Q4' },
+    ],
+    emails: [
+      { from: 'Giulia Romano', subject: 'Deck del board — puoi guardare la slide 7?' },
+      { from: 'Shopify', subject: '3 ordini da evadere' },
+    ],
+    greeting: 'Jarvis, buongiorno',
     reminder: 'Chiamare Marco',
+    memories: [
+      ['Preferisce risposte brevi', 'said', 2],
+      ['Segue l’e‑commerce shop e scrive briefing strategici', 'inferred', 6],
+      ['Le riunioni del mattino iniziano alle 9:30', 'inferred', 10],
+      ['Giulia Romano è la referente del board', 'said', 15],
+    ],
   },
 } as const;
 
@@ -56,20 +114,19 @@ export function mockApproval(
   risk: ApprovalRequest['risk'] = 'medium',
   now = Date.now(),
 ): ApprovalRequest {
-  const c = COPY[locale];
-  const high = risk === 'high';
+  const [title, detail, reason] = COPY[locale].approval[risk];
   return {
     id: `appr-${risk}`,
-    sessionId: 's1',
-    kind: high ? 'file-delete' : 'shell',
+    sessionId: 's-run',
+    kind: risk === 'high' ? 'file-delete' : risk === 'low' ? 'file-write' : 'shell',
     risk,
-    title: high ? c.deleteTitle : c.approvalTitle,
-    detail: high ? 'rm -rf ~/Projects/shop/dist' : 'pnpm build',
-    cwd: '~/Projects/shop',
-    agent: 'claude',
+    title,
+    detail,
+    cwd: '~/code/shop',
+    agent: risk === 'low' ? 'codex' : 'claude',
     project: 'shop',
-    reason: c.reason,
-    expiresAt: now + 2 * MIN,
+    ...(reason ? { reason } : {}),
+    ...(risk === 'medium' ? { expiresAt: now + 42_000 } : {}),
   };
 }
 
@@ -77,33 +134,34 @@ export function mockSessions(locale: Locale, now = Date.now()): SessionView[] {
   const c = COPY[locale];
   return [
     {
-      id: 's1',
-      agent: 'claude',
-      project: 'shop',
+      id: 's-run',
+      agent: 'home',
+      project: 'strategy-briefs',
       task: c.tasks[0],
       status: 'running',
-      activity: c.activity[0],
-      startedAt: now - 3 * MIN,
+      activity: c.activity,
+      startedAt: now - 6 * MIN,
     },
     {
-      id: 's2',
-      agent: 'home',
-      project: 'General',
+      id: 's-done',
+      agent: 'claude',
+      project: 'strategy-briefs',
       task: c.tasks[1],
       status: 'done',
-      startedAt: now - 20 * MIN,
-      finishedAt: now - 17 * MIN,
-      resultPreview: c.result,
-      resultUrl: 'http://localhost:5173',
+      startedAt: now - 26 * MIN,
+      finishedAt: now - 18 * MIN,
+      resultPreview: c.resultDone,
+      resultUrl: 'file:///Users/lorenzo/Documents/strategy-briefs/q4-outline.md',
     },
     {
-      id: 's3',
+      id: 's-fail',
       agent: 'codex',
       project: 'shop',
       task: c.tasks[2],
-      status: 'approval',
-      activity: c.activity[2],
-      startedAt: now - 6 * MIN,
+      status: 'failed',
+      startedAt: now - 95 * MIN,
+      finishedAt: now - 88 * MIN,
+      resultPreview: c.resultFailed,
     },
   ];
 }
@@ -119,37 +177,78 @@ export function mockProviders(): ProviderStatus[] {
       state: 'ok',
       primary: true,
     },
-    { id: 'claude', connected: true, plan: 'Claude Max', state: 'ok', primary: false },
-    { id: 'codex', connected: false, state: 'not-installed', primary: false },
-    { id: 'api-anthropic', connected: false, state: 'needs-login', primary: false },
-    { id: 'api-openai', connected: false, state: 'needs-login', primary: false },
-    { id: 'local', connected: false, state: 'not-installed', primary: false },
+    {
+      id: 'claude',
+      connected: true,
+      account: 'lorenzo@example.com',
+      plan: 'Claude Max',
+      usagePct: 84,
+      state: 'ok',
+      primary: false,
+    },
+    { id: 'codex', connected: true, account: 'via ChatGPT Plus', usagePct: 100, state: 'cap-reached', primary: false },
+    { id: 'api-anthropic', connected: false, state: 'not-installed', primary: false },
+    { id: 'local', connected: true, plan: 'llama3.2 · 3B', state: 'ok', primary: false },
   ];
 }
 
 export function mockChat(locale: Locale, now = Date.now()): ChatMessage[] {
   const c = COPY[locale];
-  const sessions = mockSessions(locale, now);
+  const [, done] = mockSessions(locale, now);
   return [
-    { id: 'm1', role: 'user', text: c.user, at: now - 5 * MIN, viaVoice: true },
-    { id: 'm2', role: 'jarvis', text: c.jarvis, at: now - 5 * MIN + 2000, spoken: true },
+    { id: 'm1', role: 'user', text: c.greeting, at: now - 52 * MIN, viaVoice: true },
+    { id: 'm2', role: 'jarvis', text: c.morning, at: now - 52 * MIN + 4000, spoken: true },
     {
       id: 'm3',
       role: 'system',
-      card: { type: 'session-started', session: sessions[0] as SessionView },
-      at: now - 3 * MIN,
+      card: { type: 'briefing', weather: c.weather, events: [...c.events], emails: [...c.emails] },
+      at: now - 52 * MIN + 5000,
     },
-    {
-      id: 'm4',
-      role: 'system',
-      card: { type: 'reminder-set', text: c.reminder, dueAt: now + 20 * MIN },
-      at: now - MIN,
-    },
+    { id: 'm4', role: 'system', card: { type: 'result-ready', session: done as SessionView }, at: now - 18 * MIN },
+  ];
+}
+
+export function mockMemories(locale: Locale, now = Date.now()): Memory[] {
+  return COPY[locale].memories.map(([text, source, daysAgo], i) => ({
+    id: `mem-${i + 1}`,
+    text,
+    source,
+    createdAt: now - daysAgo * 86_400_000,
+  }));
+}
+
+export function mockProjects(): Project[] {
+  const p = (
+    id: string,
+    name: string,
+    path: string,
+    permission: Project['permission'],
+    defaultAgent: Project['defaultAgent'],
+  ) => ({
+    id,
+    name,
+    path,
+    aliases: [],
+    defaultAgent,
+    permission,
+    allowlist: [],
+  });
+  return [
+    p('p-shop', 'shop', '~/code/shop', 'trusted', 'claude'),
+    p('p-briefs', 'strategy-briefs', '~/Documents/strategy-briefs', 'safe', 'home'),
   ];
 }
 
 export function mockSnapshot(locale: Locale = 'en', now = Date.now()): MockSnapshot {
-  const settings: Settings = { ...defaultSettings(), locale, userName: 'Lorenzo', onboardingComplete: true };
+  const settings: Settings = {
+    ...defaultSettings(),
+    locale,
+    userName: 'Lorenzo',
+    onboardingComplete: true,
+    theme: 'dark',
+    material: 'glass',
+    primaryBrain: 'chatgpt',
+  };
   return {
     settings,
     sessions: mockSessions(locale, now),

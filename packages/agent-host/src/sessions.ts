@@ -239,11 +239,17 @@ export class SessionManager {
     return n;
   }
 
-  /** Session waiting on the user (e.g. an agent called jarvis_ask_user). */
+  /**
+   * Session waiting on the user (an agent called jarvis_ask_user): `needs-input` while waiting, back to
+   * `running` after the answer or the timeout. Still counted as live. Only a running session enters the
+   * state, and only a `needs-input` session leaves it (a stop or an approval in between wins).
+   */
   setNeedsInput(id: string, on: boolean): void {
     const s = this.sessions.get(id);
-    if (!s || !isLive(s.status)) return;
+    if (!s) return;
+    if (on ? s.status !== 'running' : s.status !== 'needs-input') return;
     s.status = on ? 'needs-input' : 'running';
+    s.activity = on ? 'Waiting for your answer' : s.activity === 'Waiting for your answer' ? undefined : s.activity;
     this.deps.store.saveSession(s);
     this.emit();
   }
@@ -329,6 +335,7 @@ export class SessionManager {
       ...(this.deps.tokens ? { mcpSessionToken: this.deps.tokens.issue(s.id) } : {}),
       onProcess: (pid, startTime) => {
         rt.pid = pid;
+        this.deps.inspector.adopt?.(pid);
         this.deps.store.setSessionProcess(s.id, pid, startTime);
       },
       requestApproval: async (req) => {
@@ -369,6 +376,7 @@ export class SessionManager {
     }
     write({ type: 'end' });
     this.deps.store.setSessionProcess(s.id, null, null);
+    if (rt.pid && !abort.signal.aborted) this.deps.inspector.release?.(rt.pid);
     rt.pid = undefined;
 
     if (abort.signal.aborted || s.status === 'cancelled') {

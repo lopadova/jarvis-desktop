@@ -1,17 +1,26 @@
 /**
- * Codex driver over `@openai/codex-sdk` (threads with resume).
+ * Codex driver.
  *
- * Approvals: the TypeScript SDK (v0.160) exposes no approval callback. `codex app-server` sends
- * JSON-RPC approval requests, but wiring that protocol is a follow-up. Until then a fail-safe sandbox
- * mapping applies (approval policy `never`, so Codex can never escalate; see `codexSandboxFor`):
- * safe → read-only; trusted → workspace-write without network on macOS/Linux, read-only on Windows
- * (weaker sandbox); full-auto → workspace-write with network.
+ * Primary path: `codex app-server` (see codex-app-server.ts) — Codex asks before risky actions and every
+ * request goes through classifyRisk → gate → Jarvis approval, like Claude.
+ *
+ * Fallback (the app-server is missing, too old, or fails before the thread starts): `@openai/codex-sdk`,
+ * which exposes no approval callback, so a fail-safe sandbox mapping applies (approval policy `never`,
+ * Codex can never escalate; see `codexSandboxFor`): safe → read-only; trusted → workspace-write without
+ * network on macOS/Linux, read-only on Windows (weaker sandbox); full-auto → workspace-write with network.
  * OPENAI_API_KEY is removed from the child env so the user's ChatGPT login is used (R10).
  */
 
 import { basename } from 'node:path';
 import type { AgentDriver, AgentEvent, Logger, PermissionLevel, Settings } from '@jarvis/core';
 import type { Codex as CodexClass, SandboxMode, ThreadEvent, ThreadOptions } from '@openai/codex-sdk';
+import type { McpCommand } from './claude.js';
+import {
+  type AppServerRunDeps,
+  AppServerUnavailable,
+  codexAppServerLaunch,
+  runCodexAppServer,
+} from './codex-app-server.js';
 import { childEnv, commonBinDirs, composeGuidance, discoverExecutable, type HostRunOptions } from './common.js';
 
 export interface CodexDriverDeps {
@@ -21,13 +30,32 @@ export interface CodexDriverDeps {
   createCodex?: (opts: ConstructorParameters<typeof CodexClass>[0]) => Pick<CodexClass, 'startThread' | 'resumeThread'>;
   discover?: () => string | null;
   platform?: NodeJS.Platform;
+  /** Jarvis' MCP bridge command, attached to app-server threads. */
+  mcpCommand?: () => McpCommand | null;
+  /** Kills a process tree (R7); required for the app-server path. */
+  killTree?: (pid: number) => Promise<void>;
+  /** false → always use the SDK fallback. */
+  appServer?: boolean;
+  /** Injectable for tests. */
+  spawnAppServer?: AppServerRunDeps['spawnProcess'];
+  appServerTimeouts?: AppServerRunDeps['timeouts'];
 }
 
 export class CodexDriver implements AgentDriver {
   readonly id = 'codex' as const;
   readonly label = 'Codex';
 
+  /** Remembered per executable: once the app-server failed to start, use the SDK path. */
+  private readonly appServerBroken = new Set<string>();
+
   constructor(private readonly deps: CodexDriverDeps) {}
+
+  /** Which path the next run uses (for diagnostics and tests). */
+  mode(): 'app-server' | 'sdk' {
+    const exe = this.executable();
+    if (!exe || this.deps.appServer === false || !this.deps.killTree || this.appServerBroken.has(exe)) return 'sdk';
+    return codexAppServerLaunch(exe, this.deps.platform ?? process.platform) ? 'app-server' : 'sdk';
+  }
 
   executable(): string | null {
     if (this.deps.discover) return this.deps.discover();
@@ -45,6 +73,28 @@ export class CodexDriver implements AgentDriver {
       yield { type: 'result', text: 'Codex is not installed.', isError: true };
       yield { type: 'exit', code: 1 };
       return;
+    }
+    if (this.mode() === 'app-server' && this.deps.killTree) {
+      const launch = codexAppServerLaunch(exe, this.deps.platform ?? process.platform);
+      if (launch) {
+        try {
+          const runDeps: AppServerRunDeps = {
+            settings: this.deps.settings,
+            logger: this.deps.logger,
+            killTree: this.deps.killTree,
+          };
+          if (this.deps.mcpCommand) runDeps.mcpCommand = this.deps.mcpCommand;
+          if (this.deps.spawnAppServer) runDeps.spawnProcess = this.deps.spawnAppServer;
+          if (this.deps.appServerTimeouts) runDeps.timeouts = this.deps.appServerTimeouts;
+          yield* runCodexAppServer(launch, opts, runDeps);
+          return;
+        } catch (e) {
+          if (!(e instanceof AppServerUnavailable) || opts.signal.aborted) throw e;
+          this.appServerBroken.add(exe);
+          this.deps.logger.warn('codex app-server unavailable, using the SDK sandbox mode', { error: e.message });
+          yield { type: 'activity', text: 'Codex approvals unavailable; using sandbox-only mode' };
+        }
+      }
     }
     let factory = this.deps.createCodex;
     if (!factory) {

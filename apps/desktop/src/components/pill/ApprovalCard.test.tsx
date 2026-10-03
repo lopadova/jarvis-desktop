@@ -50,10 +50,18 @@ describe('ApprovalCard (security-model R2)', () => {
     expect(onDecision).toHaveBeenCalledWith('appr-high', 'deny');
   });
 
-  it('shows the command in monospace and the countdown', () => {
+  it('shows the command in monospace and the countdown ring', () => {
+    renderCard('medium');
+    const code = screen.getByTestId('approval-detail');
+    expect(code).toHaveClass('font-mono');
+    expect(code).toHaveTextContent('pnpm add @radix-ui/react-separator');
+    expect(screen.getByRole('timer')).toHaveAttribute('aria-label', 'Auto-deny in 42s');
+  });
+
+  it('high risk without expiry shows no countdown', () => {
     renderCard('high');
-    expect(screen.getByText('rm -rf ~/Projects/shop/dist')).toHaveClass('font-mono');
-    expect(screen.getByText(/Auto-deny in 120s/)).toBeInTheDocument();
+    expect(screen.getByTestId('approval-detail')).toHaveTextContent('rm -rf dist');
+    expect(screen.queryByRole('timer')).toBeNull();
   });
 
   it('is localised (Italian high-risk hint)', () => {

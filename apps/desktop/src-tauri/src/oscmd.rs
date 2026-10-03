@@ -80,17 +80,27 @@ impl Platform {
     }
 }
 
-/// A program name for `openTerminal.program`: a bare executable name or an absolute path, nothing
-/// that a shell would interpret.
-fn valid_program(p: &str) -> bool {
-    !p.is_empty()
-        && p.len() <= 256
-        && !p.chars().any(|c| {
-            matches!(
-                c,
-                ';' | '&' | '|' | '`' | '$' | '<' | '>' | '\n' | '\r' | '"' | '\''
-            )
-        })
+/// The only programs `openTerminal` may start, and the only argument shapes they accept: resuming an
+/// agent session by id. Anything else is refused (defense in depth: the sidecar is not trusted to name
+/// arbitrary executables, absolute paths or interpreters).
+fn valid_program_and_args(p: &str, args: &[String]) -> bool {
+    // An id must start with an alphanumeric character so it can never be parsed as an option
+    // (e.g. `--dangerously-skip-permissions` is made only of id characters).
+    let is_id = |s: &str| {
+        s.len() <= 64
+            && s.chars().next().is_some_and(|c| c.is_ascii_alphanumeric())
+            && s.chars().all(|c| c.is_ascii_alphanumeric() || c == '-')
+    };
+    let resume_flag = match p {
+        "claude" => "--resume",
+        "codex" => "resume",
+        _ => return false,
+    };
+    match args {
+        [] => true,
+        [flag, id] => flag == resume_flag && is_id(id),
+        _ => false,
+    }
 }
 
 /// Terminal launch candidates, in order. The caller tries each until one spawns.
@@ -105,7 +115,7 @@ pub fn open_terminal_candidates(
         return Err(CmdError::BadDirectory);
     }
     if let Some(p) = program
-        && !valid_program(p)
+        && !valid_program_and_args(p, args)
     {
         return Err(CmdError::BadProgram);
     }
@@ -361,13 +371,41 @@ mod tests {
     #[test]
     fn terminal_program_and_args_stay_separate() {
         let dir = abs();
-        let args = vec!["--resume".to_string(), "a b; c".to_string()];
+        let args = vec!["--resume".to_string(), "0f3c-42ab".to_string()];
         let win = open_terminal_candidates(Platform::Windows, &dir, Some("claude"), &args).unwrap();
-        assert_eq!(&win[0].args[2..], &["--", "claude", "--resume", "a b\\; c"]);
+        assert_eq!(
+            &win[0].args[2..],
+            &["--", "claude", "--resume", "0f3c-42ab"]
+        );
         assert_eq!(win[1].program, "claude");
         assert_eq!(win[1].args, args, "fallback starts the program directly");
         let lin = open_terminal_candidates(Platform::Linux, &dir, Some("claude"), &args).unwrap();
-        assert_eq!(&lin[0].args, &["-e", "claude", "--resume", "a b; c"]);
+        assert_eq!(&lin[0].args, &["-e", "claude", "--resume", "0f3c-42ab"]);
+        let codex = vec!["resume".to_string(), "abc123".to_string()];
+        assert!(open_terminal_candidates(Platform::Linux, &dir, Some("codex"), &codex).is_ok());
+        // Only the resume shape with a plain id is accepted.
+        for bad in [
+            vec!["--resume".to_string(), "a b; c".to_string()],
+            vec!["-e".to_string(), "x".to_string()],
+            vec!["--resume".to_string()],
+            vec![
+                "--dangerously-skip-permissions".to_string(),
+                "x".to_string(),
+            ],
+            // An "id" that is really an option must never pass.
+            vec![
+                "--resume".to_string(),
+                "--dangerously-skip-permissions".to_string(),
+            ],
+            vec!["--resume".to_string(), "-x".to_string()],
+            vec!["--resume".to_string(), String::new()],
+        ] {
+            assert_eq!(
+                open_terminal_candidates(Platform::Linux, &dir, Some("claude"), &bad),
+                Err(CmdError::BadProgram),
+                "{bad:?}"
+            );
+        }
     }
 
     #[test]
@@ -376,11 +414,40 @@ mod tests {
             open_terminal_candidates(Platform::Linux, Path::new("relative"), None, &[]),
             Err(CmdError::BadDirectory)
         );
-        for p in ["rm -rf /; x", "a|b", "$(id)", "`id`", "a&b"] {
+        // Only claude/codex, by bare name: no other programs, paths or interpreters.
+        for p in [
+            "rm -rf /; x",
+            "a|b",
+            "$(id)",
+            "`id`",
+            "a&b",
+            "powershell",
+            "cmd",
+            "bash",
+            "/usr/bin/claude",
+            r"C:\x\claude.exe",
+            "python",
+        ] {
             assert_eq!(
                 open_terminal_candidates(Platform::Linux, &abs(), Some(p), &[]),
                 Err(CmdError::BadProgram),
                 "{p}"
+            );
+        }
+        // Allowed programs only accept the resume shape with a plain id.
+        for args in [
+            vec!["--resume".to_string(), "a b; c".to_string()],
+            vec!["-e".to_string(), "x".to_string()],
+            vec!["--resume".to_string()],
+            vec![
+                "--dangerously-skip-permissions".to_string(),
+                "x".to_string(),
+            ],
+        ] {
+            assert_eq!(
+                open_terminal_candidates(Platform::Linux, &abs(), Some("claude"), &args),
+                Err(CmdError::BadProgram),
+                "{args:?}"
             );
         }
     }
