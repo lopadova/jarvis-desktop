@@ -5,6 +5,7 @@
  *   2. the Tauri shell in Docker with cargo-xwin;
  *   3. collects `dist-windows/` = jarvis-desktop.exe + agent-host.exe, ready for Windows Sandbox or another PC.
  * Usage: node scripts/windows-xbuild/build-windows.mjs [release|debug]
+ * Env: JARVIS_XBUILD_IMAGE=<image> reuses a prepared image; JARVIS_XWIN_SDK=<dir> uses a local `xwin splat` output.
  * Requires Docker Desktop. cargo-xwin accepts Microsoft's CRT/SDK licence terms on your behalf (see Dockerfile).
  */
 import { spawnSync } from 'node:child_process';
@@ -51,11 +52,13 @@ run('docker', [
   '-v',
   'jarvis-xbuild-target:/target',
   '-v',
-  'jarvis-xbuild-cargo:/usr/local/cargo/registry',
+  'jarvis-cargo-registry:/usr/local/cargo/registry',
   '-v',
   'jarvis-xbuild-xwin:/root/.cache/cargo-xwin',
   '-v',
   `${out}:/out`,
+  // JARVIS_XWIN_SDK: an existing `xwin splat` output on the host → offline build, no SDK download in Docker.
+  ...(process.env.JARVIS_XWIN_SDK ? ['-v', `${process.env.JARVIS_XWIN_SDK}:/xwin-sdk:ro`, '-v', 'jarvis-xbuild-sdk:/opt/xwin'] : []),
   image,
   '/src/scripts/windows-xbuild/build.sh',
   profile,
