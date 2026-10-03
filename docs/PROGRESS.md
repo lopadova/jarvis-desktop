@@ -18,3 +18,9 @@
   - `docs/product-spec.md`
   - `docs/security-model.md`
   - ADRs 0001–0005
+- 2026-10-03 — `packages/agent-host` (sidecar):
+  - loopback JSON-RPC server, SQLite store, turn orchestrator, sessions
+  - Claude/Codex/Home drivers, approvals, voice output, reminders
+  - MCP handler, relay link client
+  - 103 vitest tests covering R1–R12
+  - Bun-compiled binary verified on Windows

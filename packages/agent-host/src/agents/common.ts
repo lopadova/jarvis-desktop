@@ -109,33 +109,15 @@ export const AGENT_SAFE_JARVIS_TOOLS = new Set([
 ]);
 
 /**
- * An agent calling Jarvis' own MCP server. Read/notify tools are allowed; `jarvis_start_task` (could
- * spawn work elsewhere) is high risk with the full task shown, and `jarvis_remember` (could persist an
- * injected instruction) always asks. Unknown Jarvis tools ask too.
+ * Jarvis' own write tools gated by the MCP handler itself (click approval for EVERY caller), so they
+ * are let through here to avoid asking twice. The handler is the single gate: an agent could reach
+ * mcp.call directly with its session token, bypassing canUseTool.
  */
-export function describeJarvisTool(tool: string, input: Record<string, unknown>): ToolRequest | 'allow' {
-  if (AGENT_SAFE_JARVIS_TOOLS.has(tool)) return 'allow';
-  if (tool === 'jarvis_start_task') {
-    const where = str(input.project) ? ` in project ${str(input.project)}` : '';
-    const detail = `Start a new ${str(input.agent) || 'agent'} task${where}: ${str(input.task)}`;
-    return {
-      kind: 'mcp-tool',
-      title: 'start another background task',
-      detail,
-      risk: { kind: 'mcp-tool', detail, destructiveHint: true },
-      forceAsk: true,
-    };
-  }
-  if (tool === 'jarvis_remember') {
-    const detail = `Remember: ${str(input.text)}`;
-    return {
-      kind: 'mcp-tool',
-      title: 'save something to memory',
-      detail,
-      risk: { kind: 'mcp-tool', detail },
-      forceAsk: true,
-    };
-  }
+export const HANDLER_GATED_JARVIS_TOOLS = new Set(['jarvis_start_task', 'jarvis_remember']);
+
+/** An agent calling Jarvis' own MCP server. Known tools are allowed (see above); unknown ones ask. */
+export function describeJarvisTool(tool: string, _input: Record<string, unknown>): ToolRequest | 'allow' {
+  if (AGENT_SAFE_JARVIS_TOOLS.has(tool) || HANDLER_GATED_JARVIS_TOOLS.has(tool)) return 'allow';
   return {
     kind: 'mcp-tool',
     title: `use ${tool}`,
