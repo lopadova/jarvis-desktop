@@ -103,7 +103,7 @@ export function HomeSurface({ platform }: { platform: Platform }) {
       privateMode={s.pill.privateMode || s.settings.privateMode}
       sessionsToday={s.sessions.filter((x) => x.startedAt >= startOfDay || LIVE.has(x.status)).length}
       providers={s.providers}
-      primary={s.settings.primaryBrain}
+      primary={s.settings.primaryBrain ?? s.providers.find((p) => p.primary)?.id ?? null}
       suggestions={s.suggestions}
       forYou={forYou}
       activeCategory={category}

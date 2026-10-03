@@ -57,9 +57,15 @@ with an energy-based VAD fallback.
 
 ## Windows build notes
 
-sherpa-onnx ships Windows static libraries built with `/MT`. `src-tauri/.cargo/config.toml`
-therefore enables `+crt-static` on the MSVC targets. Building needs the MSVC C/C++ build tools
-(Visual Studio "Desktop development with C++"), because a few build scripts compile C (bzip2, vswhom).
+sherpa-onnx ships Windows static libraries built with `/MT`. This links fine because
+`tauri-build` already links the VC runtime statically (`libcmt` + `libvcruntime`, with a dynamic
+UCRT). Do **not** add `-C target-feature=+crt-static`: combined with Tauri's link arguments it
+removes the UCRT entirely, and the link fails with unresolved `fmod`, `sin`, `strlen` …
+Building needs the MSVC C/C++ build tools (Visual Studio "Desktop development with C++"),
+because a few build scripts compile C (bzip2, vswhom).
+
+Cross-checking from Linux works with `cargo xwin build --target x86_64-pc-windows-msvc`. On a
+case-sensitive filesystem you need to alias `PathCch.lib` to `pathcch.lib` in the xwin SDK dir.
 
 ## Updater
 
