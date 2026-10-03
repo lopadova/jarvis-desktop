@@ -109,7 +109,11 @@ async function main(): Promise<void> {
   app.register(server);
 
   const port = await server.listen();
-  await writeConnectionFile(dir, { port, mcpToken, pid: process.pid, version: VERSION, startedAt: Date.now() });
+  await writeConnectionFile(
+    dir,
+    { port, mcpToken, pid: process.pid, version: VERSION, startedAt: Date.now() },
+    { logger },
+  );
   await app.start();
   process.stdout.write(`${READY_PREFIX} ${port}\n`);
   logger.info('agent-host ready', { port });

@@ -191,6 +191,7 @@ export class App {
         host: deps.host,
         speak: (t) => this.orchestrator.jarvisSays(t),
         ask: (q, o, ms) => this.orchestrator.ask(q, o, ms),
+        setNeedsInput: (id, waiting) => this.sessions.setNeedsInput(id, waiting),
         startTask: (req, origin) => this.startTaskFromMcp(req, origin),
         sessions: () => this.sessions.list(),
         remember: (t) => this.memory.add(t),
@@ -282,7 +283,12 @@ export class App {
     const mcpCommand = () => this.deps.mcpCommand?.() ?? null;
     return {
       claude: new ClaudeDriver({ settings, logger: this.deps.logger, mcpCommand }),
-      codex: new CodexDriver({ settings, logger: this.deps.logger }),
+      codex: new CodexDriver({
+        settings,
+        logger: this.deps.logger,
+        mcpCommand,
+        killTree: (pid) => this.deps.inspector.killTree(pid),
+      }),
       home: new HomeDriver({
         brain: () => {
           const pick = this.orchestrator.pickBrain();
@@ -593,10 +599,7 @@ export class App {
         throw new RpcError(RpcErrorCode.notAvailable, errorMessage(e));
       }
     });
-    reg('relay.unpair', ui, async () => {
-      await this.relay.unpair();
-      return ok;
-    });
+    reg('relay.unpair', ui, async () => ({ ok: true, ...(await this.relay.unpair()) }));
     reg('reminders.list', ui, () => ({ reminders: this.reminders.list() }));
     reg('reminders.cancel', ui, (p) => ({ ok: this.reminders.cancel(p.id) }));
 
