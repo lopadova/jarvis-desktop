@@ -593,10 +593,7 @@ export class App {
         throw new RpcError(RpcErrorCode.notAvailable, errorMessage(e));
       }
     });
-    reg('relay.unpair', ui, async () => {
-      await this.relay.unpair();
-      return ok;
-    });
+    reg('relay.unpair', ui, async () => ({ ok: true, ...(await this.relay.unpair()) }));
     reg('reminders.list', ui, () => ({ reminders: this.reminders.list() }));
     reg('reminders.cancel', ui, (p) => ({ ok: this.reminders.cancel(p.id) }));
 
