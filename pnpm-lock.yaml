@@ -185,6 +185,15 @@ importers:
         specifier: ^4.6.5
         version: 4.6.5
 
+  packages/providers:
+    dependencies:
+      '@jarvis/core':
+        specifier: workspace:*
+        version: link:../core
+      jose:
+        specifier: ^6.2.12
+        version: 6.2.12
+
 packages:
 
   '@biomejs/biome@2.5.15':
@@ -537,6 +546,9 @@ packages:
     resolution: {integrity: sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==}
     engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
     os: [darwin]
+
+  jose@6.2.12:
+    resolution: {integrity: sha512-9NiFmJEex0sy2Dk58j2UGBSHgUs2ypF9eZSu4L6vjOX3Dp96Sw1F3uL+H+D1sx02jZZdzUT0HgvCy59CuvXcWw==}
 
   lightningcss-android-arm64@1.33.0:
     resolution: {integrity: sha512-gEpRTalKdosp4Bb8qWtc2iOgE5SeIHlpS1up9bFq2wAyYhl1UdTObYiHe98zEM9SQvSoqQZ1IQD0JNpg3Ml5pg==}
@@ -958,6 +970,8 @@ snapshots:
 
   fsevents@2.3.3:
     optional: true
+
+  jose@6.2.12: {}
 
   lightningcss-android-arm64@1.33.0:
     optional: true
