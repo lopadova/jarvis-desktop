@@ -6,28 +6,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.1.0] — 2026-10-03 — "Hello, Jarvis"
+
+First public release. Installers are **unsigned** (see `docs/guides/signing.md`).
+
 ### Added
+- **Cross-platform app (Tauri 2)** for macOS, Windows and Linux: tray, listening pill, sessions panel, chat-style Home with suggestion chips, onboarding and settings — pixel-perfect from the Claude Design handoff, dark/light × glass/solid, English and Italian.
+- **Brains:** Sign in with ChatGPT (Plus/Pro plan tokens, open-source token-sharing flow, never a silent paid fallback), Claude Code, Codex, Anthropic/OpenAI API keys, local models (Ollama / OpenAI-compatible); vision for "what's on my screen".
+- **Agents:** Claude Code (Agent SDK, `canUseTool` approvals), Codex (`codex app-server` approvals, sandbox fallback), built-in Home agent with egress guard; safe-by-default, risk-tiered approvals by voice or click.
+- **Voice out:** ElevenLabs (v3 tags / flash), Fish Audio, OpenAI, Piper, Kokoro, system voice; neutral expressive cues; streaming replies with barge-in.
+- **Voice in:** on-device wake word, Silero VAD and Whisper (sherpa-onnx), push-to-talk with release, double clap, conversation mode, optional cloud STT (OpenAI, ElevenLabs Scribe).
+- **Everyday features:** morning briefing, timers/alarms/reminders, dictation, clipboard summarise/translate/fix, screen explain (opt-in), shopping list, memory you can see and edit, forget today, private/local mode, usage meter.
+- **Interop:** `jarvis-mcp` stdio/HTTP MCP bridge, Claude Desktop `.mcpb` extension, Claude Code / Cowork plugin, Codex config; remote MCP relay for ChatGPT on Cloudflare Workers (free tier) with OAuth + pairing code, Vercel long-poll variant, Cloudflare Tunnel guide.
+- **Security:** threat model and rules R1–R12 with regression tests (inert deep links, content-is-data, grounding, risk gate hardening, keyring-only secrets, process-tree safety, relay grant revocation, SSRF/egress guard, strict terminal allowlist).
+- **Tooling:** Windows cross-build in Docker (offline SDK mode) and Windows Sandbox test harness; opt-in code signing (Azure Trusted Signing, Apple notarisation); docs-site (docmd) with semantic search; SHA-pinned GitHub Actions.
 
-- Foundations: product specification, security model (threats T1–T9, rules R1–R12), design brief and ADRs 0001–0005.
-- `packages/core`: settings schema, router action schema, offline fast-path intents (EN/IT), risk classification and permission gate, inert deep-link parser, IPC and MCP tool contracts, suggestion-chip catalogue, expressive voice cues, data-dir conventions.
-- Relay protocol specification for the ChatGPT relay.
-- Documentation: README, `INSTALL_WITH_AI.md`, `llms.txt`, user and developer guides under `docs/`, reference pages (settings, MCP tools, voice commands), and the `docs-site/` documentation site.
-- Community files: contributing guide, code of conduct, issue and pull request templates.
-- GitHub Actions: CI (lint, typecheck, tests, Rust checks on macOS/Windows/Linux), release (unsigned installers for macOS arm64/x64, Windows x64, Linux x64, plus MCP bundles) and docs deployment to Cloudflare Pages.
+### Known limitations
+- Unsigned builds: Windows SmartScreen / Smart App Control and macOS Gatekeeper warn or block until you allow them.
+- Acoustic echo cancellation is a stub; Focus/Do-Not-Disturb detection is Windows-only.
+- Sign in with ChatGPT is verified against a mock server; verify on your account and report issues.
+- Mobile companion, speaker verification and scheduled routines are on the [roadmap](ROADMAP.md).
 
-## [0.1.0] — planned: "Hello, Jarvis"
-
-### Planned
-
-- Cross-platform tray app on Tauri 2 (macOS, Windows, Linux) with the listening pill, sessions panel, Home screen with suggestion chips, onboarding and settings.
-- Brains: Sign in with ChatGPT (Plus/Pro plan), Claude Code, Codex, Anthropic/OpenAI API keys, local models via Ollama or any OpenAI-compatible endpoint.
-- Agents: Claude Code (Agent SDK), Codex, built-in Home agent, with safe-by-default, risk-tiered approvals by voice or click.
-- Voice out: ElevenLabs, Fish Audio, OpenAI, Kokoro/Piper (local), system voice; streaming with expressive cues.
-- Voice in: on-device wake word, voice activity detection and Whisper; push-to-talk; double clap; conversation mode; optional cloud speech-to-text.
-- Everyday features: briefing, timers/alarms/reminders, clipboard summarise/translate/fix, dictation, "what's on my screen", file search, web research, shopping list, memory, private mode, usage meter, history.
-- Interop: `jarvis-mcp` MCP server, Claude Desktop `.mcpb` extension, Cowork / Claude Code plugin, Cloudflare relay for ChatGPT.
-- English and Italian UI.
-- Unsigned installers (`.dmg`, `.exe`/`.msi`, `.AppImage`/`.deb`/`.rpm`).
-
-[Unreleased]: https://github.com/lopadova/jarvis-desktop/commits/main
-[0.1.0]: https://github.com/lopadova/jarvis-desktop/releases
+[Unreleased]: https://github.com/lopadova/jarvis-desktop/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/lopadova/jarvis-desktop/releases/tag/v0.1.0

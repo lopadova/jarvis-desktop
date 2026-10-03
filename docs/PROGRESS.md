@@ -2,16 +2,16 @@
 
 | Phase | Scope | Status |
 |---|---|---|
-| 0 | Foundations: design brief, product spec, security model, ADRs | ✅ in review |
-| 1 | Scaffold: monorepo, Tauri 2 shell, sidecar, CI | ⏳ next |
-| 1b | **UI pixel-perfect** from the Claude Design handoff in `docs/design/handoff/` (replaces the provisional UI) | ✅ branch `feat/ui-pixel` |
-| 2 | Brain & core (Sign in with ChatGPT, Claude, Codex, API keys, Ollama, router, memory, policy) | — |
-| 3 | Agents (Claude Agent SDK, Codex SDK, Home agent, approvals, SQLite) | — |
-| 4 | Voice out (ElevenLabs, Fish, OpenAI, local, cues, streaming) | — |
-| 5 | Voice in (PTT, wake word, VAD, Whisper, cloud STT, AEC) | — |
-| 6 | MCP & interop (.mcpb, Cowork plugin, Cloudflare relay for ChatGPT) | — |
-| 7 | Everyday features + suggestion chips | ✅ branch `feat/everyday` |
-| 8 | Release v0.1.0, README, docs-site — **real app screenshots taken while testing** (home, pill states, approval card, sessions, onboarding, settings) added to README and docs-site "See it" | — |
+| 0 | Foundations: design brief, product spec, security model, ADRs | ✅ #1 |
+| 1 | Scaffold: monorepo, Tauri 2 shell, sidecar, CI | ✅ #2 |
+| 1b | Pixel-perfect UI from the Claude Design handoff (`docs/design/handoff/`) | ✅ #10 |
+| 2 | Brain & core (Sign in with ChatGPT, Claude, Codex, API keys, Ollama, router, memory, policy) | ✅ #2 |
+| 3 | Agents (Claude Agent SDK, Codex app-server approvals, Home agent, approvals, SQLite) | ✅ #2, #7 |
+| 4 | Voice out (ElevenLabs, Fish, OpenAI, Piper/Kokoro, cues, streaming replies) | ✅ #2, #7 |
+| 5 | Voice in (PTT, wake word, VAD, Whisper, cloud STT) — AEC is a documented follow-up | ✅ #2 |
+| 6 | MCP & interop (.mcpb, Cowork plugin, Cloudflare relay for ChatGPT + Vercel variant, relay e2e) | ✅ #2, #7 |
+| 7 | Everyday features + suggestion chips (dictation, clipboard, screen, shopping, briefing, memory) | ✅ #12 |
+| 8 | Release v0.1.0: README + docs-site with real screenshots, CHANGELOG, opt-in signing, Windows cross-build + Sandbox harness | ✅ #11, this release |
 
 ## Log
 - 2026-10-03 — Phase 0 docs written:
@@ -75,3 +75,4 @@
   - Docs: everyday guide, voice commands, settings (+ docs-site equivalents).
   - Tests: core 121, providers 68, agent-host 179, desktop 43 (workspace 438); Rust 53 (`png_within`);
     `pnpm e2e` 6/6.
+- 2026-10-03 — v0.1.0 released (draft): all phases merged to `main`; 438 workspace tests + 35 relay + 52 Rust tests, `pnpm e2e` 6/6, `pnpm e2e:relay` 14/14.
