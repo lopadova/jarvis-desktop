@@ -1,0 +1,48 @@
+{
+  "name": "@jarvis/relay",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Remote MCP relay for Jarvis Desktop (Cloudflare Worker + Durable Object, free tier) so ChatGPT can reach Jarvis on your computer.",
+  "license": "MIT",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lopadova/jarvis-desktop.git",
+    "directory": "packages/relay"
+  },
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "cf-typegen": "wrangler types",
+    "typecheck": "tsc --noEmit -p .",
+    "test": "vitest run",
+    "smoke": "node scripts/smoke.mjs",
+    "sync:vercel": "node scripts/sync-vercel-shared.mjs",
+    "typecheck:vercel": "tsc --noEmit -p vercel"
+  },
+  "cloudflare": {
+    "bindings": {
+      "OAUTH_KV": {
+        "description": "Stores OAuth clients, grants and tokens issued to ChatGPT. Created automatically."
+      },
+      "DESKTOP_LINK": {
+        "description": "One Durable Object per paired computer; holds the desktop's WebSocket. Created automatically."
+      },
+      "PAIR_REGISTRY": {
+        "description": "Stores pairing records (pair id, secret hash, label). Created automatically."
+      }
+    }
+  },
+  "dependencies": {
+    "@cloudflare/workers-oauth-provider": "^1.2.1"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "^0.22.0",
+    "@cloudflare/workers-types": "^5.20261001.1",
+    "@types/node": "^24.0.0",
+    "@upstash/redis": "^1.39.0",
+    "typescript": "^7.0.2",
+    "vitest": "~4.1.11",
+    "wrangler": "^4.147.0"
+  }
+}
