@@ -1,21 +1,27 @@
 /** ChatBubble + SystemCard (brief §6, handoff `ChatMessage.dc.html`). */
+import type { ShoppingItem } from '@jarvis/core';
 import {
   Bell,
+  Check,
   CircleAlert,
   CircleCheck,
   CircleX,
+  Copy,
   ExternalLink,
+  FileText,
   type LucideIcon,
   Mic,
   PanelRight,
   Play,
   RotateCcw,
   ShieldAlert,
+  ShoppingCart,
   Sunrise,
   Timer,
   Volume2,
+  X,
 } from 'lucide-react';
-import type { ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
 import { type MessageKey, useLocale, useT } from '../../i18n';
 import { useNow } from '../../lib/motion';
 import type { ApprovalDecision, ChatMessage, SystemCardData } from '../../types/ui';
@@ -34,6 +40,11 @@ export interface ChatBubbleProps {
   resolved?: ApprovalDecision;
   /** False when the approval is no longer pending (expired/resolved elsewhere). */
   pending?: boolean;
+  /** Copy a text result back to the clipboard (text-result cards). */
+  onCopy?(text: string): void;
+  /** Live shopping list: given only to the newest shopping card, which then offers remove buttons. */
+  shoppingLive?: ShoppingItem[];
+  onShoppingRemove?(id: string): void;
 }
 
 export function ChatBubble({
@@ -44,6 +55,9 @@ export function ChatBubble({
   onApproval,
   resolved,
   pending,
+  onCopy,
+  shoppingLive,
+  onShoppingRemove,
 }: ChatBubbleProps) {
   const t = useT();
   const locale = useLocale();
@@ -56,6 +70,9 @@ export function ChatBubble({
         onApproval={onApproval}
         resolved={resolved}
         pending={pending}
+        onCopy={onCopy}
+        shoppingLive={shoppingLive}
+        onShoppingRemove={onShoppingRemove}
       />
     );
   const time = <time dateTime={new Date(m.at).toISOString()}>{formatTime(m.at, locale)}</time>;
@@ -138,6 +155,8 @@ const CARD_META: Record<SystemCardData['type'], { icon: LucideIcon; color: strin
   'reminder-set': { icon: Bell, color: 'var(--color-ember)' },
   timer: { icon: Timer, color: 'var(--color-accent)' },
   briefing: { icon: Sunrise, color: 'var(--color-ember)' },
+  shopping: { icon: ShoppingCart, color: 'var(--color-success)' },
+  'text-result': { icon: FileText, color: 'var(--color-accent)' },
 };
 
 const smallPrimary =
@@ -150,6 +169,9 @@ export function SystemCard({
   onApproval,
   resolved,
   pending = true,
+  onCopy,
+  shoppingLive,
+  onShoppingRemove,
 }: {
   card: SystemCardData;
   onOpenSession?(id: string): void;
@@ -157,10 +179,14 @@ export function SystemCard({
   onApproval?(id: string, decision: ApprovalDecision): void;
   resolved?: ApprovalDecision;
   pending?: boolean;
+  onCopy?(text: string): void;
+  shoppingLive?: ShoppingItem[];
+  onShoppingRemove?(id: string): void;
 }) {
   const t = useT();
   const locale = useLocale();
   const now = useNow(c.type === 'timer');
+  const [copied, setCopied] = useState(false);
   const meta = CARD_META[c.type];
   if (!meta) return <div className="pl-[34px] text-[12px] text-subtle">{t('card.unknown')}</div>;
   const { icon: I, color } = meta;
@@ -264,6 +290,69 @@ export function SystemCard({
       timerPct = 100 * (1 - left / total);
       break;
     }
+    case 'shopping': {
+      const items = shoppingLive ?? c.items;
+      const added = new Set(c.added ?? []);
+      title = t('card.shopping');
+      sub = c.added?.length
+        ? t('card.shopping.added', { items: c.added.join(', ') })
+        : c.removed?.length
+          ? t('card.shopping.removed', { items: c.removed.join(', ') })
+          : t('card.shopping.count', { n: items.length });
+      extra = items.length ? (
+        <ul className="m-0 flex list-none flex-col gap-0.5 p-0">
+          {items.map((i) => (
+            <li key={i.id} className="flex min-h-[28px] items-center gap-2.5 text-[13px] text-text">
+              <span
+                aria-hidden="true"
+                className="h-1.5 w-1.5 shrink-0 rounded-pill"
+                style={{ background: added.has(i.text) ? 'var(--color-success)' : 'var(--color-border-strong)' }}
+              />
+              <span className="min-w-0 flex-1 truncate">{i.text}</span>
+              {shoppingLive && onShoppingRemove ? (
+                <button
+                  type="button"
+                  onClick={() => onShoppingRemove(i.id)}
+                  aria-label={t('card.shopping.remove', { item: i.text })}
+                  title={t('card.shopping.remove', { item: i.text })}
+                  className="grid h-6 w-6 shrink-0 cursor-pointer place-items-center rounded-[6px] border-0 bg-transparent text-muted hover:bg-surface-sunken hover:text-text"
+                >
+                  <X size={13} aria-hidden="true" />
+                </button>
+              ) : null}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <span className="text-[12.5px] text-subtle">{t('card.shopping.empty')}</span>
+      );
+      break;
+    }
+    case 'text-result':
+      title = c.source === 'clipboard' ? t('card.textResult.clipboard') : t('card.textResult.screen');
+      sub = t('card.textResult.private');
+      button = onCopy ? (
+        <button
+          type="button"
+          className={smallPrimary}
+          onClick={() => {
+            onCopy(c.text);
+            setCopied(true);
+          }}
+        >
+          {copied ? <Check size={13} aria-hidden="true" /> : <Copy size={13} aria-hidden="true" />}
+          {copied ? t('card.copied') : t('card.copy')}
+        </button>
+      ) : null;
+      extra = (
+        <p
+          data-selectable
+          className="text-pretty scroll-y m-0 max-h-[280px] text-[13.5px] leading-[1.55] whitespace-pre-wrap text-text"
+        >
+          {c.text}
+        </p>
+      );
+      break;
     case 'briefing':
       title = t('card.briefing');
       sub = c.weather ?? '';
@@ -273,6 +362,7 @@ export function SystemCard({
             <span className="text-[11px] font-semibold tracking-[.06em] text-subtle uppercase">
               {t('card.calendar')}
             </span>
+            {c.events.length === 0 ? <span className="text-[13px] text-subtle">{t('card.briefing.none')}</span> : null}
             {c.events.map((e) => (
               <span key={`${e.time}-${e.title}`} className="flex gap-2.5 text-[13px] text-text">
                 <span className="tabular w-10 shrink-0 text-muted">{e.time}</span>
@@ -282,6 +372,7 @@ export function SystemCard({
           </div>
           <div className="flex flex-col gap-1.5">
             <span className="text-[11px] font-semibold tracking-[.06em] text-subtle uppercase">{t('card.email')}</span>
+            {c.emails.length === 0 ? <span className="text-[13px] text-subtle">{t('card.briefing.none')}</span> : null}
             {c.emails.map((e) => (
               <span key={`${e.from}-${e.subject}`} className="flex flex-col text-[13px] leading-[1.35]">
                 <b className="font-semibold text-text">{e.from}</b>

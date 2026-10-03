@@ -6,7 +6,15 @@
  * Demo hooks: a submitted text containing "delete"/"elimina" raises a high-risk approval, one
  * containing "build" a medium-risk approval.
  */
-import { type AppMethod, type AppParams, type Memory, mergeSettings, type Project, type Settings } from '@jarvis/core';
+import {
+  type AppMethod,
+  type AppParams,
+  type Memory,
+  matchFastIntent,
+  mergeSettings,
+  type Project,
+  type Settings,
+} from '@jarvis/core';
 import { type MockSnapshot, mockApproval, mockMemories, mockProjects, mockSnapshot } from '../mocks';
 import type { ChatMessage, Locale, PillEvent } from '../types/ui';
 import type { ConnectionStatus, NotificationHandler, StatusHandler, Transport } from './client';
@@ -157,6 +165,21 @@ export class MockTransport implements Transport {
         return { turns: [] };
       case 'reminders.list':
         return { reminders: s.reminders };
+      case 'shopping.list':
+        return { items: s.shopping };
+      case 'shopping.remove':
+      case 'shopping.clear':
+        s.shopping = method === 'shopping.clear' ? [] : s.shopping.filter((i) => i.id !== p.id);
+        this.emit('ui.shopping', { items: s.shopping });
+        return { ok: true };
+      case 'clipboard.write':
+        return { ok: true };
+      case 'history.clear': {
+        const since = p.scope === 'today' ? new Date().setHours(0, 0, 0, 0) : 0;
+        s.chat = s.chat.filter((m) => m.at < since);
+        this.emit('ui.history', { since });
+        return { ok: true };
+      }
       default:
         return { ok: true };
     }
@@ -190,6 +213,19 @@ export class MockTransport implements Transport {
     const locale = s.settings.locale;
     this.pushChat({ id: uid('u'), role: 'user', text, at: Date.now(), viaVoice: source === 'voice' });
     this.setPill({ ...s.pill, state: { kind: 'thinking', transcript: text, brain: 'chatgpt' } });
+    // Demo: the local shopping list works in the browser preview too (same parser as the sidecar).
+    const fast = matchFastIntent(text);
+    if (fast?.kind === 'shopping-add') {
+      const added = fast.items.map((t) => ({ id: uid('s'), text: t, createdAt: Date.now() }));
+      s.shopping = [...s.shopping, ...added];
+      this.emit('ui.shopping', { items: s.shopping });
+      this.pushChat({
+        id: uid('c'),
+        role: 'system',
+        card: { type: 'shopping', items: s.shopping, added: added.map((i) => i.text) },
+        at: Date.now(),
+      });
+    }
     const lower = text.toLowerCase();
     const risk = /delete|elimina/.test(lower) ? 'high' : /build/.test(lower) ? 'medium' : null;
     this.later(() => {

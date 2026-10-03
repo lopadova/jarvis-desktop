@@ -2,7 +2,7 @@
  * Pure reducer from sidecar `ui.*` notifications (and the `app.state` snapshot) to UI state.
  * Kept free of React/zustand so it is trivially unit-testable.
  */
-import { defaultSettings, type Reminder, type Settings } from '@jarvis/core';
+import { defaultSettings, type Reminder, type Settings, type ShoppingItem } from '@jarvis/core';
 import type { ConnectionStatus } from '../ipc/client';
 import type {
   ApprovalDecision,
@@ -11,6 +11,7 @@ import type {
   ModelStatus,
   PillEvent,
   ProviderStatus,
+  RailView,
   RelayState,
   SessionView,
   Suggestion,
@@ -40,7 +41,13 @@ export interface UiState {
   pushToTalk: boolean;
   /** The shell has the microphone open (R11 indicator). */
   micOpen: boolean;
+  /** Local shopping list (`ui.shopping`). */
+  shopping: ShoppingItem[];
+  /** Latest request from the sidecar to show a Home rail view (`ui.navigate`); `seq` makes repeats observable. */
+  navigate: { view: RailView; seq: number } | null;
 }
+
+const RAIL_VIEWS: readonly RailView[] = ['home', 'history', 'memory', 'projects'];
 
 export const initialState = (): UiState => ({
   connection: 'closed',
@@ -61,6 +68,8 @@ export const initialState = (): UiState => ({
   micLevel: 0,
   pushToTalk: false,
   micOpen: false,
+  shopping: [],
+  navigate: null,
 });
 
 export interface AppStateSnapshot {
@@ -73,6 +82,7 @@ export interface AppStateSnapshot {
   pill: PillEvent;
   relay: RelayState;
   version: string;
+  shopping: ShoppingItem[];
 }
 
 const MAX_CHAT = 500;
@@ -94,6 +104,7 @@ export function applySnapshot(state: UiState, snap: Partial<AppStateSnapshot>): 
     chat: snap.chat ?? state.chat,
     pill: snap.pill ?? state.pill,
     relay: snap.relay ?? state.relay,
+    shopping: snap.shopping ?? state.shopping,
   };
 }
 
@@ -141,6 +152,21 @@ export function applyUiEvent(state: UiState, method: string, params: unknown): U
     }
     case 'ui.settings':
       return isObj(params.settings) ? { ...state, settings: params.settings as Settings } : state;
+    case 'ui.shopping': {
+      const shopping = arr<ShoppingItem>(params.items);
+      return shopping ? { ...state, shopping } : state;
+    }
+    case 'ui.navigate': {
+      const view = params.view as RailView;
+      if (!RAIL_VIEWS.includes(view)) return state;
+      return { ...state, navigate: { view, seq: (state.navigate?.seq ?? 0) + 1 } };
+    }
+    case 'ui.history': {
+      // History was deleted in the sidecar: drop the same messages from the visible conversation.
+      if (typeof params.since !== 'number') return state;
+      const since = params.since;
+      return { ...state, chat: state.chat.filter((m) => m.at < since) };
+    }
     case 'ui.relay':
       return typeof params.status === 'string' ? { ...state, relay: params as unknown as RelayState } : state;
     case 'ui.toast': {

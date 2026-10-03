@@ -765,6 +765,7 @@ function TabBody(p: SettingsProps) {
               />
             </Row>
             {sw('openResults', 'settings.openResults')}
+            {sw('screenAccess', 'settings.screenAccess', 'settings.screenAccess.desc')}
           </Section>
           <Section title={t('settings.danger')} danger>
             <Row label={t('settings.deleteToday')} desc={t('settings.deleteToday.desc')}>

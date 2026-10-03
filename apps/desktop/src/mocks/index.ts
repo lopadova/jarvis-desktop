@@ -2,7 +2,15 @@
  * Typed mock data for every surface (EN + IT), mirroring the Claude Design handoff samples.
  * Used in mock mode (plain browser) and in tests.
  */
-import { allSuggestions, defaultSettings, type Memory, type Project, type Reminder, type Settings } from '@jarvis/core';
+import {
+  allSuggestions,
+  defaultSettings,
+  type Memory,
+  type Project,
+  type Reminder,
+  type Settings,
+  type ShoppingItem,
+} from '@jarvis/core';
 import type {
   ApprovalRequest,
   ChatMessage,
@@ -26,6 +34,7 @@ export interface MockSnapshot {
   pill: PillEvent;
   relay: RelayState;
   suggestions: Suggestion[];
+  shopping: ShoppingItem[];
   version: string;
 }
 
@@ -259,6 +268,7 @@ export function mockSnapshot(locale: Locale = 'en', now = Date.now()): MockSnaps
     pill: { state: { kind: 'idle-hint', shortcut: ['Alt', 'Space'] }, privateMode: false },
     relay: { status: 'unpaired' },
     suggestions: allSuggestions(locale),
+    shopping: [],
     version: '0.1.0-mock',
   };
 }
