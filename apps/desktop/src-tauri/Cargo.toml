@@ -18,6 +18,9 @@ path = "src/main.rs"
 
 [features]
 default = ["voice"]
+# Production builds serve the embedded UI (`frontendDist`) instead of the dev server URL. `tauri build` enables
+# it; a plain `cargo build --release` must pass `--features custom-protocol`.
+custom-protocol = ["tauri/custom-protocol"]
 # On-device voice input: cpal capture + sherpa-onnx keyword spotting, Silero VAD and Whisper.
 voice = ["dep:sherpa-onnx", "dep:cpal"]
 # Acoustic echo cancellation (follow-up; currently a documented stub).
