@@ -17,3 +17,6 @@ docs-site/.docmd-search/*
 *.tsbuildinfo
 models/
 .claude/
+dist-windows/
+dist-sandbox/
+apps/desktop/src-tauri/tauri.signing.json
