@@ -40,3 +40,11 @@
   - UI: React 19 / Tailwind v4 surfaces S1–S5 following the design brief contract, IPC client + mock mode, EN/IT.
   - Verified: vite build, tsc, vitest (27), cargo fmt/clippy/test on Linux (49 + 1 ignored model test),
     Windows cross-build (cargo-xwin) with 50 unit tests and `--self-test` passing on Windows 11.
+- 2026-10-03 — Sidecar hardening (branch `feat/host-followups`):
+  - Relay client now matches the Worker: unpairing calls `DELETE /pair/register`, and re-pairing revokes the old pairing first. It handles close codes `4000` (replaced, no reconnect loop), `4001` (pairing revoked) and `1009`/`1003` (backoff), and retries a `401` upgrade only at the slowest backoff. A pong watchdog drops dead links, results are capped at 64 KB by UTF-8 bytes, and stale-socket events are ignored.
+  - Conformance tests against `packages/relay/src/shared` and an end-to-end test, `pnpm e2e:relay`: `wrangler dev`, the real sidecar, OAuth with the pairing code, `/mcp` tools/list and tools/call, unpair. 14/14 checks pass.
+  - Codex runs through `codex app-server`. Command, file, permission, MCP-tool and legacy approvals go through classifyRisk → gate → approval. Also: thread resume, interrupt plus tree kill, the Jarvis MCP config sent over stdin, and the native `codex.exe` launched from npm shims. The SDK sandbox mapping remains as a fallback. Tests use a fake app-server process, and `scripts/codex-live-check.ts` verified a real turn.
+  - `jarvis_ask_user` puts the calling session in `needs-input` and sets it back to running afterwards. The session still counts as live.
+  - Router `answer`/`clarify`/`status` replies are spoken while they stream. An incremental JSON scan reads the brain deltas. Memory claims and invalid replies are never spoken early.
+  - Windows: agent trees run in Job Objects through `bun:ffi`, verified under `bun run` and as a compiled binary. The connection file is restricted to the current user's SID with `icacls`.
+  - Test counts: agent-host 159 vitest tests, relay 35, mcp 27. `pnpm e2e` passes 6/6.
