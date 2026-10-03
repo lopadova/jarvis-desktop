@@ -109,13 +109,51 @@ jobs:
           test -f "$BIN" || { echo "::error::Expected sidecar $BIN was not produced"; exit 1; }
           ls -la apps/desktop/src-tauri/binaries
 
+      # Code signing is OPT-IN: each block only activates when its secrets exist (see docs/guides/signing.md).
+      # Without secrets the build is unsigned, exactly as in v0.1.
+      - name: Configure Windows signing (Azure Trusted Signing)
+        if: runner.os == 'Windows'
+        shell: bash
+        env:
+          AZURE_TS_ENDPOINT: ${{ secrets.AZURE_TRUSTED_SIGNING_ENDPOINT }}
+          AZURE_TS_ACCOUNT: ${{ secrets.AZURE_TRUSTED_SIGNING_ACCOUNT }}
+          AZURE_TS_PROFILE: ${{ secrets.AZURE_TRUSTED_SIGNING_PROFILE }}
+        run: |
+          set -euo pipefail
+          if [ -z "${AZURE_TS_ENDPOINT}" ] || [ -z "${AZURE_TS_ACCOUNT}" ] || [ -z "${AZURE_TS_PROFILE}" ]; then
+            echo "Windows signing secrets not set: building unsigned."; exit 0
+          fi
+          cargo install trusted-signing-cli --locked
+          node scripts/signing/windows-sign-config.mjs > apps/desktop/src-tauri/tauri.signing.json
+          echo "TAURI_EXTRA_CONFIG=--config src-tauri/tauri.signing.json" >> "$GITHUB_ENV"
+
+      - name: Configure macOS signing and notarisation
+        if: runner.os == 'macOS'
+        shell: bash
+        env:
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+        run: |
+          if [ -z "${APPLE_CERTIFICATE}" ]; then echo "Apple signing secrets not set: building unsigned."; exit 0; fi
+          echo "JARVIS_MAC_SIGNED=1" >> "$GITHUB_ENV"
+
       # Build only (no releaseId/tagName): uploading happens in the publish job.
-      # Unsigned v0.1 builds: no APPLE_* / Windows signing secrets are set on purpose.
       - name: Build installers
         uses: tauri-apps/tauri-action@1deb371b0cd8bd54025b384f1cd735e725c4060f # v1.0.0
+        env:
+          # Read by trusted-signing-cli (Windows) — empty when signing is not configured.
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          # Read by the Tauri bundler (macOS) — only passed when the certificate secret exists.
+          APPLE_CERTIFICATE: ${{ env.JARVIS_MAC_SIGNED == '1' && secrets.APPLE_CERTIFICATE || '' }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ env.JARVIS_MAC_SIGNED == '1' && secrets.APPLE_CERTIFICATE_PASSWORD || '' }}
+          APPLE_SIGNING_IDENTITY: ${{ env.JARVIS_MAC_SIGNED == '1' && secrets.APPLE_SIGNING_IDENTITY || '' }}
+          APPLE_ID: ${{ env.JARVIS_MAC_SIGNED == '1' && secrets.APPLE_ID || '' }}
+          APPLE_PASSWORD: ${{ env.JARVIS_MAC_SIGNED == '1' && secrets.APPLE_APP_SPECIFIC_PASSWORD || '' }}
+          APPLE_TEAM_ID: ${{ env.JARVIS_MAC_SIGNED == '1' && secrets.APPLE_TEAM_ID || '' }}
         with:
           projectPath: apps/desktop
-          args: --target ${{ matrix.target }}
+          args: --target ${{ matrix.target }} ${{ env.TAURI_EXTRA_CONFIG }}
 
       - name: Collect installers
         env:
