@@ -283,7 +283,12 @@ export class App {
     const mcpCommand = () => this.deps.mcpCommand?.() ?? null;
     return {
       claude: new ClaudeDriver({ settings, logger: this.deps.logger, mcpCommand }),
-      codex: new CodexDriver({ settings, logger: this.deps.logger }),
+      codex: new CodexDriver({
+        settings,
+        logger: this.deps.logger,
+        mcpCommand,
+        killTree: (pid) => this.deps.inspector.killTree(pid),
+      }),
       home: new HomeDriver({
         brain: () => {
           const pick = this.orchestrator.pickBrain();
