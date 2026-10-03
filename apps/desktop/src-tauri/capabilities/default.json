@@ -1,0 +1,13 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Permissions for all Jarvis webviews. App commands (sidecar_endpoint, show_window, …) are defined by the app crate.",
+  "windows": ["pill", "sessions", "home", "settings", "onboarding"],
+  "permissions": [
+    "core:default",
+    "core:window:allow-minimize",
+    "core:window:allow-toggle-maximize",
+    "core:window:allow-hide",
+    "core:window:allow-start-dragging"
+  ]
+}
