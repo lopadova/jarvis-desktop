@@ -22,6 +22,9 @@ First public release. Installers are **unsigned** (see `docs/guides/signing.md`)
 - **Tooling:** Windows cross-build in Docker (offline SDK mode) and Windows Sandbox test harness; opt-in code signing (Azure Trusted Signing, Apple notarisation); docs-site (docmd) with semantic search; SHA-pinned GitHub Actions.
 
 ### Known limitations
+- No auto-update in v0.1.0 (the updater key is a placeholder): install the newer installer over the old one.
+- The desktop relay client speaks WebSocket only, so the Vercel long-poll relay variant cannot be paired yet (Cloudflare Workers or a Tunnel work).
+- Settings › Integrations: the "Install extension" button is disabled; install `jarvis.mcpb` from the release page.
 - Unsigned builds: Windows SmartScreen / Smart App Control and macOS Gatekeeper warn or block until you allow them.
 - Acoustic echo cancellation is a stub; Focus/Do-Not-Disturb detection is Windows-only.
 - Sign in with ChatGPT is verified against a mock server; verify on your account and report issues.
