@@ -46,6 +46,7 @@ import type { Store } from './store/store.js';
 import { errorMessage, expandHome, newId, slug } from './util.js';
 import { type Openable, safeOpenable } from './viewable.js';
 import type { VoiceOutput } from './voice/output.js';
+import { ReplySpeechStream } from './voice/reply-stream.js';
 
 export type TurnSource = 'voice' | 'text' | 'chip';
 
@@ -218,14 +219,25 @@ export class Orchestrator {
     const abort = new AbortController();
     this.inflight = abort;
     let action: RouterAction | null = null;
+    // Streaming TTS: safe `speak` sentences of answer/clarify/status replies start before the JSON ends.
+    const speech = s.speakReplies && !this.deps.voice.muted ? new ReplySpeechStream(this.deps.voice) : null;
     try {
       const first = await brain.complete({
         messages,
         jsonSchema: routerJsonSchema,
         tier: 'fast',
         signal: abort.signal,
+        ...(speech
+          ? {
+              onDelta: (d: string) => {
+                if (epoch === this.epoch && !abort.signal.aborted) speech.push(d);
+              },
+            }
+          : {}),
       });
       let parsed = parseRouterAction(first.json ?? first.text);
+      // Never keep speaking a reply that failed validation or turned out to be another action.
+      if (speech && (!parsed.ok || parsed.action.action !== speech.committedAction)) speech.cancel();
       if (!parsed.ok && epoch === this.epoch) {
         this.deps.logger.warn('router reply invalid, repairing', { error: parsed.error });
         const repair: BrainMessage[] = [
@@ -243,13 +255,17 @@ export class Orchestrator {
       }
       if (parsed.ok) action = parsed.action;
     } catch (e) {
+      speech?.cancel();
       if (epoch !== this.epoch || abort.signal.aborted) return;
       await this.brainFailure(text, brain, e);
       return;
     } finally {
       if (this.inflight === abort) this.inflight = null;
     }
-    if (epoch !== this.epoch) return; // a newer stop/Esc dropped this result
+    if (epoch !== this.epoch) {
+      speech?.cancel();
+      return; // a newer stop/Esc dropped this result
+    }
     if (!action) {
       await this.reply(text, p.brainError, 'invalid');
       return;
@@ -271,7 +287,7 @@ export class Orchestrator {
 
     this.clarifyContext = action.action === 'clarify' ? userText.slice(-1000) : undefined;
     if (action.action !== 'clarify') this.deps.pill.clearSticky('clarify');
-    await this.execute(action, text);
+    await this.execute(action, text, speech?.started ? speech : undefined);
   }
 
   /**
@@ -326,7 +342,7 @@ export class Orchestrator {
     );
   }
 
-  private async execute(a: RouterAction, heard: string): Promise<void> {
+  private async execute(a: RouterAction, heard: string, speech?: ReplySpeechStream): Promise<void> {
     const s = this.deps.settings();
     const p = phrases(s.locale);
     const x = extraPhrases(s.locale);
@@ -334,12 +350,12 @@ export class Orchestrator {
     switch (a.action) {
       case 'answer':
       case 'status':
-        await this.reply(heard, a.speak || p.brainError, a.action, meta);
+        await this.reply(heard, a.speak || p.brainError, a.action, meta, speech);
         return;
       case 'clarify': {
         const question = a.speak || p.notGrounded;
         this.deps.pill.setSticky({ kind: 'clarify', question, quickReplies: a.quickReplies ?? [] });
-        await this.reply(heard, question, 'clarify', meta);
+        await this.reply(heard, question, 'clarify', meta, speech);
         return;
       }
       case 'create_project': {
@@ -573,13 +589,18 @@ export class Orchestrator {
     said: string,
     action: string,
     meta: { task?: string | undefined; project?: string | undefined } = {},
+    speech?: ReplySpeechStream,
   ): Promise<void> {
     const turn: Turn = { at: this.now(), heard, said, action };
     if (meta.task) turn.task = meta.task;
     if (meta.project) turn.project = meta.project;
     this.record(turn);
     if (this.deps.pill.state.kind === 'thinking') this.deps.pill.set({ kind: 'hidden' });
-    await this.jarvisSays(said);
+    if (speech?.started) {
+      // The beginning is already being spoken: record the line and say only what is missing.
+      this.chat({ id: newId('j_'), role: 'jarvis', text: said, at: this.now(), spoken: true });
+      await speech.finish(said);
+    } else await this.jarvisSays(said);
     if (!this.deps.voice.busy)
       this.deps.voice.setListening(this.deps.settings().conversationMode ? 'conversation' : 'idle');
   }
