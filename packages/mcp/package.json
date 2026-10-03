@@ -1,0 +1,50 @@
+{
+  "name": "@jarvis/mcp",
+  "version": "0.1.0",
+  "private": true,
+  "description": "MCP server for Jarvis Desktop: lets Claude, Codex and other agents talk to the user through Jarvis (stdio + Streamable HTTP).",
+  "license": "MIT",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lopadova/jarvis-desktop.git",
+    "directory": "packages/mcp"
+  },
+  "bin": {
+    "jarvis-mcp": "dist/jarvis-mcp.mjs"
+  },
+  "files": [
+    "dist/jarvis-mcp.mjs",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./tools": {
+      "types": "./src/tools.ts",
+      "default": "./src/tools.ts"
+    }
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "pack:mcpb": "node scripts/pack-mcpb.mjs",
+    "gen:relay": "node scripts/gen-relay-catalog.mjs",
+    "typecheck": "tsc --noEmit -p .",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@anthropic-ai/mcpb": "^2.1.2",
+    "@jarvis/core": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.31.0",
+    "@types/node": "^24.0.0",
+    "@types/ws": "^8.18.2",
+    "esbuild": "^0.28.2",
+    "ws": "^8.22.0",
+    "zod": "^4.6.5"
+  }
+}

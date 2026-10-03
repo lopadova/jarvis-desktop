@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<sc-if value="{{ isUser }}" hint-placeholder-val="{{ false }}">
+  <div style="display:flex; flex-direction:column; align-items:flex-end; gap:4px; font-family:var(--font-sans);">
+    <div style="max-width:78%; padding:10px 14px; border-radius:16px 16px 4px 16px; background:var(--color-accent-soft); border:1px solid color-mix(in oklab, var(--color-accent) 25%, transparent); color:var(--color-text); font-size:14px; line-height:1.5; text-wrap:pretty;">{{ m.text }}</div>
+    <span style="display:flex; align-items:center; gap:5px; font-size:11.5px; color:var(--color-text-subtle);"><sc-if value="{{ m.viaVoice }}" hint-placeholder-val="{{ true }}"><i class="icon-mic" style="font-size:11px; line-height:1;"></i>{{ t.said }} ·</sc-if>{{ time }}</span>
+  </div>
+</sc-if>
+<sc-if value="{{ isJarvis }}" hint-placeholder-val="{{ true }}">
+  <div style="display:flex; gap:10px; align-items:flex-start; font-family:var(--font-sans);">
+    <dc-import name="Orb" size="{{ 24 }}" state="{{ orbState }}" animated="{{ false }}" hint-size="24px,24px"></dc-import>
+    <div style="flex:1; min-width:0; display:flex; flex-direction:column; gap:4px; align-items:flex-start;">
+      <div style="{{ jBubble }}">{{ m.text }}</div>
+      <span style="display:flex; align-items:center; gap:6px; font-size:11.5px; color:var(--color-text-subtle);">
+        <sc-if value="{{ m.spoken }}" hint-placeholder-val="{{ true }}"><span style="display:inline-flex; align-items:center; gap:4px;"><i class="icon-volume-2" style="font-size:12px; line-height:1;"></i>{{ t.spoken }}</span>
+          <button onClick="{{ onReplay }}" aria-label="{{ t.replay }}" style="height:22px; padding:0 6px; border-radius:6px; border:none; background:transparent; color:var(--color-text-muted); font:500 11.5px var(--font-sans); cursor:pointer; display:inline-flex; align-items:center; gap:4px;" style-hover="background:var(--color-surface-raised); color:var(--color-text);"><i class="icon-rotate-ccw" style="font-size:11px; line-height:1;"></i>{{ t.replay }}</button>·</sc-if>
+        <sc-if value="{{ isError }}" hint-placeholder-val="{{ false }}"><span style="color:var(--color-danger); display:inline-flex; align-items:center; gap:4px;"><i class="icon-circle-alert" style="font-size:12px; line-height:1;"></i>{{ t.failed }}</span>·</sc-if>
+        <span>{{ time }}</span>
+      </span>
+    </div>
+  </div>
+</sc-if>
+<sc-if value="{{ isSystem }}" hint-placeholder-val="{{ false }}">
+  <div style="padding-left:34px; font-family:var(--font-sans);">
+    <div style="{{ cardBox }}">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span style="{{ iconTile }}"><i class="{{ cardIcon }}" style="font-size:15px; line-height:1;"></i></span>
+        <div style="flex:1; min-width:0; display:flex; flex-direction:column; gap:1px;">
+          <span style="font-size:13.5px; font-weight:600; color:var(--color-text);">{{ cardTitle }}</span>
+          <span style="font-size:12px; color:var(--color-text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ cardSub }}</span>
+        </div>
+        <sc-if value="{{ hasBig }}" hint-placeholder-val="{{ false }}"><span style="font-size:22px; font-weight:600; letter-spacing:-0.02em; color:var(--color-text); font-variant-numeric:tabular-nums;">{{ big }}</span></sc-if>
+        <sc-if value="{{ hasCardBtn }}" hint-placeholder-val="{{ false }}"><button onClick="{{ cardBtn.on }}" style="height:30px; padding:0 12px; border-radius:8px; border:none; background:var(--color-accent); color:var(--color-accent-contrast); font:600 12.5px var(--font-sans); cursor:pointer; display:inline-flex; align-items:center; gap:6px;"><i class="{{ cardBtn.icon }}" style="font-size:13px; line-height:1;"></i>{{ cardBtn.label }}</button></sc-if>
+      </div>
+      <sc-if value="{{ hasBody }}" hint-placeholder-val="{{ false }}"><p style="margin:0; font-size:13px; line-height:1.5; color:var(--color-text-muted); text-wrap:pretty;">{{ body }}</p></sc-if>
+      <sc-if value="{{ isTimer }}" hint-placeholder-val="{{ false }}"><div style="height:4px; border-radius:999px; background:var(--color-surface-sunken); overflow:hidden;"><div style="height:100%; width:{{ timerPct }}; background:var(--color-accent); border-radius:999px; transition:width 1s linear;"></div></div></sc-if>
+      <sc-if value="{{ isApproval }}" hint-placeholder-val="{{ false }}">
+        <code style="font-family:var(--font-mono); font-size:12.5px; padding:8px 10px; border-radius:8px; background:var(--color-surface-sunken); color:var(--color-text); word-break:break-all;">{{ detail }}</code>
+        <sc-if value="{{ pending }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex; gap:6px;">
+            <button onClick="{{ onAllow }}" style="height:30px; padding:0 12px; border-radius:8px; border:none; background:var(--color-accent); color:var(--color-accent-contrast); font:600 12.5px var(--font-sans); cursor:pointer;">{{ t.allow }}</button>
+            <button onClick="{{ onDeny }}" style="height:30px; padding:0 12px; border-radius:8px; border:1px solid var(--color-border-strong); background:var(--color-surface-raised); color:var(--color-text); font:600 12.5px var(--font-sans); cursor:pointer;">{{ t.deny }}</button>
+          </div>
+        </sc-if>
+        <sc-if value="{{ resolved }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px; color:var(--color-text-muted); display:flex; align-items:center; gap:5px;"><i class="{{ resolvedIcon }}" style="font-size:13px; line-height:1;"></i>{{ resolvedText }}</span></sc-if>
+      </sc-if>
+      <sc-if value="{{ isBriefing }}" hint-placeholder-val="{{ false }}">
+        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:16px; padding-top:2px;">
+          <div style="display:flex; flex-direction:column; gap:6px;">
+            <span style="font-size:11px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--color-text-subtle);">{{ t.calendar }}</span>
+            <sc-for list="{{ events }}" as="e" hint-placeholder-count="3"><span style="display:flex; gap:10px; font-size:13px; color:var(--color-text);"><span style="width:40px; flex-shrink:0; color:var(--color-text-muted); font-variant-numeric:tabular-nums;">{{ e.time }}</span><span>{{ e.title }}</span></span></sc-for>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:6px;">
+            <span style="font-size:11px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--color-text-subtle);">{{ t.email }}</span>
+            <sc-for list="{{ emails }}" as="e" hint-placeholder-count="2"><span style="display:flex; flex-direction:column; font-size:13px; line-height:1.35;"><b style="font-weight:600; color:var(--color-text);">{{ e.from }}</b><span style="color:var(--color-text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ e.subject }}</span></span></sc-for>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+</sc-if>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:640,&quot;height&quot;:140},&quot;message&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;ChatMessage&quot;},&quot;locale&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;en&quot;,&quot;it&quot;],&quot;default&quot;:&quot;en&quot;,&quot;tsType&quot;:&quot;Locale&quot;}}">
+const CM_T = {
+  en: { said: 'Said', spoken: 'Spoken', replay: 'Replay', failed: 'Not delivered', allow: 'Allow once', deny: 'Deny', calendar: 'Calendar', email: 'Email', open: 'Open', view: 'View', started: 'started', resultReady: 'Result ready', reminder: 'Reminder set', approval: 'Approval needed', briefing: 'Morning briefing', allowed: 'Allowed once', denied: 'Denied', due: 'Due', timerDone: 'Time’s up' },
+  it: { said: 'Detto', spoken: 'Letto ad alta voce', replay: 'Riascolta', failed: 'Non inviato', allow: 'Consenti una volta', deny: 'Nega', calendar: 'Calendario', email: 'Email', open: 'Apri', view: 'Vedi', started: 'avviato', resultReady: 'Risultato pronto', reminder: 'Promemoria impostato', approval: 'Serve un’approvazione', briefing: 'Briefing del mattino', allowed: 'Consentito una volta', denied: 'Negato', due: 'Alle', timerDone: 'Tempo scaduto' }
+};
+const CM_AG = { claude: 'Claude Code', codex: 'Codex', home: 'Jarvis Home' };
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const t = CM_T[p.locale] || CM_T.en;
+    const m = p.message || { id: 'm', role: 'jarvis', text: 'Good morning, Lorenzo. Three meetings today and one email from Giulia that needs a reply.', at: Date.now(), spoken: true };
+    const loc = p.locale === 'it' ? 'it-IT' : 'en-GB';
+    const fmt = ms => new Date(ms).toLocaleTimeString(loc, { hour: '2-digit', minute: '2-digit' });
+    const now = p.now || Date.now();
+    const c = m.card || {};
+    const v = { t, m, time: fmt(m.at), isUser: m.role === 'user', isJarvis: m.role === 'jarvis', isSystem: m.role === 'system', isError: !!m.error, orbState: m.error ? 'error' : 'idle' };
+    v.jBubble = { padding: '10px 14px', borderRadius: '4px 16px 16px 16px', background: 'var(--color-surface-raised)', border: `1px solid ${m.error ? 'color-mix(in oklab, var(--color-danger) 50%, transparent)' : 'var(--color-border)'}`, color: 'var(--color-text)', fontSize: 14, lineHeight: 1.55, maxWidth: '86%', textWrap: 'pretty' };
+    v.onReplay = () => p.onReplay && p.onReplay(m.id);
+    if (m.role !== 'system') return v;
+    const accent = { 'session-started': 'var(--color-accent)', 'approval-needed': 'var(--color-warning)', 'result-ready': 'var(--color-success)', 'reminder-set': 'var(--color-ember)', timer: 'var(--color-accent)', briefing: 'var(--color-ember)' }[c.type];
+    const icon = { 'session-started': 'icon-play', 'approval-needed': 'icon-shield-alert', 'result-ready': 'icon-circle-check', 'reminder-set': 'icon-bell', timer: 'icon-timer', briefing: 'icon-sunrise' }[c.type];
+    let title = '', sub = '', body = '', big = '', btn = null;
+    const s = c.session;
+    if (c.type === 'session-started') { title = `${CM_AG[s.agent]} ${t.started}`; sub = `${s.project} · ${s.task}`; btn = { label: t.view, icon: 'icon-panel-right', on: () => p.onView && p.onView(s.id) }; }
+    if (c.type === 'result-ready') { title = t.resultReady; sub = `${s.project} · ${s.task}`; body = s.resultPreview; btn = { label: t.open, icon: 'icon-external-link', on: () => p.onOpen && p.onOpen(s.id) }; }
+    if (c.type === 'approval-needed') { title = t.approval; sub = `${CM_AG[c.request.agent]} · ${c.request.title}`; }
+    if (c.type === 'reminder-set') { title = t.reminder; sub = c.text; big = fmt(c.dueAt); }
+    let timerPct = '0%';
+    if (c.type === 'timer') { const left = Math.max(0, c.endsAt - now); const total = c.total || 600000; title = c.label; sub = left ? '' : t.timerDone; big = Math.floor(left / 60000) + ':' + String(Math.floor(left / 1000) % 60).padStart(2, '0'); timerPct = (100 * (1 - left / total)).toFixed(1) + '%'; }
+    if (c.type === 'briefing') { title = t.briefing; sub = c.weather || ''; }
+    const res = c.resolved;
+    return { ...v,
+      cardBox: { display: 'flex', flexDirection: 'column', gap: 10, padding: 14, borderRadius: 14, background: 'var(--color-surface-raised)', border: `1px solid ${c.type === 'approval-needed' && !res ? 'color-mix(in oklab, var(--color-warning) 55%, transparent)' : 'var(--color-border)'}`, maxWidth: 560 },
+      iconTile: { width: 30, height: 30, borderRadius: 8, display: 'grid', placeItems: 'center', flexShrink: 0, color: accent, background: `color-mix(in oklab, ${accent} 15%, transparent)` },
+      cardIcon: icon, cardTitle: title, cardSub: sub, body, hasBody: !!body, big, hasBig: !!big,
+      hasCardBtn: !!btn, cardBtn: btn || {},
+      isTimer: c.type === 'timer', timerPct,
+      isApproval: c.type === 'approval-needed', detail: c.request ? c.request.detail : '',
+      pending: c.type === 'approval-needed' && !res, resolved: !!res,
+      resolvedIcon: res === 'deny' ? 'icon-circle-x' : 'icon-circle-check', resolvedText: res === 'deny' ? t.denied : t.allowed,
+      onAllow: () => p.onApproval && p.onApproval(c.request.id, 'allow-once'),
+      onDeny: () => p.onApproval && p.onApproval(c.request.id, 'deny'),
+      isBriefing: c.type === 'briefing', events: c.events || [], emails: c.emails || []
+    };
+  }
+}
+</script>
+</body>
+</html>

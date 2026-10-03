@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@keyframes jv-breathe{0%,100%{opacity:.45;transform:scale(.94)}50%{opacity:.95;transform:scale(1.05)}}
+@keyframes jv-spin{to{transform:rotate(360deg)}}
+@keyframes jv-shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-3px)}40%{transform:translateX(3px)}60%{transform:translateX(-2px)}80%{transform:translateX(2px)}}
+</style>
+</helmet>
+<div role="img" aria-label="{{ label }}" style="{{ wrap }}">
+  <div style="{{ glow }}"></div>
+  <sc-if value="{{ showRings }}" hint-placeholder-val="{{ false }}">
+    <div style="{{ ring2 }}"></div>
+    <div style="{{ ring1 }}"></div>
+  </sc-if>
+  <sc-if value="{{ showHalo }}" hint-placeholder-val="{{ false }}"><div style="{{ halo }}"></div></sc-if>
+  <sc-if value="{{ showPrivate }}" hint-placeholder-val="{{ false }}"><div style="{{ privRing }}"></div></sc-if>
+  <div style="{{ core }}">
+    <sc-if value="{{ showSweep }}" hint-placeholder-val="{{ false }}"><div style="{{ sweep }}"></div></sc-if>
+    <div style="{{ hi }}"></div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:200,&quot;height&quot;:200},&quot;size&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:64,&quot;tsType&quot;:&quot;16|24|40|64|96|160&quot;},&quot;state&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;idle&quot;,&quot;listening&quot;,&quot;thinking&quot;,&quot;speaking&quot;,&quot;approval&quot;,&quot;error&quot;,&quot;muted&quot;],&quot;default&quot;:&quot;idle&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;level&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;min&quot;:0,&quot;max&quot;:1,&quot;step&quot;:0.05,&quot;default&quot;:0,&quot;tsType&quot;:&quot;number&quot;},&quot;privateMode&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;},&quot;animated&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const s = +(p.size ?? 64);
+    const st = p.state || 'idle';
+    const lv = Math.max(0, Math.min(1, +(p.level ?? 0)));
+    const anim = p.animated !== false;
+    const priv = !!p.privateMode;
+    const reactive = st === 'listening' || st === 'speaking';
+    const coreBg = st === 'muted'
+      ? 'radial-gradient(circle at 35% 30%, #f1f2f5 0%, #a3a9b5 40%, #4b515d 100%)'
+      : st === 'speaking'
+      ? 'radial-gradient(circle at 35% 30%, #fff8ec 0%, #ffd08a 22%, var(--color-ember, #f6a94a) 58%, #7a3608 100%)'
+      : 'radial-gradient(circle at 35% 30%, #ffffff 0%, var(--orb-core, #bfe8ff) 22%, var(--color-accent, #4cc3f0) 60%, oklch(0.3 0.1 var(--accent-hue, 200)) 100%)';
+    const glowCol = st === 'muted' ? 'rgba(160,166,178,.25)' : st === 'speaking' ? 'rgba(246,169,74,.55)' : st === 'error' ? 'rgba(255,114,114,.35)' : st === 'approval' ? 'rgba(245,189,79,.5)' : 'var(--orb-glow, rgba(76,195,240,.5))';
+    const glowOpacity = st === 'muted' ? .5 : reactive ? .55 + lv * .45 : .75;
+    const tr = anim ? 'transform 90ms linear, opacity 90ms linear' : 'none';
+    const haloCol = st === 'approval' ? 'var(--color-warning, #f5bd4f)' : 'var(--color-danger, #ff7272)';
+    const bw = Math.max(1.5, s * 0.035);
+    return {
+      label: 'Jarvis — ' + st + (priv ? ', local only' : ''),
+      wrap: { position: 'relative', width: s, height: s, flexShrink: 0, animation: st === 'error' && anim ? 'jv-shake .45s ease-in-out 1' : 'none' },
+      glow: { position: 'absolute', inset: -s * 0.35, borderRadius: '50%', background: `radial-gradient(circle, ${glowCol} 0%, transparent 65%)`, opacity: glowOpacity, transform: reactive ? `scale(${0.9 + lv * 0.25})` : undefined, transition: tr, animation: st === 'idle' && anim ? 'jv-breathe 4s ease-in-out infinite' : 'none', pointerEvents: 'none' },
+      showRings: st === 'listening',
+      ring1: { position: 'absolute', inset: 0, borderRadius: '50%', border: `${bw}px solid var(--orb-ring, rgba(120,210,255,.7))`, transform: `scale(${1.14 + lv * 0.22})`, opacity: .35 + lv * .55, transition: tr },
+      ring2: { position: 'absolute', inset: 0, borderRadius: '50%', border: `${Math.max(1, bw * .6)}px solid var(--orb-ring, rgba(120,210,255,.7))`, transform: `scale(${1.3 + lv * 0.45})`, opacity: .12 + lv * .35, transition: tr },
+      showHalo: st === 'approval' || st === 'error',
+      halo: { position: 'absolute', inset: -s * 0.1, borderRadius: '50%', border: `${bw}px solid ${haloCol}`, boxShadow: `0 0 ${s * .25}px ${st === 'approval' ? 'rgba(245,189,79,.45)' : 'rgba(255,114,114,.3)'}` },
+      showPrivate: priv,
+      privRing: { position: 'absolute', inset: -s * (st === 'approval' || st === 'error' ? 0.2 : 0.1), borderRadius: '50%', border: `${Math.max(1, bw * .7)}px solid var(--color-private, #3ddc97)` },
+      core: { position: 'absolute', inset: 0, borderRadius: '50%', background: coreBg, overflow: 'hidden', boxShadow: `inset 0 -${s * .06}px ${s * .14}px rgba(0,0,0,.35), inset 0 ${s * .03}px ${s * .06}px rgba(255,255,255,.35)`, transform: reactive ? `scale(${1 + lv * (st === 'speaking' ? 0.1 : 0.07)})` : 'none', transition: tr, filter: st === 'error' ? 'saturate(.35)' : 'none' },
+      showSweep: st === 'thinking',
+      sweep: { position: 'absolute', inset: '-20%', background: 'conic-gradient(from 0deg, transparent 0deg, rgba(255,255,255,.7) 50deg, transparent 120deg, transparent 200deg, rgba(255,255,255,.35) 250deg, transparent 320deg)', mixBlendMode: 'overlay', animation: anim ? 'jv-spin 1.6s linear infinite' : 'none' },
+      hi: { position: 'absolute', left: '18%', top: '12%', width: '34%', height: '24%', borderRadius: '50%', background: 'radial-gradient(ellipse, rgba(255,255,255,.75), transparent 70%)', opacity: st === 'muted' ? .5 : .9 }
+    };
+  }
+}
+</script>
+</body>
+</html>

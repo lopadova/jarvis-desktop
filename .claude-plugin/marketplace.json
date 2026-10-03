@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
+  "name": "jarvis-desktop",
+  "description": "Plugins for Jarvis Desktop, the open-source voice assistant.",
+  "owner": {
+    "name": "Jarvis Desktop contributors",
+    "url": "https://github.com/lopadova/jarvis-desktop"
+  },
+  "plugins": [
+    {
+      "name": "jarvis",
+      "source": "./packages/mcp/integrations/claude-plugin",
+      "description": "Lets Claude speak to you, ask you questions out loud and notify you through Jarvis Desktop.",
+      "category": "productivity",
+      "homepage": "https://github.com/lopadova/jarvis-desktop"
+    }
+  ]
+}

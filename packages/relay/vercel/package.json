@@ -1,0 +1,14 @@
+{
+  "name": "jarvis-relay-vercel",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Vercel Functions variant of the Jarvis relay (long-polling + Upstash Redis).",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "@upstash/redis": "^1.39.0"
+  }
+}

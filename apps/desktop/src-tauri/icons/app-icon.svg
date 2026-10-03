@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <title>Jarvis</title>
+  <!-- Provisional app icon: the Orb on a midnight rounded square. Replaced by the design template. -->
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#5cc8ff" stop-opacity="0.65"/>
+      <stop offset="1" stop-color="#5cc8ff" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="core" cx="38%" cy="32%" r="70%">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="0.45" stop-color="#9fe0ff"/>
+      <stop offset="1" stop-color="#1d6fa3"/>
+    </radialGradient>
+  </defs>
+  <rect x="64" y="64" width="896" height="896" rx="200" fill="#151a24"/>
+  <circle cx="512" cy="512" r="360" fill="url(#glow)"/>
+  <circle cx="512" cy="512" r="230" fill="url(#core)"/>
+</svg>

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@keyframes jv-pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.7)}}
+@keyframes jv-spin{to{transform:rotate(360deg)}}
+@keyframes jv-pop{0%{transform:scale(.4);opacity:0}60%{transform:scale(1.15);opacity:1}100%{transform:scale(1)}}
+</style>
+</helmet>
+<sc-if value="{{ compact }}" hint-placeholder-val="{{ false }}">
+  <div style="display:flex; align-items:center; gap:10px; height:40px; padding:0 12px; border-radius:10px; background:var(--color-surface-raised); border:1px solid var(--color-border); font-family:var(--font-sans);">
+    <span style="{{ markSm }}">{{ agent.glyph }}</span>
+    <span style="flex:1; min-width:0; font-size:13px; font-weight:500; color:var(--color-text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ s.task }}</span>
+    <span style="{{ statusDotStyle }}"></span>
+    <span style="font-size:12px; color:var(--color-text-subtle); font-variant-numeric:tabular-nums;">{{ elapsed }}</span>
+  </div>
+</sc-if>
+<sc-if value="{{ full }}" hint-placeholder-val="{{ true }}">
+  <article aria-label="{{ ariaLabel }}" style="{{ card }}">
+    <div style="display:flex; align-items:flex-start; gap:12px;">
+      <span style="{{ mark }}">{{ agent.glyph }}</span>
+      <div style="flex:1; min-width:0; display:flex; flex-direction:column; gap:3px;">
+        <span style="font-size:14px; font-weight:600; line-height:1.35; color:var(--color-text); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; text-wrap:pretty;">{{ s.task }}</span>
+        <span style="font-size:12px; color:var(--color-text-subtle); display:flex; gap:6px; align-items:center; flex-wrap:wrap;"><span>{{ agent.name }}</span><span>·</span><span>{{ s.project }}</span><span>·</span><span style="font-variant-numeric:tabular-nums;">{{ elapsed }}</span></span>
+      </div>
+      <span style="{{ chip }}"><i class="{{ st.icon }}" style="{{ chipIcon }}"></i>{{ st.label }}</span>
+    </div>
+    <sc-if value="{{ hasActivity }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--color-text-muted); min-width:0;">
+        <span style="{{ liveDot }}"></span>
+        <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ s.activity }}</span>
+      </div>
+    </sc-if>
+    <sc-if value="{{ hasPreview }}" hint-placeholder-val="{{ false }}">
+      <p style="margin:0; font-size:12.5px; line-height:1.5; color:var(--color-text-muted); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; text-wrap:pretty;">{{ s.resultPreview }}</p>
+    </sc-if>
+    <sc-if value="{{ needsInput }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex; gap:6px;">
+        <input value="{{ reply }}" onChange="{{ onReplyChange }}" onKeyDown="{{ onReplyKey }}" placeholder="{{ t.replyPh }}" aria-label="{{ t.reply }}" style="flex:1; min-width:0; height:32px; padding:0 10px; border-radius:8px; border:1px solid var(--color-border-strong); background:var(--color-surface-sunken); color:var(--color-text); font:13px var(--font-sans); outline:none;" style-focus="border-color:var(--color-accent);"></input>
+        <button onClick="{{ sendReply }}" aria-label="{{ t.reply }}" style="width:32px; height:32px; border-radius:8px; border:none; background:var(--color-accent); color:var(--color-accent-contrast); cursor:pointer; display:grid; place-items:center;"><i class="icon-arrow-up" style="font-size:15px; line-height:1;"></i></button>
+      </div>
+    </sc-if>
+    <div style="display:flex; align-items:center; gap:4px; margin:0 -6px -4px;">
+      <sc-for list="{{ actions }}" as="a" hint-placeholder-count="2">
+        <button onClick="{{ a.on }}" style="{{ a.style }}" style-hover="background:var(--color-surface-sunken); color:var(--color-text);"><i class="{{ a.icon }}" style="font-size:13px; line-height:1;"></i>{{ a.label }}</button>
+      </sc-for>
+      <span style="flex:1;"></span>
+      <sc-if value="{{ canDismiss }}" hint-placeholder-val="{{ false }}">
+        <button onClick="{{ onDismiss }}" aria-label="{{ t.dismiss }}" style="width:28px; height:28px; border-radius:7px; border:none; background:transparent; color:var(--color-text-subtle); cursor:pointer; display:grid; place-items:center;" style-hover="background:var(--color-surface-sunken); color:var(--color-text);"><i class="icon-x" style="font-size:14px; line-height:1;"></i></button>
+      </sc-if>
+    </div>
+  </article>
+</sc-if>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:380,&quot;height&quot;:200},&quot;session&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;SessionView&quot;},&quot;locale&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;en&quot;,&quot;it&quot;],&quot;default&quot;:&quot;en&quot;,&quot;tsType&quot;:&quot;Locale&quot;},&quot;compact&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;},&quot;animated&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;},&quot;now&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;}}">
+const SC_T = {
+  en: { status: { running: 'Running', 'needs-input': 'Needs input', approval: 'Needs approval', done: 'Done', failed: 'Failed', cancelled: 'Cancelled' }, open: 'Open result', log: 'Log', reply: 'Reply', stop: 'Stop', review: 'Review', dismiss: 'Dismiss', replyPh: 'Answer the agent…', took: 'took' },
+  it: { status: { running: 'In corso', 'needs-input': 'Serve input', approval: 'Da approvare', done: 'Fatto', failed: 'Non riuscito', cancelled: 'Annullato' }, open: 'Apri risultato', log: 'Log', reply: 'Rispondi', stop: 'Ferma', review: 'Esamina', dismiss: 'Chiudi', replyPh: 'Rispondi all’agente…', took: 'durata' }
+};
+const SC_AGENTS = {
+  claude: { name: 'Claude Code', glyph: 'Cl', bg: 'oklch(0.6 0.13 45)' },
+  codex: { name: 'Codex', glyph: 'Cx', bg: 'oklch(0.48 0.04 260)' },
+  home: { name: 'Jarvis Home', glyph: 'J', bg: 'oklch(0.55 0.12 var(--accent-hue))' }
+};
+function fmtDur(ms) { const s = Math.max(0, Math.floor(ms / 1000)); const m = Math.floor(s / 60); const h = Math.floor(m / 60); if (h) return h + 'h ' + (m % 60) + 'm'; return m + ':' + String(s % 60).padStart(2, '0'); }
+class Component extends DCLogic {
+  state = { reply: '' };
+  renderVals() {
+    const p = this.props;
+    const t = SC_T[p.locale] || SC_T.en;
+    const s = p.session || { id: 'x', agent: 'claude', project: 'shop', task: 'Add a footer to the homepage', status: 'running', activity: 'Editing Footer.tsx', startedAt: Date.now() - 134000 };
+    const now = p.now || Date.now();
+    const colors = { running: 'var(--color-accent)', 'needs-input': 'var(--color-ember)', approval: 'var(--color-warning)', done: 'var(--color-success)', failed: 'var(--color-danger)', cancelled: 'var(--color-text-subtle)' };
+    const icons = { running: 'icon-loader-circle', 'needs-input': 'icon-message-circle-question', approval: 'icon-shield-alert', done: 'icon-circle-check', failed: 'icon-circle-x', cancelled: 'icon-circle-slash' };
+    const c = colors[s.status];
+    const active = ['running', 'needs-input', 'approval'].includes(s.status);
+    const anim = p.animated !== false;
+    const agent = SC_AGENTS[s.agent] || SC_AGENTS.home;
+    const elapsed = fmtDur((s.finishedAt || now) - s.startedAt);
+    const btn = { height: 28, padding: '0 8px', borderRadius: 7, border: 'none', background: 'transparent', color: 'var(--color-text-muted)', font: '500 12.5px var(--font-sans)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap', flexShrink: 0 };
+    const primary = { ...btn, background: 'var(--color-accent-soft)', color: 'var(--color-text)', fontWeight: 600 };
+    const id = s.id; const call = f => () => p[f] && p[f](id);
+    const A = {
+      open: { label: t.open, icon: 'icon-external-link', on: call('onOpen'), style: primary },
+      review: { label: t.review, icon: 'icon-shield-alert', on: call('onReview'), style: primary },
+      log: { label: t.log, icon: 'icon-scroll-text', on: call('onLog'), style: btn },
+      stop: { label: t.stop, icon: 'icon-square', on: call('onStop'), style: btn }
+    };
+    const actions = s.status === 'done' ? [A.open, A.log] : s.status === 'approval' ? [A.review, A.log, A.stop] : active ? [A.log, A.stop] : [A.log];
+    const markBase = { borderRadius: 8, display: 'grid', placeItems: 'center', color: '#fff', fontWeight: 700, background: agent.bg, flexShrink: 0, fontFamily: 'var(--font-sans)' };
+    return {
+      t, s, agent, elapsed, actions,
+      compact: !!p.compact, full: !p.compact,
+      ariaLabel: `${agent.name}: ${s.task} — ${t.status[s.status]}`,
+      card: { display: 'flex', flexDirection: 'column', gap: 10, padding: 14, borderRadius: 14, background: 'var(--color-surface-raised)', border: `1px solid ${s.status === 'approval' ? 'color-mix(in oklab, var(--color-warning) 55%, transparent)' : 'var(--color-border)'}`, fontFamily: 'var(--font-sans)', transition: 'border-color 200ms' },
+      mark: { ...markBase, width: 30, height: 30, fontSize: 11.5 },
+      markSm: { ...markBase, width: 22, height: 22, fontSize: 9.5, borderRadius: 6 },
+      st: { label: t.status[s.status], icon: icons[s.status] },
+      chip: { display: 'inline-flex', alignItems: 'center', gap: 5, height: 22, padding: '0 8px', borderRadius: 999, fontSize: 11.5, fontWeight: 600, color: c, background: `color-mix(in oklab, ${c} 14%, transparent)`, whiteSpace: 'nowrap', flexShrink: 0, transition: 'color 200ms, background 200ms' },
+      chipIcon: { fontSize: 12, lineHeight: 1, display: 'inline-block', animation: anim ? (s.status === 'running' ? 'jv-spin 1.2s linear infinite' : s.status === 'done' ? 'jv-pop .5s cubic-bezier(.3,1.5,.5,1) 1' : 'none') : 'none' },
+      statusDotStyle: { width: 8, height: 8, borderRadius: 999, background: c, flexShrink: 0, animation: s.status === 'running' && anim ? 'jv-pulse 1.6s ease-in-out infinite' : 'none' },
+      hasActivity: !!s.activity && active,
+      liveDot: { width: 6, height: 6, borderRadius: 999, background: c, flexShrink: 0, animation: s.status === 'running' && anim ? 'jv-pulse 1.6s ease-in-out infinite' : 'none' },
+      hasPreview: !!s.resultPreview && !active,
+      needsInput: s.status === 'needs-input',
+      canDismiss: !active,
+      onDismiss: call('onDismiss'),
+      reply: this.state.reply,
+      onReplyChange: e => this.setState({ reply: e.target.value }),
+      onReplyKey: e => { if (e.key === 'Enter') this.send(); },
+      sendReply: () => this.send()
+    };
+  }
+  send() { if (!this.state.reply.trim()) return; this.props.onReply && this.props.onReply(this.props.session.id, this.state.reply); this.setState({ reply: '' }); }
+}
+</script>
+</body>
+</html>

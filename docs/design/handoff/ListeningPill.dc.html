@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@keyframes jv-word{from{color:var(--color-text-subtle)}to{color:var(--color-text)}}
+@keyframes jv-shimmer{0%{background-position:150% 0}100%{background-position:-50% 0}}
+@keyframes jv-pill-in{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+</style>
+</helmet>
+<div role="{{ role }}" aria-label="{{ aria }}" style="{{ shell }}">
+  <div style="display:flex; align-items:center; gap:12px; min-height:{{ rowH }};">
+    <dc-import name="Orb" size="{{ 40 }}" state="{{ orbState }}" level="{{ level }}" private-mode="{{ privateMode }}" animated="{{ animated }}" hint-size="40px,40px"></dc-import>
+    <div aria-live="polite" style="flex:1; min-width:0; display:flex; flex-direction:column; justify-content:center; gap:2px;">
+      <sc-if value="{{ isIdle }}" hint-placeholder-val="{{ false }}">
+        <span style="font-size:13.5px; color:var(--color-text-muted); display:flex; align-items:center; gap:6px; flex-wrap:wrap;">{{ t.say }} <b style="color:var(--color-text); font-weight:600; font-style:italic;">Jarvis</b> {{ t.orHold }}
+          <span style="display:inline-flex; gap:3px;"><sc-for list="{{ keys }}" as="k" hint-placeholder-count="2"><kbd style="min-width:20px; height:20px; padding:0 5px; border-radius:5px; border:1px solid var(--color-border-strong); border-bottom-width:2px; background:var(--color-surface-sunken); color:var(--color-text); font:600 11px var(--font-sans); display:inline-grid; place-items:center;">{{ k }}</kbd></sc-for></span>
+        </span>
+      </sc-if>
+      <sc-if value="{{ isListening }}" hint-placeholder-val="{{ true }}">
+        <div style="font-size:14px; line-height:1.4; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; mask-image:linear-gradient(90deg,#000 85%,transparent); -webkit-mask-image:linear-gradient(90deg,#000 85%,transparent);">
+          <sc-for list="{{ committed }}" as="w" hint-placeholder-count="4"><span style="{{ w.style }}">{{ w.t }} </span></sc-for><span style="color:var(--color-text-subtle);">{{ partial }}</span>
+        </div>
+      </sc-if>
+      <sc-if value="{{ isThinking }}" hint-placeholder-val="{{ false }}">
+        <span style="{{ shimmer }}">{{ thinkingText }}</span>
+      </sc-if>
+      <sc-if value="{{ isSpeaking }}" hint-placeholder-val="{{ false }}">
+        <div style="font-size:14px; line-height:1.4; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">
+          <sc-for list="{{ spoken }}" as="w" hint-placeholder-count="6"><span style="{{ w.style }}">{{ w.t }} </span></sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{ isHeadline }}" hint-placeholder-val="{{ false }}">
+        <span style="font-size:14.5px; font-weight:600; line-height:1.35; color:var(--color-text); text-wrap:pretty;">{{ headline }}</span>
+      </sc-if>
+      <sc-if value="{{ isMuted }}" hint-placeholder-val="{{ false }}">
+        <span style="font-size:13.5px; color:var(--color-text-muted);">{{ mutedText }}</span>
+      </sc-if>
+    </div>
+    <div style="display:flex; flex-direction:column; align-items:flex-end; gap:4px; flex-shrink:0;">
+      <sc-if value="{{ hasChip }}" hint-placeholder-val="{{ true }}"><span style="{{ chip }}"><i class="{{ chipIcon }}" style="font-size:11px; line-height:1;"></i>{{ chipLabel }}</span></sc-if>
+      <sc-if value="{{ privateMode }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex; align-items:center; gap:4px; height:20px; padding:0 7px; border-radius:999px; font-size:11px; font-weight:600; color:var(--color-private); background:color-mix(in oklab, var(--color-private) 14%, transparent);"><i class="icon-lock" style="font-size:10px; line-height:1;"></i>{{ t.local }}</span></sc-if>
+    </div>
+    <sc-if value="{{ isSpeaking }}" hint-placeholder-val="{{ false }}">
+      <button onClick="{{ onStop }}" aria-label="{{ t.stop }}" title="{{ t.stop }} (Esc)" style="width:32px; height:32px; border-radius:999px; border:1px solid var(--color-border-strong); background:var(--color-surface-raised); color:var(--color-text); cursor:pointer; display:grid; place-items:center; flex-shrink:0;" style-hover="background:var(--color-surface-sunken);"><i class="icon-square" style="font-size:12px; line-height:1;"></i></button>
+    </sc-if>
+  </div>
+  <sc-if value="{{ isClarify }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center; padding-left:52px;">
+      <sc-for list="{{ replies }}" as="r" hint-placeholder-count="3">
+        <button onClick="{{ r.on }}" style="height:32px; padding:0 14px; border-radius:999px; border:1px solid var(--color-border-strong); background:var(--color-surface-raised); color:var(--color-text); font:500 13px var(--font-sans); cursor:pointer;" style-hover="border-color:var(--color-accent); background:var(--color-accent-soft);" style-active="transform:scale(.98);">{{ r.t }}</button>
+      </sc-for>
+      <span style="font-size:12.5px; color:var(--color-text-subtle); font-style:italic;">{{ t.justSay }}</span>
+    </div>
+  </sc-if>
+  <sc-if value="{{ isError }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex; gap:8px; padding-left:52px;">
+      <sc-if value="{{ hasAction }}" hint-placeholder-val="{{ true }}"><button onClick="{{ onErrorAction }}" style="height:32px; padding:0 14px; border-radius:9px; border:none; background:var(--color-accent); color:var(--color-accent-contrast); font:600 13px var(--font-sans); cursor:pointer;">{{ actionLabel }}</button></sc-if>
+      <button onClick="{{ onStop }}" style="height:32px; padding:0 12px; border-radius:9px; border:none; background:transparent; color:var(--color-text-muted); font:500 13px var(--font-sans); cursor:pointer;" style-hover="background:var(--color-surface-raised); color:var(--color-text);">{{ t.dismiss }}</button>
+    </div>
+  </sc-if>
+  <sc-if value="{{ isApproval }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="ApprovalCard" request="{{ request }}" locale="{{ locale }}" now="{{ now }}" embedded="{{ true }}" on-decision="{{ onDecision }}" hint-size="100%,220px"></dc-import>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:600,&quot;height&quot;:160},&quot;state&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;PillState&quot;},&quot;privateMode&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;},&quot;platform&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;mac&quot;,&quot;win&quot;,&quot;linux&quot;],&quot;default&quot;:&quot;mac&quot;,&quot;tsType&quot;:&quot;Platform&quot;},&quot;locale&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;en&quot;,&quot;it&quot;],&quot;default&quot;:&quot;en&quot;,&quot;tsType&quot;:&quot;Locale&quot;},&quot;animated&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;}}">
+const LP_T = {
+  en: { say: 'Say', orHold: 'or hold', listening: 'Listening', thinking: 'Thinking', using: 'Using', speaking: 'Speaking', yourTurn: 'Your turn', approval: 'Needs OK', error: 'Error', muted: 'Muted', local: 'Local only', stop: 'Stop', justSay: 'or just say it', dismiss: 'Dismiss', mutedFocus: 'Muted during Focus', mutedUser: 'Microphone muted', approvalHead: 'needs your OK', pill: 'Jarvis' },
+  it: { say: 'Di’', orHold: 'o tieni premuto', listening: 'In ascolto', thinking: 'Ci penso', using: 'Con', speaking: 'Parlo', yourTurn: 'Tocca a te', approval: 'Serve OK', error: 'Errore', muted: 'Muto', local: 'Solo locale', stop: 'Ferma', justSay: 'oppure dillo e basta', dismiss: 'Chiudi', mutedFocus: 'In silenzio durante Focus', mutedUser: 'Microfono disattivato', approvalHead: 'chiede il tuo OK', pill: 'Jarvis' }
+};
+const BRAINS = { chatgpt: 'ChatGPT', claude: 'Claude', codex: 'Codex', 'api-anthropic': 'Anthropic API', 'api-openai': 'OpenAI API', local: 'Local' };
+const AG = { claude: 'Claude Code', codex: 'Codex', home: 'Jarvis Home' };
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const t = LP_T[p.locale] || LP_T.en;
+    const st = p.state || { kind: 'listening', level: 0.5, committed: 'Jarvis, in project shop', partial: 'ad' };
+    const k = st.kind;
+    const mac = (p.platform || 'mac') === 'mac';
+    const anim = p.animated !== false;
+    const expanded = ['clarify', 'approval', 'error'].includes(k);
+    const orbMap = { 'idle-hint': 'idle', listening: 'listening', thinking: 'thinking', speaking: 'speaking', clarify: 'idle', approval: 'approval', error: 'error', muted: 'muted' };
+    const chipMap = {
+      listening: [t.listening, 'icon-mic', 'var(--color-accent)'],
+      thinking: [st.brain ? t.using + ' ' + BRAINS[st.brain] : t.thinking, 'icon-sparkles', 'var(--color-text-muted)'],
+      speaking: [t.speaking, 'icon-audio-lines', 'var(--color-ember)'],
+      clarify: [t.yourTurn, 'icon-message-circle-question', 'var(--color-accent)'],
+      approval: [t.approval, 'icon-shield-alert', 'var(--color-warning)'],
+      error: [t.error, 'icon-circle-alert', 'var(--color-danger)'],
+      muted: [t.muted, 'icon-mic-off', 'var(--color-text-subtle)']
+    };
+    const ch = chipMap[k];
+    let committed = [];
+    if (k === 'listening') {
+      let words = (st.committed || '').split(' ').filter(Boolean);
+      if (words.length > 14) words = ['…', ...words.slice(-13)];
+      committed = words.map((w, i) => ({ t: w, style: { color: 'var(--color-text)', animation: anim && i === words.length - 1 ? 'jv-word 120ms ease-out' : 'none' } }));
+    }
+    let spoken = [];
+    if (k === 'speaking') {
+      const words = (st.text || '').split(' ');
+      const cut = Math.round((st.progress || 0) * words.length);
+      spoken = words.map((w, i) => ({ t: w, style: { color: i < cut ? 'var(--color-text)' : 'var(--color-text-subtle)', transition: 'color 120ms' } }));
+    }
+    const req = st.request;
+    const headline = k === 'clarify' ? st.question : k === 'error' ? st.message : k === 'approval' && req ? (AG[req.agent] + ' ' + t.approvalHead) : '';
+    const radius = expanded ? 24 : 32;
+    return {
+      t, locale: p.locale || 'en', now: p.now || Date.now(), animated: anim,
+      role: k === 'approval' ? 'group' : 'status', aria: 'Jarvis',
+      shell: { width: expanded ? 560 : 360, boxSizing: 'border-box', minHeight: 64, padding: expanded ? '12px 16px 16px 12px' : '0 12px', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 14, borderRadius: radius, background: 'var(--color-surface)', backdropFilter: 'var(--backdrop)', WebkitBackdropFilter: 'var(--backdrop)', border: `1px solid ${p.privateMode ? 'color-mix(in oklab, var(--color-private) 45%, transparent)' : k === 'approval' && req && req.risk === 'high' ? 'var(--color-danger)' : 'var(--color-border)'}`, boxShadow: 'var(--shadow-lg)', fontFamily: 'var(--font-sans)', transition: anim ? 'width 260ms var(--ease-emphasized), border-radius 260ms' : 'none', animation: anim ? 'jv-pill-in 240ms var(--ease-spring-like)' : 'none' },
+      rowH: expanded ? '40px' : '64px',
+      orbState: orbMap[k], level: st.level || 0, privateMode: !!p.privateMode,
+      isIdle: k === 'idle-hint', isListening: k === 'listening', isThinking: k === 'thinking', isSpeaking: k === 'speaking',
+      isHeadline: expanded, isMuted: k === 'muted', isClarify: k === 'clarify', isError: k === 'error', isApproval: k === 'approval',
+      keys: st.shortcut || (mac ? ['⌥', 'Space'] : ['Alt', 'Space']),
+      committed, partial: st.partial || '', spoken,
+      thinkingText: st.transcript || '',
+      shimmer: { fontSize: 14, lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', color: 'var(--color-text-muted)', backgroundImage: anim ? 'linear-gradient(90deg, var(--color-text-muted) 0%, var(--color-text-muted) 40%, var(--color-text) 50%, var(--color-text-muted) 60%, var(--color-text-muted) 100%)' : 'none', backgroundSize: '200% 100%', WebkitBackgroundClip: anim ? 'text' : 'border-box', backgroundClip: anim ? 'text' : 'border-box', WebkitTextFillColor: anim ? 'transparent' : 'currentColor', animation: anim ? 'jv-shimmer 1.8s linear infinite' : 'none' },
+      headline, mutedText: st.reason === 'focus' ? t.mutedFocus : t.mutedUser,
+      hasChip: !!ch, chipLabel: ch ? ch[0] : '', chipIcon: ch ? ch[1] : '',
+      chip: { display: 'inline-flex', alignItems: 'center', gap: 4, height: 20, padding: '0 8px', borderRadius: 999, fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap', color: ch ? ch[2] : 'inherit', background: ch ? `color-mix(in oklab, ${ch[2]} 14%, transparent)` : 'transparent' },
+      replies: (st.quickReplies || []).map(r => ({ t: r, on: () => p.onQuickReply && p.onQuickReply(r) })),
+      hasAction: !!st.actionLabel, actionLabel: st.actionLabel,
+      request: req,
+      onStop: () => p.onStop && p.onStop(),
+      onErrorAction: () => p.onErrorAction && p.onErrorAction(),
+      onDecision: (id, d) => p.onApprovalDecision && p.onApprovalDecision(id, d)
+    };
+  }
+}
+</script>
+</body>
+</html>

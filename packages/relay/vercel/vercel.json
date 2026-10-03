@@ -1,0 +1,8 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "functions": {
+    "api/relay.ts": { "maxDuration": 150 }
+  },
+  "rewrites": [{ "source": "/(.*)", "destination": "/api/relay?__path=/$1" }]
+}

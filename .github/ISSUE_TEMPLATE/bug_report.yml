@@ -1,0 +1,115 @@
+name: Bug report
+description: Something in Jarvis doesn't work as expected.
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug!
+        **Security issue?** Do not file it here. Please use [private vulnerability reporting](https://github.com/lopadova/jarvis-desktop/security/advisories/new) instead (see SECURITY.md).
+        Please remove personal data (emails, file paths with your name, tokens) from logs before pasting them.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, and what happened instead?
+      placeholder: 'I said "Jarvis, timer for 10 minutes" and…'
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open Settings › Voice
+        2. Select …
+        3. Say …
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Jarvis version
+      description: Settings › About
+      placeholder: "0.1.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        - macOS (Apple Silicon)
+        - macOS (Intel)
+        - Windows 11
+        - Windows 10
+        - Linux (X11)
+        - Linux (Wayland)
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: os-version
+    attributes:
+      label: OS version / distribution
+      placeholder: "macOS 26.1, Windows 11 24H2, Ubuntu 26.04 …"
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      multiple: true
+      options:
+        - Install / first run
+        - Wake word / microphone / transcription
+        - Voice output
+        - Brain (ChatGPT plan, Claude Code, Codex, API key, local)
+        - Agents / sessions / approvals
+        - Everyday features (timers, clipboard, screen, files…)
+        - Claude Desktop / Cowork / MCP
+        - ChatGPT relay
+        - Settings / UI
+        - Docs
+        - Other
+    validations:
+      required: true
+  - type: dropdown
+    id: brain
+    attributes:
+      label: Primary brain
+      options:
+        - ChatGPT plan (Sign in with ChatGPT)
+        - Claude Code
+        - Codex
+        - Anthropic API key
+        - OpenAI API key
+        - Local (Ollama / OpenAI-compatible)
+        - None / not relevant
+  - type: dropdown
+    id: tts
+    attributes:
+      label: Voice provider
+      options:
+        - System voice
+        - ElevenLabs
+        - Fish Audio
+        - OpenAI
+        - Kokoro
+        - Piper
+        - Not relevant
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: |
+        Relevant lines from `logs/app.log` in the Jarvis data folder (macOS `~/Library/Application Support/Jarvis`, Windows `%APPDATA%\Jarvis`, Linux `~/.local/share/jarvis`). Logs are redacted, but please double-check.
+      render: text
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: I searched existing issues and this is not a duplicate.
+          required: true
+        - label: I removed personal data and secrets from everything I pasted.
+          required: true

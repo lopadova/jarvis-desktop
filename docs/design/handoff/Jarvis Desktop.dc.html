@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<title>Jarvis Desktop — UI template</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"></link>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400..700&amp;family=JetBrains+Mono:wght@400..600&amp;display=swap"></link>
+<link rel="stylesheet" href="https://unpkg.com/lucide-static@0.469.0/font/lucide.css"></link>
+<style>
+html,body{margin:0;padding:0;}
+body{-webkit-font-smoothing:antialiased;}
+a{color:var(--color-accent);} a:hover{color:var(--color-text);}
+button:focus-visible,input:focus-visible,select:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--color-accent);outline-offset:2px;}
+@keyframes jv-breathe{0%,100%{opacity:.45;transform:scale(.94)}50%{opacity:.95;transform:scale(1.05)}}
+@keyframes jv-spin{to{transform:rotate(360deg)}}
+@keyframes jv-shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-3px)}40%{transform:translateX(3px)}60%{transform:translateX(-2px)}80%{transform:translateX(2px)}}
+@keyframes jv-pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.7)}}
+@keyframes jv-pop{0%{transform:scale(.4);opacity:0}60%{transform:scale(1.15);opacity:1}100%{transform:scale(1)}}
+@keyframes jv-word{from{color:var(--color-text-subtle)}to{color:var(--color-text)}}
+@keyframes jv-shimmer{0%{background-position:150% 0}100%{background-position:-50% 0}}
+@keyframes jv-pill-in{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+@keyframes jv-toast-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes jv-wave{0%,100%{transform:scaleY(.3)}50%{transform:scaleY(1)}}
+</style>
+</helmet>
+<div style="{{ rootStyle }}">
+  <header style="position:sticky; top:0; z-index:50; display:flex; flex-wrap:wrap; align-items:center; gap:12px 24px; padding:12px 24px; background:var(--color-bg); border-bottom:1px solid var(--color-border);">
+    <div style="display:flex; align-items:center; gap:10px;">
+      <dc-import name="Orb" size="{{ 24 }}" state="idle" animated="{{ motionOn }}" hint-size="24px,24px"></dc-import>
+      <span style="font-size:15px; font-weight:650; letter-spacing:-0.02em;">Jarvis</span>
+      <span style="font-size:12px; color:var(--color-text-subtle);">{{ t.gallery }}</span>
+    </div>
+    <nav aria-label="Surfaces" style="display:flex; gap:2px; flex-wrap:wrap; flex:1;">
+      <sc-for list="{{ views }}" as="v" hint-placeholder-count="8">
+        <button onClick="{{ v.pick }}" aria-current="{{ v.current }}" style="{{ v.style }}" style-hover="background:var(--color-surface-raised); color:var(--color-text);">{{ v.label }}</button>
+      </sc-for>
+    </nav>
+    <div style="display:flex; flex-wrap:wrap; gap:8px 14px; align-items:center;">
+      <sc-for list="{{ toggles }}" as="g" hint-placeholder-count="5">
+        <div role="radiogroup" aria-label="{{ g.label }}" style="display:flex; padding:2px; border-radius:9px; background:var(--color-surface-sunken); border:1px solid var(--color-border);">
+          <sc-for list="{{ g.opts }}" as="o" hint-placeholder-count="2"><button role="radio" aria-checked="{{ o.on }}" onClick="{{ o.pick }}" title="{{ g.label }}" style="{{ o.style }}">{{ o.label }}</button></sc-for>
+        </div>
+      </sc-for>
+      <div role="radiogroup" aria-label="Accent hue" style="display:flex; gap:6px; align-items:center;">
+        <sc-for list="{{ hues }}" as="h" hint-placeholder-count="5"><button role="radio" aria-checked="{{ h.on }}" aria-label="{{ h.label }}" title="{{ h.label }}" onClick="{{ h.pick }}" style="{{ h.style }}"></button></sc-for>
+      </div>
+    </div>
+  </header>
+
+  <sc-if value="{{ vPrototype }}" hint-placeholder-val="{{ true }}">
+    <div ref="{{ sceneRef }}" style="padding:16px 24px 40px; box-sizing:border-box; display:flex; flex-direction:column; gap:12px;">
+      <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+        <span style="font-size:13px; color:var(--color-text-muted); flex:1; min-width:240px; text-wrap:pretty;">{{ t.protoHint }}</span>
+        <button onClick="{{ runBuild }}" style="height:32px; padding:0 12px; border-radius:9px; border:none; background:var(--color-accent); color:var(--color-accent-contrast); font:600 12.5px var(--font-sans); cursor:pointer; display:inline-flex; align-items:center; gap:6px; white-space:nowrap; flex-shrink:0;"><i class="icon-play" style="font-size:13px; line-height:1;"></i>{{ t.runFlow }}</button>
+        <button onClick="{{ reset }}" style="height:32px; padding:0 12px; border-radius:9px; border:1px solid var(--color-border-strong); background:var(--color-surface-raised); color:var(--color-text); font:600 12.5px var(--font-sans); cursor:pointer; display:inline-flex; align-items:center; gap:6px;"><i class="icon-rotate-ccw" style="font-size:13px; line-height:1;"></i>{{ t.reset }}</button>
+      </div>
+      <div style="{{ sceneOuter }}">
+        <div style="{{ scene }}">
+          <sc-if value="{{ topBar }}" hint-placeholder-val="{{ true }}">
+            <div style="position:absolute; top:0; left:0; right:0; height:28px; display:flex; align-items:center; gap:18px; padding:0 14px; background:{{ menubarBg }}; backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); font-size:13px; color:var(--color-text); z-index:30;">
+              <sc-if value="{{ isMac }}" hint-placeholder-val="{{ true }}"><b style="font-weight:650;">Jarvis</b><span>File</span><span>Edit</span><span>Window</span><span>Help</span></sc-if>
+              <sc-if value="{{ isLinux }}" hint-placeholder-val="{{ false }}"><span style="font-weight:600;">Activities</span></sc-if>
+              <span style="flex:1; text-align:center; font-weight:{{ clockWeight }};">{{ linuxClock }}</span>
+              <button onClick="{{ toggleTray }}" aria-label="{{ t.trayAria }}" aria-expanded="{{ trayOpen }}" style="height:22px; padding:0 6px; border-radius:5px; border:none; background:{{ trayBtnBg }}; color:var(--color-text); cursor:pointer; display:grid; place-items:center;">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><circle cx="9" cy="9" r="6.25" stroke="currentColor" stroke-width="1.5"></circle><circle cx="9" cy="9" r="2.75" fill="currentColor"></circle><sc-if value="{{ busy }}" hint-placeholder-val="{{ true }}"><circle cx="15" cy="3.5" r="2.5" fill="currentColor" stroke="{{ menubarSolid }}" stroke-width="1.2"></circle></sc-if></svg>
+              </button>
+              <i class="icon-wifi" style="font-size:15px; line-height:1;"></i>
+              <i class="icon-battery-full" style="font-size:17px; line-height:1;"></i>
+              <sc-if value="{{ isMac }}" hint-placeholder-val="{{ true }}"><span style="font-variant-numeric:tabular-nums;">{{ clock }}</span></sc-if>
+            </div>
+          </sc-if>
+          <sc-if value="{{ isWin }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute; bottom:0; left:0; right:0; height:48px; display:flex; align-items:center; justify-content:flex-end; gap:6px; padding:0 12px; background:{{ menubarBg }}; backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border-top:1px solid var(--color-border); color:var(--color-text); z-index:30;">
+              <i class="icon-chevron-up" style="font-size:15px; line-height:1; padding:0 6px;"></i>
+              <button onClick="{{ toggleTray }}" aria-label="{{ t.trayAria }}" style="width:32px; height:32px; border-radius:6px; border:none; background:{{ trayBtnBg }}; color:var(--color-text); cursor:pointer; display:grid; place-items:center;">
+                <svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden="true"><circle cx="9" cy="9" r="6.25" stroke="currentColor" stroke-width="1.6"></circle><circle cx="9" cy="9" r="2.75" fill="currentColor"></circle><sc-if value="{{ busy }}" hint-placeholder-val="{{ true }}"><circle cx="15" cy="3.5" r="2.5" fill="var(--color-accent)"></circle></sc-if></svg>
+              </button>
+              <i class="icon-wifi" style="font-size:15px; line-height:1; padding:0 6px;"></i><i class="icon-volume-2" style="font-size:15px; line-height:1; padding:0 6px;"></i>
+              <span style="display:flex; flex-direction:column; align-items:flex-end; font-size:11.5px; line-height:1.3; padding:0 8px; font-variant-numeric:tabular-nums;"><span>{{ clockShort }}</span><span>{{ dateShort }}</span></span>
+            </div>
+          </sc-if>
+
+          <div style="{{ homePos }}">
+            <div style="display:flex; flex-direction:column; width:960px; height:680px; border-radius:{{ winRadius }}; background:var(--color-surface); backdrop-filter:var(--backdrop); -webkit-backdrop-filter:var(--backdrop); border:1px solid var(--color-border); box-shadow:var(--shadow-lg); overflow:hidden; position:relative;">
+              <div data-tauri-drag-region="true" style="height:40px; flex-shrink:0; display:flex; align-items:center; gap:8px; padding-left:14px; border-bottom:1px solid var(--color-border);">
+                <sc-if value="{{ isMac }}" hint-placeholder-val="{{ true }}"><div style="display:flex; gap:8px;"><span style="width:12px; height:12px; border-radius:50%; background:#ff5f57;"></span><span style="width:12px; height:12px; border-radius:50%; background:#febc2e;"></span><span style="width:12px; height:12px; border-radius:50%; background:#28c840;"></span></div></sc-if>
+                <span style="flex:1; text-align:center; font-size:12.5px; font-weight:600; color:var(--color-text-muted);">Jarvis</span>
+                <button onClick="{{ togglePanel }}" aria-pressed="{{ panelOpen }}" aria-label="{{ t.sessions }}" title="{{ t.sessions }}" style="height:28px; padding:0 8px; border-radius:7px; border:none; background:{{ panelBtnBg }}; color:var(--color-text-muted); font:600 12px var(--font-sans); cursor:pointer; display:inline-flex; align-items:center; gap:6px; margin-right:{{ panelBtnMargin }};" style-hover="color:var(--color-text);"><i class="icon-panel-right" style="font-size:15px; line-height:1;"></i>{{ runningLabel }}</button>
+                <sc-if value="{{ isWin }}" hint-placeholder-val="{{ false }}"><div style="display:flex; align-self:stretch;"><span style="width:46px; display:grid; place-items:center; color:var(--color-text-muted);"><i class="icon-minus" style="font-size:15px; line-height:1;"></i></span><span style="width:46px; display:grid; place-items:center; color:var(--color-text-muted);"><i class="icon-square" style="font-size:12px; line-height:1;"></i></span><span style="width:46px; display:grid; place-items:center; color:var(--color-text-muted);" style-hover="background:#c42b1c; color:#fff;"><i class="icon-x" style="font-size:15px; line-height:1;"></i></span></div></sc-if>
+                <sc-if value="{{ isLinux }}" hint-placeholder-val="{{ false }}"><div style="display:flex; gap:8px; padding-right:12px;"><span style="width:24px; height:24px; border-radius:50%; background:var(--color-surface-raised); display:grid; place-items:center; color:var(--color-text-muted);"><i class="icon-minus" style="font-size:12px; line-height:1;"></i></span><span style="width:24px; height:24px; border-radius:50%; background:var(--color-surface-raised); display:grid; place-items:center; color:var(--color-text-muted);"><i class="icon-x" style="font-size:12px; line-height:1;"></i></span></div></sc-if>
+              </div>
+              <div style="flex:1; min-height:0; display:flex;">
+                <nav aria-label="Main" style="width:64px; flex-shrink:0; display:flex; flex-direction:column; align-items:center; gap:4px; padding:12px 0; border-right:1px solid var(--color-border);">
+                  <sc-for list="{{ rail }}" as="r" hint-placeholder-count="5">
+                    <button onClick="{{ r.pick }}" aria-label="{{ r.label }}" title="{{ r.label }}" aria-current="{{ r.current }}" style="{{ r.style }}" style-hover="background:var(--color-surface-raised); color:var(--color-text);"><i class="{{ r.icon }}" style="font-size:19px; line-height:1;"></i></button>
+                  </sc-for>
+                  <span style="flex:1;"></span>
+                  <span aria-label="Lorenzo" style="width:32px; height:32px; border-radius:999px; display:grid; place-items:center; background:var(--color-surface-raised); border:1px solid var(--color-border-strong); font-size:12.5px; font-weight:600; color:var(--color-text);">L</span>
+                </nav>
+                <div style="flex:1; min-width:0; display:flex; flex-direction:column;">
+                  <div ref="{{ chatRef }}" style="flex:1; min-height:0; overflow-y:auto;">
+                    <div style="max-width:760px; margin:0 auto; padding:28px 28px 20px; display:flex; flex-direction:column; gap:28px;">
+                      <sc-if value="{{ railHome }}" hint-placeholder-val="{{ true }}">
+                        <div style="display:flex; align-items:center; gap:20px;">
+                          <dc-import name="Orb" size="{{ 96 }}" state="{{ homeOrbState }}" level="{{ lv }}" private-mode="{{ privateMode }}" animated="{{ motionOn }}" hint-size="96px,96px"></dc-import>
+                          <div style="display:flex; flex-direction:column; gap:6px; min-width:0;">
+                            <h1 style="margin:0; font-size:28px; font-weight:650; letter-spacing:-0.03em; line-height:1.1;">{{ greeting }}</h1>
+                            <div style="display:flex; flex-wrap:wrap; gap:4px 10px; font-size:13px; color:var(--color-text-muted);">
+                              <sc-for list="{{ statusBits }}" as="b" hint-placeholder-count="3"><span style="display:inline-flex; align-items:center; gap:5px;"><span style="{{ b.dot }}"></span>{{ b.text }}</span></sc-for>
+                            </div>
+                          </div>
+                        </div>
+                        <section aria-label="{{ t.suggestions }}" style="display:flex; flex-direction:column; gap:12px;">
+                          <div role="tablist" aria-label="{{ t.suggestions }}" style="display:flex; gap:4px; overflow-x:auto; padding-bottom:2px; scrollbar-width:none;">
+                            <sc-for list="{{ cats }}" as="c" hint-placeholder-count="11"><button role="tab" aria-selected="{{ c.on }}" onClick="{{ c.pick }}" style="{{ c.style }}" style-hover="color:var(--color-text);">{{ c.label }}</button></sc-for>
+                          </div>
+                          <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(168px,1fr)); gap:8px;">
+                            <sc-for list="{{ chips }}" as="s" hint-placeholder-count="8">
+                              <button onClick="{{ s.pick }}" disabled="{{ s.disabled }}" title="{{ s.title }}" style="{{ s.style }}" style-hover="transform:translateY(-1px); box-shadow:var(--shadow-md); border-color:var(--color-border-strong);" style-active="transform:scale(.98);">
+                                <span style="display:flex; align-items:center; gap:8px; min-width:0;"><span style="width:26px; height:26px; border-radius:7px; display:grid; place-items:center; background:var(--color-accent-soft); color:var(--color-accent); flex-shrink:0;"><i class="{{ s.iconCls }}" style="font-size:14px; line-height:1;"></i></span><span style="font-size:13px; font-weight:600; color:var(--color-text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ s.label }}</span></span>
+                                <span style="font-size:11.5px; color:var(--color-text-subtle); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-align:left;">{{ t.sayPrefix }} “{{ s.utterance }}”</span>
+                              </button>
+                            </sc-for>
+                          </div>
+                        </section>
+                        <section aria-label="{{ t.conversation }}" aria-live="polite" style="display:flex; flex-direction:column; gap:16px;">
+                          <sc-for list="{{ msgs }}" as="m" hint-placeholder-count="3">
+                            <dc-import name="ChatMessage" message="{{ m }}" locale="{{ locale }}" now="{{ now }}" on-open="{{ openSession }}" on-view="{{ showPanel }}" on-approval="{{ decide }}" on-replay="{{ replay }}" hint-size="100%,60px"></dc-import>
+                          </sc-for>
+                        </section>
+                      </sc-if>
+                      <sc-if value="{{ railMemory }}" hint-placeholder-val="{{ false }}">
+                        <div style="display:flex; flex-direction:column; gap:4px;">
+                          <h1 style="margin:0 0 6px; font-size:22px; font-weight:650; letter-spacing:-0.02em;">{{ t.memory }}</h1>
+                          <p style="margin:0 0 14px; font-size:13.5px; color:var(--color-text-muted);">{{ t.memorySub }}</p>
+                          <sc-for list="{{ memory }}" as="mi" hint-placeholder-count="3">
+                            <div style="display:flex; align-items:center; gap:12px; padding:12px 14px; border-radius:12px; background:var(--color-surface-raised); border:1px solid var(--color-border); opacity:{{ mi.opacity }};">
+                              <i class="{{ mi.icon }}" style="font-size:16px; line-height:1; color:var(--color-text-muted);"></i>
+                              <div style="flex:1; min-width:0; display:flex; flex-direction:column; gap:2px;"><span style="font-size:14px; color:var(--color-text); text-decoration:{{ mi.strike }};">{{ mi.text }}</span><span style="font-size:12px; color:var(--color-text-subtle);">{{ mi.meta }}</span></div>
+                              <button onClick="{{ mi.act }}" aria-label="{{ mi.actLabel }}" style="height:30px; padding:0 10px; border-radius:8px; border:none; background:transparent; color:var(--color-text-muted); font:600 12px var(--font-sans); cursor:pointer; display:inline-flex; align-items:center; gap:6px;" style-hover="background:var(--color-surface-sunken); color:var(--color-text);"><i class="{{ mi.actIcon }}" style="font-size:14px; line-height:1;"></i>{{ mi.actText }}</button>
+                            </div>
+                          </sc-for>
+                        </div>
+                      </sc-if>
+                      <sc-if value="{{ railEmpty }}" hint-placeholder-val="{{ false }}">
+                        <div style="display:flex; flex-direction:column; align-items:center; text-align:center; gap:14px; padding:96px 24px;">
+                          <dc-import name="Orb" size="{{ 64 }}" state="muted" animated="{{ false }}" hint-size="64px,64px"></dc-import>
+                          <span style="font-size:16px; font-weight:600;">{{ emptyTitle }}</span>
+                          <span style="max-width:360px; font-size:13.5px; line-height:1.5; color:var(--color-text-muted); text-wrap:pretty;">{{ emptyBody }}</span>
+                        </div>
+                      </sc-if>
+                    </div>
+                  </div>
+                  <div style="padding:0 28px 8px; position:relative;">
+                    <div style="max-width:760px; margin:0 auto; position:relative;">
+                      <sc-if value="{{ brainMenu }}" hint-placeholder-val="{{ false }}">
+                        <div role="menu" style="position:absolute; right:96px; bottom:60px; width:240px; padding:6px; border-radius:12px; background:var(--color-surface-raised); border:1px solid var(--color-border-strong); box-shadow:var(--shadow-lg); display:flex; flex-direction:column; gap:2px; z-index:5;">
+                          <sc-for list="{{ brainOpts }}" as="b" hint-placeholder-count="4">
+                            <button role="menuitemradio" aria-checked="{{ b.on }}" onClick="{{ b.pick }}" style="height:36px; padding:0 10px; border-radius:8px; border:none; background:{{ b.bg }}; color:var(--color-text); font:500 13px var(--font-sans); cursor:pointer; display:flex; align-items:center; gap:10px; text-align:left;" style-hover="background:var(--color-surface-sunken);"><span style="{{ b.dot }}"></span><span style="flex:1;">{{ b.label }}</span><span style="font-size:11.5px; color:var(--color-text-subtle);">{{ b.note }}</span></button>
+                          </sc-for>
+                        </div>
+                      </sc-if>
+                      <div style="{{ composer }}">
+                        <button onClick="{{ attachClip }}" aria-label="{{ t.attachClip }}" title="{{ t.attachClip }}" style="width:36px; height:36px; border-radius:999px; border:none; background:transparent; color:var(--color-text-muted); cursor:pointer; display:grid; place-items:center; flex-shrink:0;" style-hover="background:var(--color-surface-raised); color:var(--color-text);"><i class="icon-clipboard" style="font-size:17px; line-height:1;"></i></button>
+                        <button onClick="{{ attachShot }}" aria-label="{{ t.attachShot }}" title="{{ t.attachShot }}" style="width:36px; height:36px; border-radius:999px; border:none; background:transparent; color:var(--color-text-muted); cursor:pointer; display:grid; place-items:center; flex-shrink:0;" style-hover="background:var(--color-surface-raised); color:var(--color-text);"><i class="icon-screen-share" style="font-size:17px; line-height:1;"></i></button>
+                        <sc-if value="{{ recording }}" hint-placeholder-val="{{ false }}">
+                          <div aria-label="{{ t.recording }}" style="flex:1; min-width:0; display:flex; align-items:center; gap:3px; height:36px; padding:0 6px;">
+                            <sc-for list="{{ wave }}" as="w" hint-placeholder-count="24"><span style="{{ w }}"></span></sc-for>
+                            <span style="margin-left:10px; font-size:12.5px; color:var(--color-text-muted); white-space:nowrap;">{{ t.recording }}</span>
+                          </div>
+                        </sc-if>
+                        <sc-if value="{{ notRecording }}" hint-placeholder-val="{{ true }}">
+                          <input value="{{ text }}" onChange="{{ onText }}" onKeyDown="{{ onTextKey }}" placeholder="{{ placeholder }}" aria-label="{{ t.composerAria }}" style="flex:1; min-width:0; height:36px; border:none; background:transparent; color:var(--color-text); font:14px var(--font-sans); outline:none; padding:0 6px;"></input>
+                        </sc-if>
+                        <button onClick="{{ toggleBrainMenu }}" aria-haspopup="menu" aria-expanded="{{ brainMenu }}" style="height:32px; padding:0 10px; border-radius:999px; border:1px solid var(--color-border); background:var(--color-surface-sunken); color:var(--color-text-muted); font:600 12px var(--font-sans); cursor:pointer; display:inline-flex; align-items:center; gap:6px; flex-shrink:0;" style-hover="color:var(--color-text);"><i class="icon-brain" style="font-size:13px; line-height:1;"></i>{{ brainLabel }}<i class="icon-chevron-down" style="font-size:12px; line-height:1;"></i></button>
+                        <button onClick="{{ micClick }}" aria-label="{{ t.mic }}" aria-pressed="{{ recording }}" title="{{ t.micTitle }}" style="{{ micBtn }}"><i class="icon-mic" style="font-size:18px; line-height:1;"></i></button>
+                        <button onClick="{{ send }}" disabled="{{ cantSend }}" aria-label="{{ t.send }}" style="{{ sendBtn }}"><i class="icon-arrow-up" style="font-size:18px; line-height:1;"></i></button>
+                      </div>
+                    </div>
+                  </div>
+                  <footer style="height:32px; flex-shrink:0; display:flex; align-items:center; gap:16px; padding:0 20px; border-top:1px solid var(--color-border); font-size:11.5px; color:var(--color-text-muted);">
+                    <span style="display:flex; align-items:center; gap:8px;"><span>{{ t.usage }}</span><span role="progressbar" aria-valuenow="12" aria-valuemin="0" aria-valuemax="100" aria-label="{{ t.usage }}" style="width:64px; height:4px; border-radius:999px; background:var(--color-surface-sunken); overflow:hidden;"><span style="display:block; width:12%; height:100%; background:var(--color-accent); border-radius:999px;"></span></span><span style="font-variant-numeric:tabular-nums;">12 %</span></span>
+                    <span style="flex:1;"></span>
+                    <span style="display:flex; align-items:center; gap:6px;"><i class="{{ micInd.icon }}" style="font-size:12px; line-height:1; color:{{ micInd.color }};"></i>{{ micInd.text }}</span>
+                    <span style="display:flex; align-items:center; gap:6px;"><span style="width:6px; height:6px; border-radius:999px; background:var(--color-success);"></span>{{ t.online }}</span>
+                  </footer>
+                </div>
+              </div>
+              <sc-if value="{{ hasToast }}" hint-placeholder-val="{{ false }}">
+                <div role="status" style="{{ toastStyle }}">
+                  <i class="{{ toast.icon }}" style="font-size:17px; line-height:1.2; color:{{ toast.color }};"></i>
+                  <div style="flex:1; min-width:0; display:flex; flex-direction:column; gap:2px;"><span style="font-size:13.5px; font-weight:600;">{{ toast.title }}</span><sc-if value="{{ toast.hasBody }}" hint-placeholder-val="{{ true }}"><span style="font-size:12.5px; line-height:1.45; color:var(--color-text-muted);">{{ toast.body }}</span></sc-if></div>
+                  <sc-if value="{{ toast.hasAction }}" hint-placeholder-val="{{ false }}"><button onClick="{{ toast.act }}" style="height:28px; padding:0 10px; border-radius:7px; border:none; background:var(--color-accent-soft); color:var(--color-text); font:600 12px var(--font-sans); cursor:pointer;">{{ toast.action }}</button></sc-if>
+                  <button onClick="{{ closeToast }}" aria-label="Close" style="width:24px; height:24px; border-radius:6px; border:none; background:transparent; color:var(--color-text-subtle); cursor:pointer; display:grid; place-items:center;"><i class="icon-x" style="font-size:13px; line-height:1;"></i></button>
+                </div>
+              </sc-if>
+            </div>
+          </div>
+
+          <sc-if value="{{ panelOpen }}" hint-placeholder-val="{{ true }}">
+            <div style="{{ panelPos }}">
+              <dc-import name="SessionsPanel" sessions="{{ sessions }}" locale="{{ locale }}" now="{{ now }}" compact="{{ compact }}" animated="{{ motionOn }}" max-height="520px" on-toggle-compact="{{ toggleCompact }}" on-clear-finished="{{ clearFinished }}" on-close="{{ togglePanel }}" on-open="{{ openSession }}" on-log="{{ logSession }}" on-reply="{{ replySession }}" on-stop="{{ stopSession }}" on-dismiss="{{ dismissSession }}" on-review="{{ reviewSession }}" hint-size="380px,420px"></dc-import>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ hasPill }}" hint-placeholder-val="{{ false }}">
+            <div style="{{ pillPos }}">
+              <dc-import name="ListeningPill" state="{{ pillState }}" private-mode="{{ privateMode }}" platform="{{ platform }}" locale="{{ locale }}" animated="{{ motionOn }}" now="{{ now }}" on-stop="{{ stopPill }}" on-quick-reply="{{ quickReply }}" on-error-action="{{ errorAction }}" on-approval-decision="{{ decide }}" hint-size="360px,64px"></dc-import>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ trayOpen }}" hint-placeholder-val="{{ false }}">
+            <div role="menu" aria-label="Jarvis" style="{{ trayPos }}">
+              <sc-for list="{{ trayItems }}" as="it" hint-placeholder-count="10">
+                <sc-if value="{{ it.isSep }}" hint-placeholder-val="{{ false }}"><div style="height:1px; margin:4px 8px; background:var(--color-border-strong);"></div></sc-if>
+                <sc-if value="{{ it.isItem }}" hint-placeholder-val="{{ true }}">
+                  <button role="{{ it.role }}" aria-checked="{{ it.checked }}" onClick="{{ it.act }}" disabled="{{ it.disabled }}" style="{{ it.style }}" style-hover="background:var(--color-accent); color:var(--color-accent-contrast);">
+                    <span style="width:14px; display:grid; place-items:center;"><sc-if value="{{ it.checked }}" hint-placeholder-val="{{ false }}"><i class="icon-check" style="font-size:12px; line-height:1;"></i></sc-if></span>
+                    <i class="{{ it.icon }}" style="font-size:14px; line-height:1; width:16px;"></i>
+                    <span style="flex:1; text-align:left;">{{ it.label }}</span>
+                    <span style="opacity:.7; font-size:12px;">{{ it.keys }}</span>
+                  </button>
+                </sc-if>
+              </sc-for>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ vPill }}" hint-placeholder-val="{{ false }}">
+    <div style="padding:24px; display:flex; flex-direction:column; gap:16px;">
+      <p style="margin:0; max-width:720px; font-size:13.5px; line-height:1.55; color:var(--color-text-muted); text-wrap:pretty;">{{ t.pillIntro }}</p>
+      <div style="padding:40px 32px; border-radius:16px; background:var(--wallpaper); display:grid; grid-template-columns:repeat(auto-fill,minmax(580px,1fr)); gap:36px 32px;">
+        <sc-for list="{{ pillStates }}" as="ps" hint-placeholder-count="10">
+          <div style="display:flex; flex-direction:column; gap:10px; align-items:flex-start;">
+            <span style="font-family:var(--font-mono); font-size:12px; color:var(--color-text); background:var(--color-surface-sunken); padding:2px 8px; border-radius:6px;">{{ ps.name }}</span>
+            <dc-import name="ListeningPill" state="{{ ps.state }}" private-mode="{{ ps.priv }}" platform="{{ platform }}" locale="{{ locale }}" animated="{{ motionOn }}" now="{{ now }}" hint-size="360px,64px"></dc-import>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ vSessions }}" hint-placeholder-val="{{ false }}">
+    <div style="padding:24px;">
+      <div style="padding:32px; border-radius:16px; background:var(--wallpaper); display:flex; flex-wrap:wrap; gap:32px; align-items:flex-start;">
+        <div style="display:flex; flex-direction:column; gap:10px;"><span style="font-family:var(--font-mono); font-size:12px;">{{ t.full }}</span><dc-import name="SessionsPanel" sessions="{{ allSessions }}" locale="{{ locale }}" now="{{ now }}" animated="{{ motionOn }}" max-height="720px" hint-size="380px,600px"></dc-import></div>
+        <div style="display:flex; flex-direction:column; gap:10px;"><span style="font-family:var(--font-mono); font-size:12px;">{{ t.compactMode }}</span><dc-import name="SessionsPanel" sessions="{{ allSessions }}" locale="{{ locale }}" now="{{ now }}" compact="{{ true }}" animated="{{ motionOn }}" hint-size="380px,200px"></dc-import></div>
+        <div style="display:flex; flex-direction:column; gap:10px;"><span style="font-family:var(--font-mono); font-size:12px;">{{ t.empty }}</span><dc-import name="SessionsPanel" sessions="{{ noSessions }}" locale="{{ locale }}" now="{{ now }}" hint-size="380px,260px"></dc-import></div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ vOnboarding }}" hint-placeholder-val="{{ false }}">
+    <div style="padding:24px;"><div style="padding:48px 24px; border-radius:16px; background:var(--wallpaper); display:grid; place-items:center; overflow-x:auto;">
+      <dc-import name="Onboarding" locale="{{ locale }}" platform="{{ platform }}" animated="{{ motionOn }}" on-finish="{{ finishOnboarding }}" hint-size="720px,560px"></dc-import>
+    </div></div>
+  </sc-if>
+
+  <sc-if value="{{ vSettings }}" hint-placeholder-val="{{ false }}">
+    <div style="padding:24px;"><div style="padding:48px 24px; border-radius:16px; background:var(--wallpaper); display:grid; place-items:center; overflow-x:auto;">
+      <dc-import name="Settings" locale="{{ locale }}" platform="{{ platform }}" theme="{{ theme }}" material="{{ material }}" hue="{{ hue }}" animated="{{ motionOn }}" initial-tab="{{ settingsTab }}" on-theme="{{ setTheme }}" on-material="{{ setMaterial }}" on-hue="{{ setHue }}" on-locale="{{ setLocale }}" hint-size="820px,600px"></dc-import>
+    </div></div>
+  </sc-if>
+
+  <sc-if value="{{ vTray }}" hint-placeholder-val="{{ false }}">
+    <div style="padding:24px; display:grid; grid-template-columns:repeat(auto-fit,minmax(360px,1fr)); gap:32px; align-items:start;">
+      <section style="display:flex; flex-direction:column; gap:12px;">
+        <h2 style="margin:0; font-size:16px; font-weight:650;">{{ t.trayTitle }}</h2>
+        <p style="margin:0; font-size:13px; line-height:1.5; color:var(--color-text-muted); text-wrap:pretty;">{{ t.trayNote }}</p>
+        <div style="padding:24px; border-radius:16px; background:var(--wallpaper);">
+          <div role="menu" style="{{ trayStatic }}">
+            <sc-for list="{{ trayItems }}" as="it" hint-placeholder-count="10">
+              <sc-if value="{{ it.isSep }}" hint-placeholder-val="{{ false }}"><div style="height:1px; margin:4px 8px; background:var(--color-border-strong);"></div></sc-if>
+              <sc-if value="{{ it.isItem }}" hint-placeholder-val="{{ true }}">
+                <div style="{{ it.style }}"><span style="width:14px; display:grid; place-items:center;"><sc-if value="{{ it.checked }}" hint-placeholder-val="{{ false }}"><i class="icon-check" style="font-size:12px; line-height:1;"></i></sc-if></span><i class="{{ it.icon }}" style="font-size:14px; line-height:1; width:16px;"></i><span style="flex:1;">{{ it.label }}</span><span style="opacity:.7; font-size:12px;">{{ it.keys }}</span></div>
+              </sc-if>
+            </sc-for>
+          </div>
+        </div>
+      </section>
+      <section style="display:flex; flex-direction:column; gap:12px;">
+        <h2 style="margin:0; font-size:16px; font-weight:650;">{{ t.toastsTitle }}</h2>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <sc-for list="{{ toastSamples }}" as="ts" hint-placeholder-count="5">
+            <div role="status" style="{{ ts.style }}">
+              <i class="{{ ts.icon }}" style="font-size:17px; line-height:1.2; color:{{ ts.color }};"></i>
+              <div style="flex:1; min-width:0; display:flex; flex-direction:column; gap:2px;"><span style="font-size:13.5px; font-weight:600;">{{ ts.title }}</span><span style="font-size:12.5px; line-height:1.45; color:var(--color-text-muted);">{{ ts.body }}</span></div>
+              <sc-if value="{{ ts.hasAction }}" hint-placeholder-val="{{ false }}"><button style="height:28px; padding:0 10px; border-radius:7px; border:none; background:var(--color-accent-soft); color:var(--color-text); font:600 12px var(--font-sans); cursor:pointer;">{{ ts.action }}</button></sc-if>
+              <i class="icon-x" style="font-size:13px; line-height:1.4; color:var(--color-text-subtle);"></i>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+      <section style="display:flex; flex-direction:column; gap:12px;">
+        <h2 style="margin:0; font-size:16px; font-weight:650;">{{ t.notifTitle }}</h2>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <sc-for list="{{ notifs }}" as="n" hint-placeholder-count="5">
+            <div style="display:flex; gap:12px; padding:12px 14px; border-radius:14px; background:var(--color-surface-raised); border:1px solid var(--color-border);">
+              <span style="width:32px; height:32px; border-radius:8px; background:linear-gradient(160deg, oklch(0.32 0.06 var(--accent-hue)), #0b0e15); display:grid; place-items:center; flex-shrink:0;"><dc-import name="Orb" size="{{ 16 }}" state="idle" animated="{{ false }}" hint-size="16px,16px"></dc-import></span>
+              <div style="flex:1; min-width:0; display:flex; flex-direction:column; gap:2px;"><span style="font-size:13px; font-weight:600;">{{ n.title }}</span><span style="font-size:12.5px; line-height:1.45; color:var(--color-text-muted);">{{ n.body }}</span></div>
+              <span style="font-size:11px; color:var(--color-text-subtle);">{{ t.now }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ vComponents }}" hint-placeholder-val="{{ false }}">
+    <div style="padding:24px 24px 64px; display:flex; flex-direction:column; gap:48px; max-width:1280px;">
+      <section style="display:flex; flex-direction:column; gap:16px;">
+        <h2 style="margin:0; font-size:18px; font-weight:650; letter-spacing:-0.01em;">Orb</h2>
+        <div style="display:flex; align-items:flex-end; gap:40px; flex-wrap:wrap; padding:32px; border-radius:16px; background:var(--color-surface-sunken);">
+          <sc-for list="{{ orbSizes }}" as="o" hint-placeholder-count="6"><div style="display:flex; flex-direction:column; align-items:center; gap:12px;"><dc-import name="Orb" size="{{ o.size }}" state="idle" animated="{{ motionOn }}" hint-size="40px,40px"></dc-import><span style="font-family:var(--font-mono); font-size:11.5px; color:var(--color-text-muted);">{{ o.label }}</span></div></sc-for>
+        </div>
+        <div style="display:flex; align-items:flex-start; gap:40px 48px; flex-wrap:wrap; padding:40px 32px; border-radius:16px; background:var(--color-surface-sunken);">
+          <sc-for list="{{ orbStates }}" as="o" hint-placeholder-count="9"><div style="display:flex; flex-direction:column; align-items:center; gap:18px; width:84px;"><dc-import name="Orb" size="{{ 64 }}" state="{{ o.state }}" level="{{ o.level }}" private-mode="{{ o.priv }}" animated="{{ o.anim }}" hint-size="64px,64px"></dc-import><span style="font-family:var(--font-mono); font-size:11.5px; color:var(--color-text-muted); text-align:center;">{{ o.label }}</span></div></sc-for>
+        </div>
+      </section>
+      <section style="display:flex; flex-direction:column; gap:16px;">
+        <h2 style="margin:0; font-size:18px; font-weight:650;">ApprovalCard</h2>
+        <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(440px,1fr)); gap:16px; align-items:start;">
+          <sc-for list="{{ approvalSamples }}" as="a" hint-placeholder-count="5"><dc-import name="ApprovalCard" request="{{ a }}" locale="{{ locale }}" now="{{ now }}" auto-focus="{{ false }}" hint-size="100%,260px"></dc-import></sc-for>
+        </div>
+      </section>
+      <section style="display:flex; flex-direction:column; gap:16px;">
+        <h2 style="margin:0; font-size:18px; font-weight:650;">SessionCard</h2>
+        <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(340px,1fr)); gap:12px; align-items:start;">
+          <sc-for list="{{ allSessions }}" as="s" hint-placeholder-count="6"><dc-import name="SessionCard" session="{{ s }}" locale="{{ locale }}" now="{{ now }}" animated="{{ motionOn }}" hint-size="100%,150px"></dc-import></sc-for>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(340px,1fr)); gap:6px;">
+          <sc-for list="{{ allSessions }}" as="s" hint-placeholder-count="6"><dc-import name="SessionCard" session="{{ s }}" locale="{{ locale }}" now="{{ now }}" compact="{{ true }}" animated="{{ motionOn }}" hint-size="100%,40px"></dc-import></sc-for>
+        </div>
+      </section>
+      <section style="display:flex; flex-direction:column; gap:16px;">
+        <h2 style="margin:0; font-size:18px; font-weight:650;">ChatBubble · SystemCard</h2>
+        <div style="max-width:720px; display:flex; flex-direction:column; gap:16px; padding:24px; border-radius:16px; background:var(--color-surface);">
+          <sc-for list="{{ chatSamples }}" as="m" hint-placeholder-count="8"><dc-import name="ChatMessage" message="{{ m }}" locale="{{ locale }}" now="{{ now }}" hint-size="100%,60px"></dc-import></sc-for>
+        </div>
+      </section>
+      <section style="display:flex; flex-direction:column; gap:16px;">
+        <h2 style="margin:0; font-size:18px; font-weight:650;">Composer</h2>
+        <div style="display:flex; flex-direction:column; gap:14px; max-width:720px;">
+          <sc-for list="{{ composerSamples }}" as="c" hint-placeholder-count="4">
+            <div style="display:flex; flex-direction:column; gap:6px;">
+              <span style="font-family:var(--font-mono); font-size:11.5px; color:var(--color-text-muted);">{{ c.name }}</span>
+              <div style="{{ c.box }}">
+                <i class="icon-clipboard" style="font-size:17px; line-height:1; color:var(--color-text-muted); padding:0 8px;"></i><i class="icon-screen-share" style="font-size:17px; line-height:1; color:var(--color-text-muted); padding:0 8px;"></i>
+                <sc-if value="{{ c.rec }}" hint-placeholder-val="{{ false }}"><div style="flex:1; display:flex; align-items:center; gap:3px; height:36px;"><sc-for list="{{ wave }}" as="w" hint-placeholder-count="24"><span style="{{ w }}"></span></sc-for><span style="margin-left:10px; font-size:12.5px; color:var(--color-text-muted);">{{ t.recording }}</span></div></sc-if>
+                <sc-if value="{{ c.notRec }}" hint-placeholder-val="{{ true }}"><span style="{{ c.textStyle }}">{{ c.text }}</span></sc-if>
+                <span style="height:32px; padding:0 10px; border-radius:999px; border:1px solid var(--color-border); background:var(--color-surface-sunken); color:var(--color-text-muted); font:600 12px var(--font-sans); display:inline-flex; align-items:center; gap:6px;"><i class="icon-brain" style="font-size:13px; line-height:1;"></i>ChatGPT<i class="icon-chevron-down" style="font-size:12px; line-height:1;"></i></span>
+                <span style="{{ c.mic }}"><i class="icon-mic" style="font-size:18px; line-height:1;"></i></span>
+                <span style="{{ c.send }}"><i class="icon-arrow-up" style="font-size:18px; line-height:1;"></i></span>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+      <section style="display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:40px;">
+        <div style="display:flex; flex-direction:column; gap:14px;">
+          <h2 style="margin:0; font-size:18px; font-weight:650;">AgentMark · ProviderBadge</h2>
+          <div style="display:flex; gap:16px; flex-wrap:wrap;"><sc-for list="{{ marks }}" as="m" hint-placeholder-count="5"><div style="display:flex; flex-direction:column; align-items:center; gap:6px;"><span style="{{ m.style }}"><sc-if value="{{ m.hasIcon }}" hint-placeholder-val="{{ false }}"><i class="{{ m.icon }}" style="font-size:16px; line-height:1;"></i></sc-if>{{ m.glyph }}</span><span style="font-size:11.5px; color:var(--color-text-muted);">{{ m.label }}</span></div></sc-for></div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;"><sc-for list="{{ badges }}" as="b" hint-placeholder-count="8"><span style="{{ b.style }}"><span style="{{ b.dot }}"></span>{{ b.label }}</span></sc-for></div>
+          <p style="margin:0; font-size:12px; color:var(--color-text-subtle); text-wrap:pretty;">{{ t.marksNote }}</p>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:14px;">
+          <h2 style="margin:0; font-size:18px; font-weight:650;">UsageMeter</h2>
+          <sc-for list="{{ meters }}" as="u" hint-placeholder-count="3">
+            <div style="display:flex; flex-direction:column; gap:6px;">
+              <div style="display:flex; justify-content:space-between; font-size:12.5px; color:var(--color-text-muted);"><span>{{ u.label }}</span><b style="font-variant-numeric:tabular-nums; color:{{ u.color }};">{{ u.pct }}</b></div>
+              <div role="progressbar" aria-valuenow="{{ u.value }}" aria-valuemin="0" aria-valuemax="100" aria-label="{{ u.label }}" style="height:6px; border-radius:999px; background:var(--color-surface-sunken); overflow:hidden;"><div style="{{ u.bar }}"></div></div>
+              <sc-if value="{{ u.capped }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px; color:var(--color-danger); display:flex; gap:6px; align-items:center;"><i class="icon-octagon-alert" style="font-size:13px; line-height:1;"></i>{{ t.capMsg }}</span></sc-if>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:14px;">
+          <h2 style="margin:0; font-size:18px; font-weight:650;">KeyHint · WindowControls</h2>
+          <sc-for list="{{ keyRows }}" as="k" hint-placeholder-count="2"><div style="display:flex; align-items:center; gap:10px;"><span style="width:70px; font-size:12px; color:var(--color-text-muted);">{{ k.label }}</span><div style="display:flex; gap:4px;"><sc-for list="{{ k.keys }}" as="kk" hint-placeholder-count="2"><kbd style="min-width:22px; height:22px; padding:0 6px; border-radius:6px; border:1px solid var(--color-border-strong); border-bottom-width:2px; background:var(--color-surface-sunken); color:var(--color-text); font:600 11.5px var(--font-sans); display:inline-grid; place-items:center;">{{ kk }}</kbd></sc-for></div></div></sc-for>
+          <div style="display:flex; gap:20px; align-items:center; flex-wrap:wrap; padding-top:6px;">
+            <div style="display:flex; gap:8px;"><span style="width:12px; height:12px; border-radius:50%; background:#ff5f57;"></span><span style="width:12px; height:12px; border-radius:50%; background:#febc2e;"></span><span style="width:12px; height:12px; border-radius:50%; background:#28c840;"></span></div>
+            <div style="display:flex; border:1px solid var(--color-border); border-radius:6px; overflow:hidden;"><span style="width:40px; height:28px; display:grid; place-items:center; color:var(--color-text-muted);"><i class="icon-minus" style="font-size:14px; line-height:1;"></i></span><span style="width:40px; height:28px; display:grid; place-items:center; color:var(--color-text-muted);"><i class="icon-square" style="font-size:11px; line-height:1;"></i></span><span style="width:40px; height:28px; display:grid; place-items:center; background:#c42b1c; color:#fff;"><i class="icon-x" style="font-size:14px; line-height:1;"></i></span></div>
+            <div style="display:flex; gap:8px;"><span style="width:24px; height:24px; border-radius:50%; background:var(--color-surface-raised); display:grid; place-items:center; color:var(--color-text-muted);"><i class="icon-minus" style="font-size:12px; line-height:1;"></i></span><span style="width:24px; height:24px; border-radius:50%; background:var(--color-surface-raised); display:grid; place-items:center; color:var(--color-text-muted);"><i class="icon-x" style="font-size:12px; line-height:1;"></i></span></div>
+          </div>
+        </div>
+      </section>
+      <section style="display:flex; flex-direction:column; gap:16px;">
+        <h2 style="margin:0; font-size:18px; font-weight:650;">Button</h2>
+        <sc-for list="{{ buttonRows }}" as="br" hint-placeholder-count="3"><div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;"><span style="width:28px; font-family:var(--font-mono); font-size:11.5px; color:var(--color-text-muted);">{{ br.size }}</span><sc-for list="{{ br.items }}" as="b" hint-placeholder-count="5"><button disabled="{{ b.disabled }}" style="{{ b.style }}">{{ b.label }}</button></sc-for></div></sc-for>
+      </section>
+      <section style="display:flex; flex-direction:column; gap:16px;">
+        <h2 style="margin:0; font-size:18px; font-weight:650;">EmptyState</h2>
+        <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:12px;">
+          <sc-for list="{{ empties }}" as="e" hint-placeholder-count="4"><div style="display:flex; flex-direction:column; align-items:center; text-align:center; gap:10px; padding:28px 20px; border-radius:14px; background:var(--color-surface-raised); border:1px solid var(--color-border);"><i class="{{ e.icon }}" style="font-size:22px; line-height:1; color:var(--color-text-subtle);"></i><span style="font-size:14px; font-weight:600;">{{ e.title }}</span><span style="font-size:12.5px; line-height:1.5; color:var(--color-text-muted); text-wrap:pretty;">{{ e.body }}</span></div></sc-for>
+        </div>
+      </section>
+      <section style="display:flex; flex-direction:column; gap:12px;">
+        <h2 style="margin:0; font-size:18px; font-weight:650;">PermissionLevelControl · ShortcutRecorder · PairingQR</h2>
+        <p style="margin:0; font-size:13px; color:var(--color-text-muted);">{{ t.liveInSettings }}</p>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;"><sc-for list="{{ settingsLinks }}" as="l" hint-placeholder-count="3"><button onClick="{{ l.go }}" style="height:32px; padding:0 12px; border-radius:9px; border:1px solid var(--color-border-strong); background:var(--color-surface-raised); color:var(--color-text); font:600 12.5px var(--font-sans); cursor:pointer; display:inline-flex; align-items:center; gap:6px;"><i class="{{ l.icon }}" style="font-size:14px; line-height:1;"></i>{{ l.label }}</button></sc-for></div>
+      </section>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ vBrand }}" hint-placeholder-val="{{ false }}">
+    <div style="padding:24px 24px 64px; display:flex; flex-direction:column; gap:48px;">
+      <section style="display:flex; flex-direction:column; gap:16px;">
+        <h2 style="margin:0; font-size:18px; font-weight:650;">{{ t.logo }}</h2>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:12px;">
+          <div style="height:160px; border-radius:16px; background:#0b0e15; display:flex; align-items:center; justify-content:center; gap:14px;"><dc-import name="Orb" size="{{ 44 }}" state="idle" animated="{{ false }}" hint-size="44px,44px"></dc-import><span style="font-size:38px; font-weight:650; letter-spacing:-0.035em; color:#eef1f6;">Jarvis</span></div>
+          <div style="height:160px; border-radius:16px; background:#f4f6f9; display:flex; align-items:center; justify-content:center; gap:14px;"><dc-import name="Orb" size="{{ 44 }}" state="idle" animated="{{ false }}" hint-size="44px,44px"></dc-import><span style="font-size:38px; font-weight:650; letter-spacing:-0.035em; color:#121620;">Jarvis</span></div>
+          <div style="height:160px; border-radius:16px; background:#f4f6f9; display:flex; align-items:center; justify-content:center; gap:14px; color:#121620;"><svg width="44" height="44" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7.25" stroke="currentColor" stroke-width="1.5"></circle><circle cx="9" cy="9" r="3.75" fill="currentColor"></circle></svg><span style="font-size:38px; font-weight:650; letter-spacing:-0.035em;">Jarvis</span></div>
+          <div style="height:160px; border-radius:16px; background:#0b0e15; display:flex; align-items:center; justify-content:center; gap:14px; color:#eef1f6;"><svg width="44" height="44" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7.25" stroke="currentColor" stroke-width="1.5"></circle><circle cx="9" cy="9" r="3.75" fill="currentColor"></circle></svg><span style="font-size:38px; font-weight:650; letter-spacing:-0.035em;">Jarvis</span></div>
+        </div>
+        <div style="display:flex; gap:24px; font-size:12px; color:var(--color-text-muted); flex-wrap:wrap;"><span>{{ t.logoFull }}</span><span>{{ t.logoMono }}</span></div>
+      </section>
+      <section style="display:flex; flex-direction:column; gap:16px;">
+        <h2 style="margin:0; font-size:18px; font-weight:650;">{{ t.appIcons }}</h2>
+        <sc-for list="{{ iconRows }}" as="row" hint-placeholder-count="2">
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            <span style="font-size:12.5px; color:var(--color-text-muted);">{{ row.label }}</span>
+            <div style="display:flex; align-items:flex-end; gap:28px; flex-wrap:wrap; padding:24px; border-radius:16px; background:var(--color-surface-sunken);">
+              <sc-for list="{{ row.icons }}" as="ic" hint-placeholder-count="8">
+                <div style="display:flex; flex-direction:column; align-items:center; gap:10px;">
+                  <div style="{{ ic.tile }}"><div style="{{ ic.orb }}"></div></div>
+                  <span style="font-family:var(--font-mono); font-size:11px; color:var(--color-text-muted);">{{ ic.label }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-for>
+      </section>
+      <section style="display:flex; flex-direction:column; gap:16px;">
+        <h2 style="margin:0; font-size:18px; font-weight:650;">{{ t.trayIcons }}</h2>
+        <div style="display:flex; gap:12px; flex-wrap:wrap;">
+          <sc-for list="{{ trayIconSamples }}" as="ti" hint-placeholder-count="4">
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <div style="{{ ti.bar }}">
+                <svg width="{{ ti.size }}" height="{{ ti.size }}" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="6.25" stroke="currentColor" stroke-width="1.5"></circle><circle cx="9" cy="9" r="2.75" fill="currentColor"></circle></svg>
+                <svg width="{{ ti.size }}" height="{{ ti.size }}" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="6.25" stroke="currentColor" stroke-width="1.5"></circle><circle cx="9" cy="9" r="2.75" fill="currentColor"></circle><circle cx="15" cy="3.5" r="2.5" fill="currentColor" stroke="{{ ti.bg }}" stroke-width="1.2"></circle></svg>
+              </div>
+              <span style="font-family:var(--font-mono); font-size:11px; color:var(--color-text-muted);">{{ ti.label }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+      <section style="display:flex; flex-direction:column; gap:16px;">
+        <h2 style="margin:0; font-size:18px; font-weight:650;">{{ t.banner }}</h2>
+        <div style="display:flex; gap:16px; flex-wrap:wrap;">
+          <sc-for list="{{ banners }}" as="bn" hint-placeholder-count="2">
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <div style="{{ bn.box }}">
+                <dc-import name="Orb" size="{{ 120 }}" state="idle" animated="{{ false }}" hint-size="120px,120px"></dc-import>
+                <div style="display:flex; flex-direction:column; gap:8px;"><span style="font-size:52px; font-weight:650; letter-spacing:-0.04em; line-height:1;">Jarvis</span><span style="font-size:17px; opacity:.75;">{{ t.tagline }}</span></div>
+              </div>
+              <span style="font-family:var(--font-mono); font-size:11px; color:var(--color-text-muted);">{{ bn.label }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{}">
+const T = {
+  en: { gallery: 'UI template', views: { prototype: 'Prototype', pill: 'Pill states', sessions: 'Sessions', onboarding: 'Onboarding', settings: 'Settings', tray: 'Tray & toasts', components: 'Components', brand: 'Brand' },
+    protoHint: 'Click a suggestion, the mic, or type. “Build something” runs the full agent flow: pill → approval → session → result.', runFlow: 'Run agent flow', reset: 'Reset',
+    morning: 'Good morning', afternoon: 'Good afternoon', evening: 'Good evening', connected: 'connected', sessionsToday: 'sessions today', localVoice: 'Local voice', localOnly: 'Local only',
+    suggestions: 'Suggestions', conversation: 'Conversation', sayPrefix: 'Say:', forYou: 'For you',
+    cats: { day: 'Day', reminders: 'Reminders', writing: 'Writing', screen: 'Screen', files: 'Files', web: 'Web', home: 'Home & family', developer: 'Developer', memory: 'Memory', privacy: 'Privacy' },
+    rail: { home: 'Home', history: 'History', memory: 'Memory', projects: 'Projects', settings: 'Settings' },
+    placeholder: 'Ask anything, or hold {k} to talk', composerAria: 'Message Jarvis', attachClip: 'Attach clipboard', attachShot: 'Attach screenshot', mic: 'Talk to Jarvis', micTitle: 'Click to talk · hold to talk while pressed', send: 'Send', recording: 'Listening… click the mic to stop',
+    usage: 'ChatGPT Plus · weekly cap', online: 'Connected', micListening: 'Listening for “Jarvis”', micMuted: 'Microphone muted', micLocal: 'Local only — nothing leaves this computer',
+    sessions: 'Sessions', running: 'running', trayAria: 'Jarvis menu',
+    memory: 'Memory', memorySub: 'What Jarvis remembers about you. Delete anything — you can undo for a few seconds.', said: 'You said', inferred: 'Inferred', del: 'Delete', undo: 'Undo',
+    emptyHistory: ['No history yet', 'Your past conversations will show up here, grouped by day.'], emptyProjects: ['No projects yet', 'Add a folder so agents can work in it. Try: “Jarvis, in project shop add a footer”.'],
+    pillIntro: 'Every state of the Listening Pill (360×64 collapsed, up to 560 wide when it needs more room). Listening and speaking react to a simulated mic/voice level.',
+    full: 'Default', compactMode: 'Compact (running only)', empty: 'Empty',
+    trayTitle: 'Tray menu', trayNote: 'Rendered natively by the OS — we ship the copy, icons and order. Shown here in the selected platform’s style.', toastsTitle: 'Toasts', notifTitle: 'OS notifications (copy)', now: 'now',
+    capMsg: 'Weekly cap reached — Jarvis will not switch to paid API automatically.', marksNote: 'Original glyphs only. Official third‑party logos go in reserved slots.', liveInSettings: 'These live, fully interactive, inside Settings.',
+    logo: 'Logo', logoFull: 'Full colour on dark and light', logoMono: 'Monochrome dark · monochrome light', appIcons: 'App icon', trayIcons: 'Tray icon (template)', banner: 'README banner & social preview · 1280×640 (shown at 50 %)', tagline: 'Calm by default. Alive when spoken to.',
+    genericReply: 'Noted. In the real app I’d answer that with ChatGPT — here, try one of the suggestions.' },
+  it: { gallery: 'Template UI', views: { prototype: 'Prototipo', pill: 'Stati della pillola', sessions: 'Sessioni', onboarding: 'Onboarding', settings: 'Impostazioni', tray: 'Tray e toast', components: 'Componenti', brand: 'Marchio' },
+    protoHint: 'Clicca un suggerimento, il microfono o scrivi. “Costruisci qualcosa” avvia il flusso completo: pillola → approvazione → sessione → risultato.', runFlow: 'Avvia flusso agente', reset: 'Ripristina',
+    morning: 'Buongiorno', afternoon: 'Buon pomeriggio', evening: 'Buonasera', connected: 'collegato', sessionsToday: 'sessioni oggi', localVoice: 'Voce locale', localOnly: 'Solo locale',
+    suggestions: 'Suggerimenti', conversation: 'Conversazione', sayPrefix: 'Di’:', forYou: 'Per te',
+    cats: { day: 'Giornata', reminders: 'Promemoria', writing: 'Scrittura', screen: 'Schermo', files: 'File', web: 'Web', home: 'Casa e famiglia', developer: 'Sviluppo', memory: 'Memoria', privacy: 'Privacy' },
+    rail: { home: 'Home', history: 'Cronologia', memory: 'Memoria', projects: 'Progetti', settings: 'Impostazioni' },
+    placeholder: 'Chiedi qualsiasi cosa, o tieni premuto {k} per parlare', composerAria: 'Scrivi a Jarvis', attachClip: 'Allega appunti', attachShot: 'Allega screenshot', mic: 'Parla con Jarvis', micTitle: 'Clicca per parlare · tieni premuto per parlare', send: 'Invia', recording: 'Ti ascolto… clicca il microfono per fermare',
+    usage: 'ChatGPT Plus · limite settimanale', online: 'Collegato', micListening: 'In ascolto di “Jarvis”', micMuted: 'Microfono disattivato', micLocal: 'Solo locale — nulla lascia questo computer',
+    sessions: 'Sessioni', running: 'in corso', trayAria: 'Menu di Jarvis',
+    memory: 'Memoria', memorySub: 'Ciò che Jarvis ricorda di te. Elimina quello che vuoi — puoi annullare per qualche secondo.', said: 'L’hai detto tu', inferred: 'Dedotto', del: 'Elimina', undo: 'Annulla',
+    emptyHistory: ['Ancora nessuna cronologia', 'Le conversazioni passate appariranno qui, raggruppate per giorno.'], emptyProjects: ['Ancora nessun progetto', 'Aggiungi una cartella perché gli agenti ci lavorino. Prova: “Jarvis, nel progetto shop aggiungi un footer”.'],
+    pillIntro: 'Tutti gli stati della pillola di ascolto (360×64 chiusa, fino a 560 di larghezza quando serve spazio). Ascolto e parlato reagiscono a un livello simulato.',
+    full: 'Predefinito', compactMode: 'Compatto (solo in corso)', empty: 'Vuoto',
+    trayTitle: 'Menu della tray', trayNote: 'Disegnato nativamente dal sistema — forniamo testi, icone e ordine. Qui nello stile della piattaforma scelta.', toastsTitle: 'Toast', notifTitle: 'Notifiche di sistema (testi)', now: 'ora',
+    capMsg: 'Limite settimanale raggiunto — Jarvis non passerà automaticamente all’API a pagamento.', marksNote: 'Solo glifi originali. I loghi ufficiali di terze parti vanno negli spazi riservati.', liveInSettings: 'Questi vivono, completamente interattivi, dentro le Impostazioni.',
+    logo: 'Logo', logoFull: 'A colori su scuro e chiaro', logoMono: 'Monocromatico scuro · monocromatico chiaro', appIcons: 'Icona dell’app', trayIcons: 'Icona della tray (template)', banner: 'Banner README e anteprima social · 1280×640 (al 50 %)', tagline: 'Calmo di default. Vivo quando gli parli.',
+    genericReply: 'Preso nota. Nell’app vera risponderei con ChatGPT — qui prova uno dei suggerimenti.' }
+};
+const SUG = [
+  ['morning', 'day', 'sunrise', 'Morning briefing', 'Jarvis, good morning', 'Briefing del mattino', 'Jarvis, buongiorno'],
+  ['today', 'day', 'calendar', 'What’s on today?', 'Jarvis, what do I have today?', 'Cosa ho oggi?', 'Jarvis, cosa ho in programma oggi?'],
+  ['prep', 'day', 'users', 'Prep my next meeting', 'Jarvis, prepare me for my next meeting', 'Prepara la prossima riunione', 'Jarvis, preparami per la prossima riunione'],
+  ['timer', 'reminders', 'timer', 'Set a timer', 'Jarvis, timer for 10 minutes', 'Imposta un timer', 'Jarvis, timer di 10 minuti'],
+  ['remind', 'reminders', 'bell', 'Remind me later', 'Jarvis, remind me in 20 minutes to call Marco', 'Ricordamelo dopo', 'Jarvis, ricordami tra 20 minuti di chiamare Marco'],
+  ['alarm', 'reminders', 'alarm-clock', 'Wake me up', 'Jarvis, alarm at 7:30', 'Svegliami', 'Jarvis, sveglia alle 7:30'],
+  ['summarise', 'writing', 'clipboard-list', 'Summarise what I copied', 'Jarvis, summarise what I copied', 'Riassumi ciò che ho copiato', 'Jarvis, riassumi quello che ho copiato'],
+  ['translate', 'writing', 'languages', 'Translate clipboard', 'Jarvis, translate what I copied into English', 'Traduci gli appunti', 'Jarvis, traduci quello che ho copiato in inglese'],
+  ['fix', 'writing', 'spell-check', 'Fix my writing', 'Jarvis, fix the grammar of what I copied', 'Correggi il testo', 'Jarvis, correggi la grammatica di quello che ho copiato'],
+  ['dictate', 'writing', 'mic', 'Dictate here', 'Jarvis, dictate', 'Detta qui', 'Jarvis, detta'],
+  ['reply', 'writing', 'mail', 'Reply politely', 'Jarvis, write a polite reply to this email', 'Rispondi con garbo', 'Jarvis, scrivi una risposta cortese a questa email'],
+  ['screen', 'screen', 'monitor', 'What am I looking at?', 'Jarvis, what’s on my screen?', 'Cosa sto guardando?', 'Jarvis, cosa c’è sullo schermo?'],
+  ['error', 'screen', 'bug', 'Explain this error', 'Jarvis, explain this error', 'Spiegami questo errore', 'Jarvis, spiegami questo errore'],
+  ['find', 'files', 'file-search', 'Find a document', 'Jarvis, find the September electricity bill PDF', 'Trova un documento', 'Jarvis, trova il PDF della bolletta della luce di settembre'],
+  ['tidy', 'files', 'folder-input', 'Tidy my Downloads', 'Jarvis, tidy up my Downloads folder', 'Riordina Download', 'Jarvis, riordina la cartella Download'],
+  ['research', 'web', 'globe', 'Research something', 'Jarvis, look up reviews of the Pixel 11', 'Fai una ricerca', 'Jarvis, cerca recensioni del Pixel 11'],
+  ['compare', 'web', 'scale', 'Compare two products', 'Jarvis, compare these two laptops', 'Confronta due prodotti', 'Jarvis, confronta questi due portatili'],
+  ['shopping', 'home', 'shopping-cart', 'Shopping list', 'Jarvis, add milk to the shopping list', 'Lista della spesa', 'Jarvis, aggiungi il latte alla lista della spesa'],
+  ['weather', 'home', 'cloud-sun', 'Tomorrow’s weather', 'Jarvis, what’s the weather tomorrow?', 'Meteo di domani', 'Jarvis, che tempo fa domani?'],
+  ['cook', 'home', 'chef-hat', 'Cook with what I have', 'Jarvis, a recipe with eggs, spinach and feta', 'Cucina con quello che ho', 'Jarvis, una ricetta con uova, spinaci e feta'],
+  ['build', 'developer', 'code', 'Build something', 'Jarvis, in project shop add a footer', 'Costruisci qualcosa', 'Jarvis, nel progetto shop aggiungi un footer'],
+  ['status', 'developer', 'activity', 'How’s it going?', 'Jarvis, how’s it going?', 'Come procede?', 'Jarvis, come sta andando?'],
+  ['open', 'developer', 'external-link', 'Open the result', 'Jarvis, open the result', 'Apri il risultato', 'Jarvis, apri il risultato'],
+  ['codex', 'developer', 'git-branch', 'Switch to Codex', 'Jarvis, do the same with Codex', 'Passa a Codex', 'Jarvis, fai lo stesso con Codex'],
+  ['teach', 'memory', 'brain', 'Teach me something about you', 'Jarvis, remember that I prefer short answers', 'Insegna qualcosa a Jarvis', 'Jarvis, ricorda che preferisco risposte brevi'],
+  ['know', 'memory', 'user-round', 'What do you know about me?', 'Jarvis, what do you know about me?', 'Cosa sai di me?', 'Jarvis, cosa sai di me?'],
+  ['local', 'privacy', 'shield-check', 'Go fully local', 'Jarvis, switch to local mode', 'Solo in locale', 'Jarvis, passa alla modalità locale'],
+  ['forget', 'privacy', 'eraser', 'Forget today', 'Jarvis, delete today’s history', 'Dimentica oggi', 'Jarvis, cancella la cronologia di oggi']
+];
+const R = {
+  en: { morning: 'Good morning, Lorenzo. 14° and clear. Three meetings today — the first is the pricing review at 9:30.', today: 'Three things: the pricing review at 9:30, lunch with Giulia at 12, and the Q4 strategic briefing at 4.', prep: 'Next up is the pricing review. I’ve pulled last week’s notes and the competitor price list — want the three key points?', timer: 'Ten minutes, starting now.', remind: 'Okay — I’ll remind you to call Marco.', alarm: 'Alarm set for 7:30 tomorrow.', summarise: 'You copied a 4‑page supplier contract. In short: 12‑month term, payment at 30 days, price review in March.', translate: 'Done — the English version is on your clipboard.', fix: 'Fixed six small things. The corrected text is on your clipboard.', dictate: 'Go ahead — I’m typing into the active app. Say “stop dictating” when you’re done.', reply: 'Draft ready: “Hi Giulia, thanks — I’ll review slide 7 this afternoon and send comments by 5.” Shall I paste it?', screen: 'You’re on the Shopify orders page. Three orders are waiting to be fulfilled, the oldest from yesterday.', error: 'The build fails because Footer.tsx imports a component that isn’t installed. Want Claude Code to fix it?', find: 'I can’t search your Documents folder yet.', findAction: 'Open settings', tidy: 'On it. I’ll sort Downloads by type and tell you when I’m done.', research: 'I’ll read the main reviews and come back with a short summary.', compareQ: 'Which two laptops?', compareR: ['The two in my open tabs', 'MacBook Air vs XPS 13', 'Never mind'], compareGo: 'Comparing them now — I’ll put a short table here.', compareNo: 'Okay, dropped it.', shopping: 'Milk is on the list. That’s six items.', weather: 'Tomorrow: 17° and sunny, light rain after 8 pm.', cook: 'Try a spinach and feta frittata — 15 minutes. Want the steps out loud?', build: 'On it — Claude Code is starting in shop. I’ll tell you when it’s done.', statusNone: 'Nothing is running right now.', statusSome: n => `${n} running. I’ll speak up if anything needs you.`, open: 'Opening the latest result.', codex: 'Starting the same task with Codex in shop.', teach: 'Got it — I’ll keep answers short.', know: 'You’re Lorenzo. You run the shop e‑commerce and write strategic briefings. You like short answers and a morning summary.', local: 'Local mode is on. Nothing leaves this computer.', forget: 'Today’s history is gone.', time: t => `It’s ${t}.`, allowed: 'Thanks — continuing.', denied: 'Okay, I denied it. Claude Code stopped.', done: 'The footer is ready in shop. Want me to open it?',
+    tasks: { build: 'Add a footer to the homepage', tidy: 'Tidy the Downloads folder', research: 'Research Pixel 11 reviews', compare: 'Compare two laptops' }, acts: ['Reading project structure', 'Creating src/components/Footer.tsx', 'Wants to install a package'], acts2: ['Installing @radix-ui/react-separator', 'Running pnpm build'], buildResult: 'Added Footer.tsx with links, newsletter field and a legal row. Build passes.', tidyResult: 'Moved 142 files into 6 folders. 3 duplicates are in the Trash.', researchResult: 'Reviewers like the camera and battery; the main complaint is the price. Average score 8.4/10.', approvalTitle: 'Run a shell command', approvalReason: 'The new footer uses a separator component that isn’t installed yet.',
+    toastDone: 'Footer is ready in shop', toastDoneBody: 'Claude Code finished. Build passes.', open2: 'Open', opening: 'Opening result', log: 'Log opened in a new window', clip: 'Clipboard attached', shot: 'Screenshot attached', quit: 'Jarvis would quit now' },
+  it: { morning: 'Buongiorno, Lorenzo. 14° e sereno. Tre riunioni oggi — la prima è la revisione prezzi alle 9:30.', today: 'Tre cose: revisione prezzi alle 9:30, pranzo con Giulia alle 12 e il briefing strategico Q4 alle 16.', prep: 'La prossima è la revisione prezzi. Ho recuperato le note della settimana scorsa e i prezzi dei concorrenti — vuoi i tre punti chiave?', timer: 'Dieci minuti, da adesso.', remind: 'Va bene — ti ricorderò di chiamare Marco.', alarm: 'Sveglia impostata per domani alle 7:30.', summarise: 'Hai copiato un contratto fornitore di 4 pagine. In breve: durata 12 mesi, pagamento a 30 giorni, revisione prezzi a marzo.', translate: 'Fatto — la versione inglese è negli appunti.', fix: 'Ho corretto sei piccole cose. Il testo corretto è negli appunti.', dictate: 'Vai pure — scrivo nell’app attiva. Di’ “smetti di dettare” quando hai finito.', reply: 'Bozza pronta: “Ciao Giulia, grazie — guardo la slide 7 nel pomeriggio e ti mando i commenti entro le 17.” La incollo?', screen: 'Sei nella pagina ordini di Shopify. Tre ordini aspettano la spedizione, il più vecchio è di ieri.', error: 'La build fallisce perché Footer.tsx importa un componente non installato. Vuoi che Claude Code lo sistemi?', find: 'Non posso ancora cercare nella cartella Documenti.', findAction: 'Apri impostazioni', tidy: 'Ci penso io. Ordino Download per tipo e ti avviso quando ho finito.', research: 'Leggo le recensioni principali e torno con un breve riassunto.', compareQ: 'Quali due portatili?', compareR: ['I due nelle schede aperte', 'MacBook Air vs XPS 13', 'Lascia stare'], compareGo: 'Li confronto ora — metto qui una breve tabella.', compareNo: 'Va bene, lascio perdere.', shopping: 'Latte aggiunto alla lista. Sono sei articoli.', weather: 'Domani: 17° e sole, pioggia leggera dopo le 20.', cook: 'Prova una frittata con spinaci e feta — 15 minuti. Vuoi i passaggi a voce?', build: 'Ci penso io — Claude Code parte in shop. Ti avviso quando ha finito.', statusNone: 'Al momento non c’è niente in corso.', statusSome: n => `${n} in corso. Ti avviso se serve qualcosa.`, open: 'Apro l’ultimo risultato.', codex: 'Avvio lo stesso compito con Codex in shop.', teach: 'Capito — risposte brevi.', know: 'Sei Lorenzo. Segui l’e‑commerce shop e scrivi briefing strategici. Ti piacciono le risposte brevi e il riassunto del mattino.', local: 'Modalità locale attiva. Nulla lascia questo computer.', forget: 'La cronologia di oggi è stata cancellata.', time: t => `Sono le ${t}.`, allowed: 'Grazie — continuo.', denied: 'Ok, ho negato. Claude Code si è fermato.', done: 'Il footer è pronto in shop. Vuoi che lo apra?',
+    tasks: { build: 'Aggiungi un footer alla homepage', tidy: 'Riordina la cartella Download', research: 'Cerca recensioni del Pixel 11', compare: 'Confronta due portatili' }, acts: ['Leggo la struttura del progetto', 'Creo src/components/Footer.tsx', 'Vuole installare un pacchetto'], acts2: ['Installo @radix-ui/react-separator', 'Eseguo pnpm build'], buildResult: 'Aggiunto Footer.tsx con link, campo newsletter e riga legale. La build passa.', tidyResult: 'Spostati 142 file in 6 cartelle. 3 duplicati sono nel Cestino.', researchResult: 'Piacciono fotocamera e batteria; la critica principale è il prezzo. Voto medio 8,4/10.', approvalTitle: 'Esegui un comando di shell', approvalReason: 'Il nuovo footer usa un componente separatore non ancora installato.',
+    toastDone: 'Il footer è pronto in shop', toastDoneBody: 'Claude Code ha finito. La build passa.', open2: 'Apri', opening: 'Apro il risultato', log: 'Log aperto in una nuova finestra', clip: 'Appunti allegati', shot: 'Screenshot allegato', quit: 'Jarvis ora si chiuderebbe' }
+};
+const MIN = 60000;
+function tokens(theme, material, h) {
+  const d = theme === 'dark', g = material === 'glass';
+  const c = d ? {
+    '--color-bg': '#0a0c11', '--color-surface': g ? 'rgba(20,23,31,0.76)' : '#151821', '--color-surface-raised': g ? 'rgba(38,42,54,0.72)' : '#1e222c', '--color-surface-sunken': g ? 'rgba(6,8,12,0.42)' : '#0f1117', '--color-overlay': 'rgba(4,6,10,0.62)',
+    '--color-border': g ? 'rgba(255,255,255,0.09)' : '#272c37', '--color-border-strong': g ? 'rgba(255,255,255,0.18)' : '#3a404d',
+    '--color-text': '#eef1f6', '--color-text-muted': '#aeb5c3', '--color-text-subtle': '#8890a0', '--color-text-inverse': '#0b0d12',
+    '--color-accent': `oklch(0.78 0.13 ${h})`, '--color-accent-contrast': '#051018', '--color-accent-soft': `oklch(0.78 0.13 ${h} / 0.16)`,
+    '--color-ember': '#f6a94a', '--color-success': '#45d49e', '--color-warning': '#f5bd4f', '--color-danger': '#ff7a7a', '--color-info': `oklch(0.78 0.13 ${h})`, '--color-private': '#3ddc97',
+    '--orb-core': `oklch(0.88 0.08 ${h})`, '--orb-glow': `oklch(0.72 0.15 ${h} / 0.55)`, '--orb-ring': `oklch(0.82 0.12 ${h} / 0.75)`,
+    '--shadow-sm': '0 1px 2px rgba(0,0,0,.4)', '--shadow-md': '0 8px 24px rgba(0,0,0,.35)', '--shadow-lg': '0 24px 64px rgba(0,0,0,.5), 0 2px 8px rgba(0,0,0,.3)', '--shadow-glow': `0 0 24px oklch(0.72 0.15 ${h} / 0.45)`,
+    '--wallpaper': `radial-gradient(60% 70% at 15% 20%, oklch(0.4 0.09 ${h} / .55), transparent 70%), radial-gradient(50% 60% at 88% 88%, oklch(0.42 0.1 40 / .45), transparent 70%), radial-gradient(40% 50% at 70% 8%, oklch(0.38 0.08 300 / .4), transparent 70%), #0b0e15`
+  } : {
+    '--color-bg': '#eceff4', '--color-surface': g ? 'rgba(250,251,253,0.74)' : '#f8f9fb', '--color-surface-raised': g ? 'rgba(255,255,255,0.86)' : '#ffffff', '--color-surface-sunken': g ? 'rgba(220,226,236,0.55)' : '#eef0f4', '--color-overlay': 'rgba(20,24,34,0.4)',
+    '--color-border': g ? 'rgba(20,30,50,0.10)' : '#dfe3ea', '--color-border-strong': g ? 'rgba(20,30,50,0.2)' : '#c3c9d5',
+    '--color-text': '#121620', '--color-text-muted': '#475063', '--color-text-subtle': '#5f6778', '--color-text-inverse': '#ffffff',
+    '--color-accent': `oklch(0.52 0.15 ${h})`, '--color-accent-contrast': '#ffffff', '--color-accent-soft': `oklch(0.6 0.14 ${h} / 0.13)`,
+    '--color-ember': '#b8590b', '--color-success': '#12804a', '--color-warning': '#a35d00', '--color-danger': '#cc2b2b', '--color-info': `oklch(0.52 0.15 ${h})`, '--color-private': '#0b8457',
+    '--orb-core': `oklch(0.86 0.09 ${h})`, '--orb-glow': `oklch(0.7 0.15 ${h} / 0.45)`, '--orb-ring': `oklch(0.6 0.15 ${h} / 0.7)`,
+    '--shadow-sm': '0 1px 2px rgba(16,24,40,.08)', '--shadow-md': '0 8px 24px rgba(16,24,40,.10)', '--shadow-lg': '0 24px 64px rgba(16,24,40,.18), 0 2px 8px rgba(16,24,40,.06)', '--shadow-glow': `0 0 24px oklch(0.7 0.15 ${h} / 0.35)`,
+    '--wallpaper': `radial-gradient(60% 70% at 15% 20%, oklch(0.86 0.07 ${h} / .9), transparent 70%), radial-gradient(50% 60% at 88% 88%, oklch(0.9 0.06 60 / .9), transparent 70%), radial-gradient(40% 50% at 70% 8%, oklch(0.88 0.05 300 / .8), transparent 70%), #e3e8f0`
+  };
+  return { ...c, '--accent-hue': h,
+    '--backdrop': g ? 'blur(28px) saturate(1.5)' : 'none', '--glass-tint': d ? '20 23 31' : '250 251 253', '--glass-opacity': g ? (d ? 0.76 : 0.74) : 1, '--blur-sm': '12px', '--blur-md': '28px',
+    '--radius-xs': '4px', '--radius-sm': '6px', '--radius-md': '10px', '--radius-lg': '14px', '--radius-xl': '20px', '--radius-pill': '999px',
+    '--font-sans': '"Inter Variable", Inter, system-ui, sans-serif', '--font-mono': '"JetBrains Mono Variable", "JetBrains Mono", ui-monospace, monospace',
+    '--text-xs': '11px', '--text-sm': '12.5px', '--text-base': '14px', '--text-lg': '16px', '--text-xl': '20px', '--text-2xl': '28px', '--text-display': '40px', '--leading-tight': 1.2, '--leading-normal': 1.5,
+    '--duration-instant': '80ms', '--duration-fast': '160ms', '--duration-normal': '240ms', '--duration-slow': '400ms',
+    '--ease-standard': 'cubic-bezier(.2,0,0,1)', '--ease-emphasized': 'cubic-bezier(.3,0,0,1)', '--ease-spring-like': 'cubic-bezier(.34,1.4,.64,1)',
+    ...Object.fromEntries([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(i => ['--space-' + i, i * 4 + 'px']))
+  };
+}
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    let saved = {};
+    try { saved = JSON.parse(localStorage.getItem('jarvis-gallery') || '{}'); } catch (e) {}
+    const reduce = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    this.state = { theme: 'dark', material: 'glass', platform: 'mac', locale: 'en', motion: !reduce, hue: 200, view: 'prototype', ...saved, ...this.seed(), lv: 0.3, now: Date.now(), scale: 1, hidden: false, settingsTab: 'general' };
+    this.chatRef = React.createRef(); this.flow = 0;
+    this.measure = () => { const el = this.sceneEl; const w = el ? el.clientWidth : window.innerWidth; const sc = Math.max(0.3, Math.min(1, (w - 48) / 1440)); if (Math.abs(sc - this.state.scale) > 0.001) this.setState({ scale: sc }); };
+    this.sceneRef = React.createRef();
+    this.attach = () => {
+      const el = this.sceneRef.current;
+      if (el === this.sceneEl) return;
+      if (this.sceneEl && this.ro) this.ro.unobserve(this.sceneEl);
+      this.sceneEl = el;
+      if (el) { if (!this.ro) this.ro = new ResizeObserver(() => requestAnimationFrame(this.measure)); this.ro.observe(el); requestAnimationFrame(this.measure); }
+    };
+  }
+  seed() {
+    const n = Date.now();
+    return {
+      cat: 'for-you', pill: null, privateMode: false, compact: false, panelOpen: true, trayOpen: false, toast: null, text: '', brain: 'chatgpt', brainMenu: false, rail: 'home', muted: false, forgotten: {},
+      messages: [
+        { id: 'm1', role: 'user', text: 'Jarvis, good morning', at: n - 52 * MIN, viaVoice: true },
+        { id: 'm2', role: 'jarvis', text: '§morning', at: n - 52 * MIN + 4000, spoken: true },
+        { id: 'm3', role: 'system', card: { type: 'briefing', weather: '14° · clear', events: [{ time: '09:30', title: 'Pricing review — shop' }, { time: '12:00', title: 'Lunch with Giulia' }, { time: '16:00', title: 'Q4 strategic briefing' }], emails: [{ from: 'Giulia Romano', subject: 'Board deck — can you check slide 7?' }, { from: 'Shopify', subject: '3 orders need fulfilment' }] }, at: n - 52 * MIN + 5000 },
+        { id: 'm4', role: 'system', card: { type: 'result-ready', session: { id: 's-done' } }, at: n - 18 * MIN }
+      ],
+      sessions: [
+        { id: 's-run', agent: 'home', project: 'strategy-briefs', task: 'Compile competitor pricing for the Q4 briefing', status: 'running', activity: 'Reading 14 product pages', startedAt: n - 6 * MIN },
+        { id: 's-done', agent: 'claude', project: 'strategy-briefs', task: 'Draft the Q4 strategic briefing outline', status: 'done', startedAt: n - 26 * MIN, finishedAt: n - 18 * MIN, resultPreview: 'Six sections: market, pricing, channels, risks, roadmap, asks. Two open questions for Giulia are flagged.', resultUrl: 'file:///Users/lorenzo/Documents/strategy-briefs/q4-outline.md' },
+        { id: 's-fail', agent: 'codex', project: 'shop', task: 'Update the Google Shopping product feed', status: 'failed', startedAt: n - 95 * MIN, finishedAt: n - 88 * MIN, resultPreview: 'Feed upload rejected: 3 products are missing a GTIN.' }
+      ]
+    };
+  }
+  componentDidMount() {
+    this.attach(); this.measure(); setTimeout(() => { this.attach(); this.measure(); }, 300);
+    this.onResize = () => requestAnimationFrame(this.measure); window.addEventListener('resize', this.onResize);
+    this.clock = setInterval(() => !this.state.hidden && this.setState({ now: Date.now() }), 1000);
+    this.lvTimer = setInterval(() => {
+      const s = this.state; if (s.hidden || !s.motion) return;
+      const live = (s.pill && ['listening', 'speaking'].includes(s.pill.kind)) || s.view === 'pill' || s.view === 'components';
+      if (!live) return;
+      const target = Math.random() < 0.2 ? Math.random() * 0.2 : 0.3 + Math.random() * 0.7;
+      this.setState({ lv: s.lv * 0.4 + target * 0.6 });
+    }, 110);
+    this.onVis = () => this.setState({ hidden: document.hidden });
+    document.addEventListener('visibilitychange', this.onVis);
+    this.onKey = e => { if (e.key === 'Escape' && this.state.pill && this.state.pill.kind !== 'approval') this.stopPill(); };
+    window.addEventListener('keydown', this.onKey);
+  }
+  componentDidUpdate() {
+    this.attach();
+    const ps = this._prev || this.state; this._prev = this.state;
+    if (ps.messages.length !== this.state.messages.length && this.chatRef.current) { const el = this.chatRef.current; setTimeout(() => el.scrollTo({ top: el.scrollHeight, behavior: this.state.motion ? 'smooth' : 'auto' }), 30); }
+    const keep = ['theme', 'material', 'platform', 'locale', 'motion', 'hue', 'view'];
+    if (keep.some(k => ps[k] !== this.state[k])) localStorage.setItem('jarvis-gallery', JSON.stringify(Object.fromEntries(keep.map(k => [k, this.state[k]]))));
+  }
+  componentWillUnmount() { this.ro && this.ro.disconnect(); clearInterval(this.clock); clearInterval(this.lvTimer); document.removeEventListener('visibilitychange', this.onVis); window.removeEventListener('keydown', this.onKey); }
+  r() { return R[this.state.locale] || R.en; }
+  sleep(ms, id) { return new Promise((res, rej) => setTimeout(() => (id === this.flow ? res() : rej('cancel')), ms)); }
+  setPill(p) { this.setState({ pill: p }); }
+  push(m) { this.setState(s => ({ messages: [...s.messages, { id: 'm' + Math.random().toString(36).slice(2), at: Date.now(), ...m }] })); }
+  upd(id, patch) { this.setState(s => ({ sessions: s.sessions.map(x => (x.id === id ? { ...x, ...patch } : x)) })); }
+  toast(kind, title, body, action, act) { clearTimeout(this.toastT); this.setState({ toast: { kind, title, body, action, act } }); this.toastT = setTimeout(() => this.setState({ toast: null }), 6000); }
+  async listen(utter, id) {
+    const w = utter.split(' ');
+    for (let i = 0; i < w.length; i++) {
+      this.setPill({ kind: 'listening', committed: w.slice(0, i).join(' '), partial: w[i].slice(0, Math.ceil(w[i].length / 2)) }); await this.sleep(90, id);
+      this.setPill({ kind: 'listening', committed: w.slice(0, i + 1).join(' '), partial: '' }); await this.sleep(150, id);
+    }
+    await this.sleep(350, id);
+  }
+  async think(utter, brain, id, ms = 1100) { this.setPill({ kind: 'thinking', transcript: utter, brain }); await this.sleep(ms, id); }
+  async say(text, id, extra) {
+    this.push({ role: 'jarvis', text, spoken: true });
+    if (extra) this.push(extra);
+    const n = Math.max(10, text.split(' ').length);
+    for (let i = 0; i <= n; i++) { this.setPill({ kind: 'speaking', text, progress: i / n }); await this.sleep(130, id); }
+    await this.sleep(600, id);
+  }
+  start() { this.flow++; this.setState({ trayOpen: false, brainMenu: false }); return this.flow; }
+  async run(fn) { try { await fn(); this.setPill(null); } catch (e) { if (e !== 'cancel') console.error(e); } }
+  utter(id) { const s = SUG.find(x => x[0] === id); return this.state.locale === 'it' ? s[6] : s[4]; }
+  pick(id) {
+    if (id === 'build') return this.runBuild();
+    const fid = this.start(); const r = this.r(); const u = this.utter(id); const brain = this.state.privateMode ? 'local' : this.state.brain;
+    const loc = this.state.locale === 'it' ? 'it-IT' : 'en-GB';
+    this.run(async () => {
+      await this.listen(u, fid);
+      this.push({ role: 'user', text: u, viaVoice: true });
+      if (id === 'compare') { await this.think(u, brain, fid, 800); this.setPill({ kind: 'clarify', question: r.compareQ, quickReplies: r.compareR }); this.pending = 'compare'; return new Promise(() => {}); }
+      if (id === 'find') { await this.think(u, brain, fid, 900); this.push({ role: 'jarvis', text: r.find, spoken: true, error: true }); this.setPill({ kind: 'error', message: r.find, actionLabel: r.findAction }); return new Promise(() => {}); }
+      await this.think(u, brain, fid);
+      const now = Date.now();
+      let extra = null, text = r[id] || r.statusNone;
+      if (id === 'morning') extra = { role: 'system', card: this.state.messages.find(m => m.card && m.card.type === 'briefing')?.card || null };
+      if (id === 'timer') extra = { role: 'system', card: { type: 'timer', label: this.state.locale === 'it' ? 'Timer · 10 min' : 'Timer · 10 min', endsAt: now + 10 * MIN, total: 10 * MIN } };
+      if (id === 'remind') extra = { role: 'system', card: { type: 'reminder-set', text: this.state.locale === 'it' ? 'Chiamare Marco' : 'Call Marco', dueAt: now + 20 * MIN } };
+      if (id === 'alarm') { const d = new Date(); d.setDate(d.getDate() + 1); d.setHours(7, 30, 0, 0); extra = { role: 'system', card: { type: 'reminder-set', text: this.state.locale === 'it' ? 'Sveglia' : 'Alarm', dueAt: +d } }; }
+      if (id === 'status') { const n = this.state.sessions.filter(s => s.status === 'running').length; text = n ? r.statusSome(n) : r.statusNone; }
+      if (id === 'local') this.setState({ privateMode: true });
+      if (id === 'forget') this.setState(s => ({ messages: s.messages.filter(m => m.at < new Date().setHours(0, 0, 0, 0)) }));
+      if (id === 'open') this.toast('info', r.opening, 'q4-outline.md');
+      if (['tidy', 'research', 'codex'].includes(id)) {
+        const sid = 's' + now; const agent = id === 'codex' ? 'codex' : 'home';
+        const sess = { id: sid, agent, project: id === 'codex' ? 'shop' : 'General', task: id === 'codex' ? r.tasks.build : r.tasks[id], status: 'running', activity: r.acts[0], startedAt: now };
+        this.setState(s => ({ sessions: [sess, ...s.sessions], panelOpen: true }));
+        extra = { role: 'system', card: { type: 'session-started', session: { id: sid } } };
+        setTimeout(() => this.upd(sid, { activity: id === 'codex' ? r.acts[1] : id === 'tidy' ? 'Sorting 142 files' : 'Reading 9 reviews' }), 2500);
+        setTimeout(() => { const res = id === 'tidy' ? r.tidyResult : id === 'research' ? r.researchResult : r.buildResult; this.upd(sid, { status: 'done', finishedAt: Date.now(), resultPreview: res }); this.push({ role: 'system', card: { type: 'result-ready', session: { id: sid } } }); }, 7000);
+      }
+      if (id === 'time') text = r.time(new Date().toLocaleTimeString(loc, { hour: '2-digit', minute: '2-digit' }));
+      await this.say(text, fid, extra && extra.card ? extra : null);
+    });
+  }
+  runBuild() {
+    const fid = this.start(); const r = this.r(); const u = this.utter('build');
+    this.run(async () => {
+      await this.listen(u, fid);
+      this.push({ role: 'user', text: u, viaVoice: true });
+      await this.think(u, 'claude', fid, 1200);
+      const sid = 'b' + Date.now();
+      this.setState(s => ({ sessions: [{ id: sid, agent: 'claude', project: 'shop', task: r.tasks.build, status: 'running', activity: r.acts[0], startedAt: Date.now() }, ...s.sessions], panelOpen: true }));
+      this.simulateBuild(sid);
+      await this.say(r.build, fid, { role: 'system', card: { type: 'session-started', session: { id: sid } } });
+    });
+  }
+  simulateBuild(sid) {
+    const r = this.r();
+    setTimeout(() => this.upd(sid, { activity: r.acts[1] }), 2200);
+    setTimeout(() => {
+      const req = { id: 'req-' + sid, kind: 'shell', risk: 'medium', title: r.approvalTitle, detail: 'pnpm add @radix-ui/react-separator', cwd: '~/code/shop', agent: 'claude', project: 'shop', reason: r.approvalReason, expiresAt: Date.now() + 60000 };
+      this.pendingReq = { sid, req };
+      this.upd(sid, { status: 'approval', activity: r.acts[2] });
+      this.push({ role: 'system', card: { type: 'approval-needed', request: req } });
+      this.flow++; this.setPill({ kind: 'approval', request: req });
+    }, 5200);
+  }
+  decide(id, d) {
+    const p = this.pendingReq; if (!p || p.req.id !== id) return;
+    this.pendingReq = null; const r = this.r(); const sid = p.sid;
+    this.setState(s => ({ messages: s.messages.map(m => (m.card && m.card.request && m.card.request.id === id ? { ...m, card: { ...m.card, resolved: d } } : m)) }));
+    const fid = this.start();
+    if (d === 'deny') { this.upd(sid, { status: 'cancelled', finishedAt: Date.now(), resultPreview: r.denied }); return this.run(() => this.say(r.denied, fid)); }
+    this.upd(sid, { status: 'running', activity: r.acts2[0] });
+    setTimeout(() => this.upd(sid, { activity: r.acts2[1] }), 2600);
+    setTimeout(() => {
+      this.upd(sid, { status: 'done', finishedAt: Date.now(), resultPreview: r.buildResult, resultUrl: 'http://localhost:5173' });
+      this.push({ role: 'system', card: { type: 'result-ready', session: { id: sid } } });
+      this.toast('success', r.toastDone, r.toastDoneBody, r.open2, () => this.toast('info', r.opening, 'http://localhost:5173'));
+      const f2 = this.start(); this.run(() => this.say(r.done, f2));
+    }, 6000);
+    this.run(() => this.say(r.allowed, fid));
+  }
+  quickReply(text) {
+    const r = this.r(); const fid = this.start(); this.push({ role: 'user', text, viaVoice: false });
+    const no = text === r.compareR[2];
+    this.run(async () => {
+      if (!no) { const sid = 'c' + Date.now(); this.setState(s => ({ sessions: [{ id: sid, agent: 'home', project: 'General', task: r.tasks.compare, status: 'running', activity: 'Reading spec sheets', startedAt: Date.now() }, ...s.sessions] })); setTimeout(() => this.upd(sid, { status: 'needs-input', activity: this.state.locale === 'it' ? 'Budget massimo?' : 'What’s your max budget?' }), 4000); }
+      await this.say(no ? r.compareNo : r.compareGo, fid);
+    });
+  }
+  sendText() {
+    const text = this.state.text.trim(); if (!text) return;
+    const fid = this.start(); this.setState({ text: '' }); this.push({ role: 'user', text, viaVoice: false });
+    this.run(async () => { await this.think(text, this.state.privateMode ? 'local' : this.state.brain, fid); await this.say(T[this.state.locale].genericReply, fid); });
+  }
+  micFlow() {
+    const fid = this.start(); const it = this.state.locale === 'it'; const u = it ? 'Jarvis, che ore sono?' : 'Jarvis, what time is it?';
+    this.run(async () => { await this.listen(u, fid); this.push({ role: 'user', text: u, viaVoice: true }); await this.think(u, this.state.privateMode ? 'local' : this.state.brain, fid, 700); await this.say(this.r().time(new Date().toLocaleTimeString(it ? 'it-IT' : 'en-GB', { hour: '2-digit', minute: '2-digit' })), fid); });
+  }
+  stopPill() { this.flow++; this.pending = null; if (this.state.pill && this.state.pill.kind === 'approval') return; this.setPill(null); }
+  renderVals() {
+    const s = this.state; const t = T[s.locale] || T.en; const r = this.r(); const L = s.locale;
+    const mac = s.platform === 'mac', win = s.platform === 'win', linux = s.platform === 'linux';
+    const motionOn = s.motion && !s.hidden;
+    const seg = on => ({ height: 26, padding: '0 10px', borderRadius: 7, border: 'none', cursor: 'pointer', font: '600 12px var(--font-sans)', background: on ? 'var(--color-surface-raised)' : 'transparent', color: on ? 'var(--color-text)' : 'var(--color-text-muted)', boxShadow: on ? 'var(--shadow-sm)' : 'none' });
+    const set = (k, v) => () => this.setState({ [k]: v });
+    const toggles = [
+      ['Theme', 'theme', [['dark', 'Dark'], ['light', 'Light']]], ['Material', 'material', [['glass', 'Glass'], ['solid', 'Solid']]],
+      ['Platform', 'platform', [['mac', 'macOS'], ['win', 'Windows'], ['linux', 'Linux']]], ['Locale', 'locale', [['en', 'EN'], ['it', 'IT']]], ['Motion', 'motion', [[true, 'Motion'], [false, 'Reduced']]]
+    ].map(([label, k, opts]) => ({ label, opts: opts.map(([v, l]) => ({ label: l, on: s[k] === v, pick: set(k, v), style: seg(s[k] === v) })) }));
+    const hues = [[200, 'Arc'], [255, 'Indigo'], [165, 'Teal'], [300, 'Violet'], [25, 'Coral']].map(([h, l]) => ({ label: 'Accent ' + l, on: s.hue === h, pick: set('hue', h), style: { width: 20, height: 20, borderRadius: 999, border: 'none', cursor: 'pointer', background: `oklch(0.7 0.14 ${h})`, boxShadow: s.hue === h ? '0 0 0 2px var(--color-bg), 0 0 0 4px var(--color-text)' : 'none' } }));
+    const views = Object.keys(t.views).map(v => ({ label: t.views[v], current: s.view === v ? 'page' : undefined, pick: set('view', v), style: { height: 30, padding: '0 10px', borderRadius: 8, border: 'none', cursor: 'pointer', font: `${s.view === v ? 600 : 500} 13px var(--font-sans)`, background: s.view === v ? 'var(--color-accent-soft)' : 'transparent', color: s.view === v ? 'var(--color-text)' : 'var(--color-text-muted)' } }));
+    const loc = L === 'it' ? 'it-IT' : 'en-GB';
+    const d = new Date(s.now);
+    const hr = d.getHours();
+    const sessionsById = Object.fromEntries(s.sessions.map(x => [x.id, x]));
+    const msgs = s.messages.filter(m => m.card !== null).map(m => {
+      if (m.text === '§morning') return { ...m, text: R[L].morning };
+      if (m.card && m.card.session) { const live = sessionsById[m.card.session.id]; return live ? { ...m, card: { ...m.card, session: live } } : null; }
+      return m;
+    }).filter(Boolean);
+    const sug = SUG.map(([id, cat, icon, el, eu, il, iu]) => ({ id, cat, icon, label: L === 'it' ? il : el, utterance: L === 'it' ? iu : eu }));
+    const forYou = hr < 12 ? ['morning', 'today', 'prep', 'build', 'status', 'summarise', 'timer', 'local'] : hr < 18 ? ['prep', 'build', 'status', 'summarise', 'reply', 'research', 'remind', 'weather'] : ['weather', 'alarm', 'cook', 'shopping', 'build', 'status', 'know', 'forget'];
+    const visible = s.cat === 'for-you' ? forYou.map(id => sug.find(x => x.id === id)) : sug.filter(x => x.cat === s.cat);
+    const busy = !!s.pill && s.pill.kind !== 'idle-hint';
+    const chips = visible.map(x => ({ ...x, iconCls: 'icon-' + x.icon, title: `${t.sayPrefix} “${x.utterance}”`, disabled: false, pick: () => this.pick(x.id), style: { display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'stretch', padding: '10px 12px', minHeight: 64, boxSizing: 'border-box', borderRadius: 12, border: '1px solid var(--color-border)', background: 'var(--color-surface-raised)', cursor: 'pointer', textAlign: 'left', font: 'inherit', transition: motionOn ? 'transform 160ms var(--ease-standard), box-shadow 160ms, border-color 160ms' : 'none', minWidth: 0 } }));
+    const cats = [['for-you', t.forYou], ...Object.entries(t.cats)].map(([id, label]) => ({ label, on: s.cat === id, pick: set('cat', id), style: { height: 30, padding: '0 12px', borderRadius: 999, flexShrink: 0, cursor: 'pointer', whiteSpace: 'nowrap', font: `${s.cat === id ? 600 : 500} 12.5px var(--font-sans)`, border: `1px solid ${s.cat === id ? 'var(--color-border-strong)' : 'transparent'}`, background: s.cat === id ? 'var(--color-surface-raised)' : 'transparent', color: s.cat === id ? 'var(--color-text)' : 'var(--color-text-muted)' } }));
+    const runningN = s.sessions.filter(x => ['running', 'needs-input', 'approval'].includes(x.status)).length;
+    const brainNames = { chatgpt: 'ChatGPT', claude: 'Claude', codex: 'Codex', local: 'Local' };
+    const brainLabel = s.privateMode ? 'Local' : brainNames[s.brain];
+    const statusBits = [
+      { text: s.privateMode ? t.localOnly : `ChatGPT Plus ${t.connected}`, dot: { width: 6, height: 6, borderRadius: 999, background: s.privateMode ? 'var(--color-private)' : 'var(--color-success)' } },
+      { text: `${s.sessions.length} ${t.sessionsToday}`, dot: { width: 6, height: 6, borderRadius: 999, background: 'var(--color-accent)' } },
+      { text: t.localVoice, dot: { width: 6, height: 6, borderRadius: 999, background: 'var(--color-text-subtle)' } }
+    ];
+    const railIcons = { home: 'icon-house', history: 'icon-history', memory: 'icon-brain', projects: 'icon-folder-kanban', settings: 'icon-settings' };
+    const rail = Object.keys(railIcons).map(id => ({ label: t.rail[id], icon: railIcons[id], current: s.rail === id ? 'page' : undefined, pick: () => id === 'settings' ? this.setState({ view: 'settings', settingsTab: 'general' }) : this.setState({ rail: id }), style: { width: 40, height: 40, borderRadius: 10, border: 'none', cursor: 'pointer', display: 'grid', placeItems: 'center', background: s.rail === id ? 'var(--color-accent-soft)' : 'transparent', color: s.rail === id ? 'var(--color-text)' : 'var(--color-text-muted)' } }));
+    const memDefs = L === 'it' ? [['m1', 'Preferisce risposte brevi', 'said', '2 ott'], ['m2', 'Segue l’e‑commerce shop e scrive briefing strategici', 'inferred', '28 set'], ['m3', 'Le riunioni del mattino iniziano alle 9:30', 'inferred', '24 set'], ['m4', 'Giulia Romano è la referente del board', 'said', '19 set']] : [['m1', 'Prefers short answers', 'said', '2 Oct'], ['m2', 'Runs the shop e‑commerce and writes strategic briefings', 'inferred', '28 Sep'], ['m3', 'Morning meetings start at 9:30', 'inferred', '24 Sep'], ['m4', 'Giulia Romano is the board contact', 'said', '19 Sep']];
+    const memory = memDefs.map(([id, text, src, date]) => { const gone = !!s.forgotten[id]; return { text, meta: `${src === 'said' ? t.said : t.inferred} · ${date}`, icon: src === 'said' ? 'icon-mic' : 'icon-sparkles', opacity: gone ? 0.55 : 1, strike: gone ? 'line-through' : 'none', actText: gone ? t.undo : t.del, actLabel: (gone ? t.undo : t.del) + ': ' + text, actIcon: gone ? 'icon-undo-2' : 'icon-trash-2', act: () => this.setState(x => ({ forgotten: { ...x.forgotten, [id]: !x.forgotten[id] } })) }; });
+    const emptyDef = s.rail === 'history' ? t.emptyHistory : t.emptyProjects;
+    const recording = !!s.pill && s.pill.kind === 'listening';
+    const wave = Array.from({ length: 24 }, (_, i) => ({ width: 3, height: 26, borderRadius: 2, background: 'var(--color-accent)', transformOrigin: 'center', transform: `scaleY(${Math.max(0.15, Math.min(1, s.lv * (0.5 + 0.5 * Math.sin(i * 1.7 + s.now / 300))))})`, transition: 'transform 110ms linear', opacity: 0.8 }));
+    const kAlt = mac ? '⌥ Space' : 'Alt + Space';
+    const composer = { display: 'flex', alignItems: 'center', gap: 4, height: 56, padding: '0 8px', boxSizing: 'border-box', borderRadius: 999, background: 'var(--color-surface-raised)', border: `1px solid ${recording ? 'var(--color-accent)' : 'var(--color-border-strong)'}`, boxShadow: recording ? 'var(--shadow-glow)' : 'var(--shadow-md)', transition: 'border-color 160ms, box-shadow 160ms' };
+    const micBtn = { width: 40, height: 40, borderRadius: 999, border: 'none', cursor: 'pointer', display: 'grid', placeItems: 'center', flexShrink: 0, background: recording ? 'var(--color-accent)' : 'var(--color-accent-soft)', color: recording ? 'var(--color-accent-contrast)' : 'var(--color-text)' };
+    const cantSend = !s.text.trim();
+    const sendBtn = { width: 40, height: 40, borderRadius: 999, border: 'none', cursor: cantSend ? 'default' : 'pointer', display: 'grid', placeItems: 'center', flexShrink: 0, background: cantSend ? 'var(--color-surface-sunken)' : 'var(--color-accent)', color: cantSend ? 'var(--color-text-subtle)' : 'var(--color-accent-contrast)' };
+    const brainOpts = [['chatgpt', 'ChatGPT', 'Plus', 'ok'], ['claude', 'Claude', 'Max · 84%', 'warn'], ['codex', 'Codex', L === 'it' ? 'limite' : 'cap reached', 'err'], ['local', 'Local', 'llama3.2', 'priv']].map(([id, label, note, st]) => ({ label, note, on: s.brain === id, bg: s.brain === id ? 'var(--color-accent-soft)' : 'transparent', dot: { width: 8, height: 8, borderRadius: 999, background: { ok: 'var(--color-success)', warn: 'var(--color-warning)', err: 'var(--color-danger)', priv: 'var(--color-private)' }[st] }, pick: () => this.setState({ brain: id, brainMenu: false, privateMode: id === 'local' ? true : s.privateMode && id === 'local' }) }));
+    const micInd = s.privateMode ? { icon: 'icon-lock', color: 'var(--color-private)', text: t.micLocal } : s.muted ? { icon: 'icon-mic-off', color: 'var(--color-text-subtle)', text: t.micMuted } : { icon: 'icon-mic', color: 'var(--color-success)', text: t.micListening };
+    const toastMeta = { info: ['icon-info', 'var(--color-accent)'], success: ['icon-circle-check', 'var(--color-success)'], warning: ['icon-triangle-alert', 'var(--color-warning)'], error: ['icon-circle-x', 'var(--color-danger)'] };
+    const toastBox = { width: 360, boxSizing: 'border-box', display: 'flex', alignItems: 'flex-start', gap: 12, padding: '12px 12px 12px 14px', borderRadius: 14, background: 'var(--color-surface-raised)', border: '1px solid var(--color-border-strong)', boxShadow: 'var(--shadow-lg)', color: 'var(--color-text)', fontFamily: 'var(--font-sans)' };
+    const tst = s.toast;
+    const toast = tst ? { title: tst.title, body: tst.body, hasBody: !!tst.body, icon: toastMeta[tst.kind][0], color: toastMeta[tst.kind][1], hasAction: !!tst.action, action: tst.action, act: () => { tst.act && tst.act(); } } : {};
+    const trayDefs = [
+      ['header', s.privateMode ? (L === 'it' ? 'Jarvis — solo locale' : 'Jarvis — local only') : s.muted ? t.micMuted : (L === 'it' ? 'Jarvis — in ascolto di “Jarvis”' : 'Jarvis — listening for “Jarvis”')],
+      ['item', L === 'it' ? 'Parla con Jarvis' : 'Talk to Jarvis', 'icon-mic', mac ? '⌥Space' : 'Alt+Space', () => this.micFlow()],
+      ['item', L === 'it' ? 'Apri Home' : 'Open Home', 'icon-house', mac ? '⌥⇧J' : 'Alt+Shift+J', () => this.setState({ trayOpen: false, rail: 'home' })],
+      ['item', `${t.sessions} (${runningN} ${t.running})`, 'icon-rows-3', mac ? '⌥⇧S' : 'Alt+Shift+S', () => this.setState({ trayOpen: false, panelOpen: true })],
+      ['sep'],
+      ['check', L === 'it' ? 'Silenzia microfono' : 'Mute microphone', 'icon-mic-off', '', () => { const m = !s.muted; this.setState({ muted: m, trayOpen: false }); if (m) { this.flow++; this.setPill({ kind: 'muted', reason: 'user' }); setTimeout(() => this.state.pill && this.state.pill.kind === 'muted' && this.setPill(null), 2600); } }, s.muted],
+      ['check', L === 'it' ? 'Modalità solo locale' : 'Local only mode', 'icon-shield-check', '', () => this.setState({ privateMode: !s.privateMode, trayOpen: false }), s.privateMode],
+      ['check', L === 'it' ? 'Pausa durante Focus' : 'Pause during Focus', 'icon-moon', '', () => {}, true],
+      ['sep'],
+      ['item', L === 'it' ? 'Impostazioni…' : 'Settings…', 'icon-settings', mac ? '⌘,' : 'Ctrl+,', () => this.setState({ view: 'settings', trayOpen: false })],
+      ['item', L === 'it' ? 'Cerca aggiornamenti…' : 'Check for updates…', 'icon-refresh-cw', '', () => this.setState({ trayOpen: false })],
+      ['item', L === 'it' ? 'Esci da Jarvis' : 'Quit Jarvis', 'icon-power', mac ? '⌘Q' : 'Alt+F4', () => { this.setState({ trayOpen: false }); this.toast('info', r.quit); }]
+    ];
+    const itemH = win ? 32 : 26;
+    const trayItems = trayDefs.map(([type, label, icon, keys, act, checked]) => ({ isSep: type === 'sep', isItem: type !== 'sep', label, icon: icon || '', keys: keys || '', act: act || (() => {}), checked: !!checked, role: type === 'check' ? 'menuitemcheckbox' : 'menuitem', disabled: type === 'header', style: { width: '100%', height: itemH, padding: '0 10px 0 6px', borderRadius: win ? 4 : 5, border: 'none', background: 'transparent', color: type === 'header' ? 'var(--color-text-subtle)' : 'var(--color-text)', font: `${type === 'header' ? 500 : 400} 13px var(--font-sans)`, display: 'flex', alignItems: 'center', gap: 8, cursor: type === 'header' ? 'default' : 'pointer', boxSizing: 'border-box' } }));
+    const trayBox = { width: 280, padding: 5, borderRadius: win ? 8 : 9, background: 'var(--color-surface-raised)', backdropFilter: 'var(--backdrop)', WebkitBackdropFilter: 'var(--backdrop)', border: '1px solid var(--color-border-strong)', boxShadow: 'var(--shadow-lg)', display: 'flex', flexDirection: 'column', fontFamily: 'var(--font-sans)' };
+    const sc = s.scale;
+    const ps = s.pill ? { ...s.pill, level: s.lv } : null;
+    const orbStateMap = { listening: 'listening', thinking: 'thinking', speaking: 'speaking', approval: 'approval', error: 'error', muted: 'muted' };
+    const n = s.now;
+    const sampleReq = (kind, risk, title, detail, extra = {}) => ({ id: 'x-' + kind + risk, kind, risk, title, detail, agent: 'claude', project: 'shop', cwd: '~/code/shop', ...extra });
+    const approvalSamples = L === 'it' ? [
+      sampleReq('shell', 'medium', 'Esegui un comando di shell', 'pnpm add @radix-ui/react-separator', { reason: R.it.approvalReason, expiresAt: n + 42000 }),
+      sampleReq('file-delete', 'high', 'Elimina una cartella', 'rm -rf dist', { reason: 'Pulizia prima di una build pulita.' }),
+      sampleReq('file-write', 'low', 'Modifica un file', 'src/components/Footer.tsx', { agent: 'codex' }),
+      sampleReq('network', 'medium', 'Accedi alla rete', 'https://api.shopify.com/admin/products.json', { agent: 'home', project: 'strategy-briefs', cwd: undefined }),
+      sampleReq('mcp-tool', 'low', 'Usa uno strumento MCP', 'calendar.create_event', { agent: 'home', project: 'General', cwd: undefined })
+    ] : [
+      sampleReq('shell', 'medium', 'Run a shell command', 'pnpm add @radix-ui/react-separator', { reason: R.en.approvalReason, expiresAt: n + 42000 }),
+      sampleReq('file-delete', 'high', 'Delete a folder', 'rm -rf dist', { reason: 'Cleaning up before a fresh build.' }),
+      sampleReq('file-write', 'low', 'Edit a file', 'src/components/Footer.tsx', { agent: 'codex' }),
+      sampleReq('network', 'medium', 'Access the network', 'https://api.shopify.com/admin/products.json', { agent: 'home', project: 'strategy-briefs', cwd: undefined }),
+      sampleReq('mcp-tool', 'low', 'Use an MCP tool', 'calendar.create_event', { agent: 'home', project: 'General', cwd: undefined })
+    ];
+    const allSessions = [
+      { id: 'g1', agent: 'claude', project: 'shop', task: R[L].tasks.build, status: 'running', activity: R[L].acts[1], startedAt: n - 134000 },
+      { id: 'g2', agent: 'home', project: 'General', task: R[L].tasks.compare, status: 'needs-input', activity: L === 'it' ? 'Budget massimo?' : 'What’s your max budget?', startedAt: n - 4 * MIN },
+      { id: 'g3', agent: 'codex', project: 'shop', task: L === 'it' ? 'Ottimizza le immagini del catalogo' : 'Optimise catalogue images', status: 'approval', activity: R[L].acts[2], startedAt: n - 9 * MIN },
+      { id: 'g4', agent: 'claude', project: 'strategy-briefs', task: L === 'it' ? 'Bozza della scaletta del briefing strategico Q4' : 'Draft the Q4 strategic briefing outline', status: 'done', startedAt: n - 26 * MIN, finishedAt: n - 18 * MIN, resultPreview: L === 'it' ? 'Sei sezioni: mercato, prezzi, canali, rischi, roadmap, richieste. Segnalate due domande per Giulia.' : 'Six sections: market, pricing, channels, risks, roadmap, asks. Two open questions for Giulia are flagged.' },
+      { id: 'g5', agent: 'codex', project: 'shop', task: L === 'it' ? 'Aggiorna il feed prodotti Google Shopping' : 'Update the Google Shopping product feed', status: 'failed', startedAt: n - 95 * MIN, finishedAt: n - 88 * MIN, resultPreview: L === 'it' ? 'Caricamento rifiutato: a 3 prodotti manca il GTIN.' : 'Feed upload rejected: 3 products are missing a GTIN.' },
+      { id: 'g6', agent: 'home', project: 'General', task: R[L].tasks.tidy, status: 'cancelled', startedAt: n - 120 * MIN, finishedAt: n - 119 * MIN }
+    ];
+    const pillStates = [
+      ['idle-hint', { kind: 'idle-hint', shortcut: mac ? ['⌥', 'Space'] : ['Alt', 'Space'] }],
+      ['listening', { kind: 'listening', level: s.lv, committed: L === 'it' ? 'Jarvis, nel progetto shop aggiungi' : 'Jarvis, in project shop add a', partial: L === 'it' ? 'un fo' : 'foo' }],
+      ['thinking', { kind: 'thinking', transcript: this.utter('build'), brain: 'chatgpt' }],
+      ['speaking', { kind: 'speaking', text: R[L].build, progress: (n / 4000) % 1, level: s.lv }],
+      ['clarify', { kind: 'clarify', question: R[L].compareQ, quickReplies: R[L].compareR }],
+      ['approval · medium', { kind: 'approval', request: approvalSamples[0] }],
+      ['approval · high', { kind: 'approval', request: approvalSamples[1] }],
+      ['error', { kind: 'error', message: R[L].find, actionLabel: R[L].findAction }],
+      ['private · listening', { kind: 'listening', level: s.lv, committed: L === 'it' ? 'Jarvis, riassumi quello che' : 'Jarvis, summarise what I', partial: '' }, true],
+      ['muted · focus', { kind: 'muted', reason: 'focus' }]
+    ].map(([name, state, priv]) => ({ name, state, priv: !!priv }));
+    const chatSamples = [
+      { id: 'c1', role: 'user', text: this.utter('build'), at: n - 5 * MIN, viaVoice: true },
+      { id: 'c2', role: 'jarvis', text: R[L].build, at: n - 5 * MIN, spoken: true },
+      { id: 'c3', role: 'system', card: { type: 'session-started', session: allSessions[0] }, at: n - 5 * MIN },
+      { id: 'c4', role: 'system', card: { type: 'approval-needed', request: approvalSamples[0] }, at: n - 4 * MIN },
+      { id: 'c5', role: 'system', card: { type: 'result-ready', session: allSessions[3] }, at: n - 3 * MIN },
+      { id: 'c6', role: 'user', text: L === 'it' ? 'Ricordami di chiamare Marco tra 20 minuti' : 'Remind me to call Marco in 20 minutes', at: n - 2 * MIN, viaVoice: false },
+      { id: 'c7', role: 'system', card: { type: 'reminder-set', text: L === 'it' ? 'Chiamare Marco' : 'Call Marco', dueAt: n + 18 * MIN }, at: n - 2 * MIN },
+      { id: 'c8', role: 'system', card: { type: 'timer', label: 'Timer · 10 min', endsAt: n + 6 * MIN, total: 10 * MIN }, at: n - MIN },
+      { id: 'c9', role: 'system', card: s.messages.find(m => m.card && m.card.type === 'briefing')?.card || { type: 'briefing', events: [], emails: [] }, at: n - MIN },
+      { id: 'c10', role: 'jarvis', text: L === 'it' ? 'Non riesco a raggiungere Claude Code. Controlla che sia installato.' : 'I can’t reach Claude Code. Check that it’s installed.', at: n, spoken: false, error: true }
+    ];
+    const cbox = { display: 'flex', alignItems: 'center', gap: 4, height: 56, padding: '0 8px', borderRadius: 999, background: 'var(--color-surface-raised)', border: '1px solid var(--color-border-strong)', boxShadow: 'var(--shadow-md)' };
+    const round = (bg, fg) => ({ width: 40, height: 40, borderRadius: 999, display: 'grid', placeItems: 'center', background: bg, color: fg, flexShrink: 0 });
+    const composerSamples = [
+      { name: 'idle', rec: false, notRec: true, text: t.placeholder.replace('{k}', kAlt), textStyle: { flex: 1, fontSize: 14, color: 'var(--color-text-subtle)', padding: '0 6px' }, box: cbox, mic: round('var(--color-accent-soft)', 'var(--color-text)'), send: round('var(--color-surface-sunken)', 'var(--color-text-subtle)') },
+      { name: 'typing', rec: false, notRec: true, text: L === 'it' ? 'Prepara una bozza per Giulia sulla slide 7' : 'Draft a note to Giulia about slide 7', textStyle: { flex: 1, fontSize: 14, color: 'var(--color-text)', padding: '0 6px' }, box: cbox, mic: round('var(--color-accent-soft)', 'var(--color-text)'), send: round('var(--color-accent)', 'var(--color-accent-contrast)') },
+      { name: 'recording', rec: true, notRec: false, box: { ...cbox, border: '1px solid var(--color-accent)', boxShadow: 'var(--shadow-glow)' }, mic: round('var(--color-accent)', 'var(--color-accent-contrast)'), send: round('var(--color-surface-sunken)', 'var(--color-text-subtle)') },
+      { name: 'disabled', rec: false, notRec: true, text: L === 'it' ? 'Jarvis è offline' : 'Jarvis is offline', textStyle: { flex: 1, fontSize: 14, color: 'var(--color-text-subtle)', padding: '0 6px' }, box: { ...cbox, opacity: 0.45 }, mic: round('var(--color-surface-sunken)', 'var(--color-text-subtle)'), send: round('var(--color-surface-sunken)', 'var(--color-text-subtle)') }
+    ];
+    const markBase = { width: 40, height: 40, borderRadius: 11, display: 'grid', placeItems: 'center', color: '#fff', fontWeight: 700, fontSize: 14 };
+    const marks = [['Claude Code', 'Cl', 'oklch(0.6 0.13 45)'], ['Codex', 'Cx', 'oklch(0.48 0.04 260)'], ['Jarvis Home', 'J', `oklch(0.55 0.12 ${s.hue})`], ['ChatGPT', '', 'oklch(0.6 0.1 160)', 'icon-message-circle'], ['Local', '', 'var(--color-private)', 'icon-cpu']].map(([label, glyph, bg, icon]) => ({ label, glyph, hasIcon: !!icon, icon, style: { ...markBase, background: bg } }));
+    const bstate = { connected: ['var(--color-success)', L === 'it' ? 'collegato' : 'connected'], login: ['var(--color-warning)', L === 'it' ? 'serve accesso' : 'needs login'], error: ['var(--color-danger)', L === 'it' ? 'errore' : 'error'] };
+    const badges = [['ChatGPT', 'connected'], ['Claude', 'connected'], ['Codex', 'login'], ['API', 'error'], ['Local', 'connected']].map(([n2, st]) => ({ label: `${n2} · ${bstate[st][1]}`, dot: { width: 7, height: 7, borderRadius: 999, background: bstate[st][0] }, style: { display: 'inline-flex', alignItems: 'center', gap: 6, height: 26, padding: '0 10px', borderRadius: 999, fontSize: 12, fontWeight: 600, background: 'var(--color-surface-raised)', border: '1px solid var(--color-border)' } }));
+    const meters = [12, 84, 100].map(v => { const c = v >= 100 ? 'var(--color-danger)' : v >= 80 ? 'var(--color-warning)' : 'var(--color-accent)'; return { label: ['ChatGPT Plus', 'Claude Max', 'Codex'][[12, 84, 100].indexOf(v)], value: v, pct: v + '%', color: c, capped: v >= 100, bar: { height: '100%', width: v + '%', background: c, borderRadius: 999 } }; });
+    const keyRows = [{ label: 'macOS', keys: ['⌘', '⌥', '⇧', 'Space'] }, { label: 'Win/Linux', keys: ['Ctrl', 'Alt', 'Shift', 'Space'] }];
+    const bsz = { sm: [28, 10, 12], md: [36, 14, 13], lg: [44, 18, 14] };
+    const bv = { primary: ['var(--color-accent)', 'var(--color-accent-contrast)', 'none'], secondary: ['var(--color-surface-raised)', 'var(--color-text)', '1px solid var(--color-border-strong)'], ghost: ['transparent', 'var(--color-text-muted)', 'none'], danger: ['var(--color-danger)', 'var(--color-text-inverse)', 'none'], link: ['transparent', 'var(--color-accent)', 'none'] };
+    const buttonRows = Object.entries(bsz).map(([size, [h, px, fs]]) => ({ size, items: [...Object.entries(bv).map(([k, [bg, fg, b]]) => ({ label: k[0].toUpperCase() + k.slice(1), disabled: false, style: { height: h, padding: `0 ${px}px`, borderRadius: h >= 44 ? 12 : 9, border: b, background: bg, color: fg, font: `600 ${fs}px var(--font-sans)`, cursor: 'pointer', textDecoration: k === 'link' ? 'underline' : 'none', textUnderlineOffset: 3 } })), { label: 'Disabled', disabled: true, style: { height: h, padding: `0 ${px}px`, borderRadius: h >= 44 ? 12 : 9, border: 'none', background: 'var(--color-accent)', color: 'var(--color-accent-contrast)', font: `600 ${fs}px var(--font-sans)`, opacity: 0.45 } }] }));
+    const empties = [['icon-rows-3', L === 'it' ? 'Niente in corso.' : 'Nothing running.', L === 'it' ? 'Prova: “Jarvis, riassumi le email non lette”' : 'Try: “Jarvis, summarise my unread emails”'], ['icon-history', ...t.emptyHistory], ['icon-brain', L === 'it' ? 'Jarvis non ricorda ancora nulla' : 'Jarvis doesn’t remember anything yet', L === 'it' ? 'Prova: “Jarvis, ricorda che preferisco risposte brevi”' : 'Try: “Jarvis, remember that I prefer short answers”'], ['icon-folder-kanban', ...t.emptyProjects]].map(([icon, title, body]) => ({ icon, title, body }));
+    const goSettings = tab => () => this.setState({ view: 'settings', settingsTab: tab });
+    const settingsLinks = [[L === 'it' ? 'Livelli di permesso' : 'Permission levels', 'icon-shield-check', 'projects'], [L === 'it' ? 'Registra scorciatoie' : 'Shortcut recorder', 'icon-keyboard', 'shortcuts'], [L === 'it' ? 'QR di abbinamento' : 'Pairing QR', 'icon-qr-code', 'integrations']].map(([label, icon, tab]) => ({ label, icon, go: goSettings(tab) }));
+    const orbSizes = [16, 24, 40, 64, 96, 160].map(x => ({ size: x, label: x + 'px' }));
+    const orbStates = [['idle', 'idle'], ['listening', 'listening'], ['thinking', 'thinking'], ['speaking', 'speaking'], ['approval', 'approval'], ['error', 'error'], ['idle', 'private', true], ['muted', 'muted'], ['idle', 'static', false, false]].map(([state, label, priv, anim]) => ({ state, label, priv: !!priv, level: s.lv, anim: anim === false ? false : motionOn }));
+    const iconTile = (size, macShape) => ({ tile: { width: size, height: size, borderRadius: macShape ? size * 0.2237 : size >= 32 ? size * 0.08 : 2, background: `radial-gradient(80% 80% at 30% 20%, oklch(0.36 0.08 ${s.hue}), #0b0e15 75%)`, display: 'grid', placeItems: 'center', boxShadow: size >= 64 ? '0 4px 14px rgba(0,0,0,.3), inset 0 0 0 1px rgba(255,255,255,.08)' : 'inset 0 0 0 0.5px rgba(255,255,255,.15)' }, orb: { width: size * 0.56, height: size * 0.56, borderRadius: '50%', background: `radial-gradient(circle at 35% 30%, #fff 0%, oklch(0.88 0.08 ${s.hue}) 22%, oklch(0.75 0.14 ${s.hue}) 60%, oklch(0.32 0.1 ${s.hue}) 100%)`, boxShadow: `0 0 ${size * 0.18}px oklch(0.72 0.15 ${s.hue} / .6)` } });
+    const iconSizes = [16, 32, 44, 64, 128, 256, 512, 1024];
+    const iconRows = [[L === 'it' ? 'macOS · quadrato arrotondato' : 'macOS · rounded square', true], [L === 'it' ? 'Windows / Linux · quadrato' : 'Windows / Linux · square', false]].map(([label, m]) => ({ label, icons: iconSizes.map(z => ({ ...iconTile(Math.min(z, 160), m), label: z + (z > 160 ? ' (preview)' : '') })) }));
+    const trayIconSamples = [['macOS 18 · dark menu bar', 18, '#1c1f26', '#eef1f6'], ['macOS 18 · light menu bar', 18, '#eceef2', '#121620'], ['Windows 16', 16, '#202020', '#ffffff'], ['Windows 32', 32, '#f3f3f3', '#111111']].map(([label, size, bg, fg]) => ({ label, size, bg, bar: { display: 'flex', gap: 16, alignItems: 'center', padding: '10px 16px', borderRadius: 10, background: bg, color: fg } }));
+    const banners = [['readme-banner.svg · dark', '#0b0e15', '#eef1f6', 0.4], ['social-preview.png · light', '#e3e8f0', '#121620', 0.86]].map(([label, bg, fg, l]) => ({ label, box: { width: 640, height: 320, maxWidth: '100%', boxSizing: 'border-box', borderRadius: 16, padding: 48, display: 'flex', alignItems: 'center', gap: 36, color: fg, background: `radial-gradient(60% 80% at 20% 30%, oklch(${l} 0.09 ${s.hue} / .7), transparent 70%), radial-gradient(50% 60% at 90% 90%, oklch(${l} 0.1 40 / .5), transparent 70%), ${bg}` } }));
+    const toastSamples = [
+      ['info', L === 'it' ? 'Copiato negli appunti' : 'Copied to clipboard', L === 'it' ? 'La bozza per Giulia è pronta da incollare.' : 'The draft for Giulia is ready to paste.'],
+      ['success', R[L].toastDone, R[L].toastDoneBody, R[L].open2],
+      ['warning', L === 'it' ? 'Piano Claude all’84%' : 'Claude plan at 84 %', L === 'it' ? 'Il limite settimanale si azzera lunedì.' : 'Your weekly cap resets on Monday.'],
+      ['error', L === 'it' ? 'Claude Code non raggiungibile' : 'Couldn’t reach Claude Code', L === 'it' ? 'Controlla che sia installato e aggiornato.' : 'Check that it’s installed and up to date.', L === 'it' ? 'Riprova' : 'Retry']
+    ].map(([kind, title, body, action]) => ({ title, body, action, hasAction: !!action, icon: toastMeta[kind][0], color: toastMeta[kind][1], style: toastBox }));
+    const notifs = (L === 'it' ? [['Il footer è pronto in shop', 'Claude Code ha finito in 4 minuti. Clicca per aprire il risultato.'], ['Claude Code chiede il tuo OK', 'Eseguire “pnpm add …” in shop? Apri Jarvis per decidere.'], ['Promemoria', 'Chiamare Marco'], ['Timer finito', 'Sono passati 10 minuti.'], ['Limite settimanale raggiunto', 'ChatGPT Plus è al 100%. Jarvis non passerà all’API a pagamento.']] : [['Footer is ready in shop', 'Claude Code finished in 4 minutes. Click to open the result.'], ['Claude Code needs your OK', 'Run “pnpm add …” in shop? Open Jarvis to decide.'], ['Reminder', 'Call Marco'], ['Timer done', '10 minutes are up.'], ['Weekly cap reached', 'ChatGPT Plus is at 100 %. Jarvis won’t switch to the paid API.']]).map(([title, body]) => ({ title, body }));
+    const topOffset = win ? 0 : 28;
+    return {
+      t, locale: L, platform: s.platform, theme: s.theme, material: s.material, hue: s.hue, motionOn, now: n, lv: s.lv,
+      rootStyle: { ...tokens(s.theme, s.material, s.hue), minHeight: '100vh', background: 'var(--color-bg)', color: 'var(--color-text)', fontFamily: 'var(--font-sans)', fontSize: 14, colorScheme: s.theme },
+      views, toggles, hues,
+      vPrototype: s.view === 'prototype', vPill: s.view === 'pill', vSessions: s.view === 'sessions', vOnboarding: s.view === 'onboarding', vSettings: s.view === 'settings', vTray: s.view === 'tray', vComponents: s.view === 'components', vBrand: s.view === 'brand',
+      sceneRef: this.sceneRef, chatRef: this.chatRef,
+      sceneOuter: { width: '100%', height: 900 * sc, position: 'relative', overflow: 'hidden', borderRadius: 14, boxShadow: 'var(--shadow-md)' },
+      scene: { position: 'absolute', left: 0, top: 0, width: 1440, height: 900, transform: `scale(${sc})`, transformOrigin: '0 0', background: 'var(--wallpaper)', overflow: 'hidden' },
+      isMac: mac, isWin: win, isLinux: linux, topBar: !win,
+      menubarBg: s.theme === 'dark' ? 'rgba(20,22,28,0.55)' : 'rgba(246,247,250,0.6)', menubarSolid: s.theme === 'dark' ? '#16181e' : '#f3f4f7',
+      clock: d.toLocaleString(loc, { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }), clockShort: d.toLocaleTimeString(loc, { hour: '2-digit', minute: '2-digit' }), dateShort: d.toLocaleDateString(loc),
+      linuxClock: linux ? d.toLocaleString(loc, { weekday: 'short', hour: '2-digit', minute: '2-digit' }) : '', clockWeight: 600,
+      busy: runningN > 0, trayOpen: s.trayOpen, trayBtnBg: s.trayOpen ? 'var(--color-border-strong)' : 'transparent',
+      toggleTray: () => this.setState(x => ({ trayOpen: !x.trayOpen })),
+      trayItems, trayPos: { ...trayBox, position: 'absolute', zIndex: 40, right: win ? 120 : 150, ...(win ? { bottom: 56 } : { top: 32 }) }, trayStatic: trayBox,
+      homePos: { position: 'absolute', left: 72, top: topOffset + 36 },
+      winRadius: mac ? '12px' : win ? '8px' : '12px',
+      panelOpen: s.panelOpen, panelBtnBg: s.panelOpen ? 'var(--color-accent-soft)' : 'transparent', panelBtnMargin: win ? '4px' : '10px',
+      runningLabel: runningN ? `${runningN} ${t.running}` : t.sessions,
+      togglePanel: () => this.setState(x => ({ panelOpen: !x.panelOpen })), showPanel: () => this.setState({ panelOpen: true }),
+      panelPos: { position: 'absolute', right: 24, top: topOffset + 24, zIndex: 10 },
+      sessions: s.sessions, compact: s.compact, toggleCompact: () => this.setState(x => ({ compact: !x.compact })),
+      clearFinished: () => this.setState(x => ({ sessions: x.sessions.filter(y => ['running', 'needs-input', 'approval'].includes(y.status)) })),
+      openSession: id => { const x = sessionsById[id]; this.toast('info', r.opening, x && x.resultUrl ? x.resultUrl.replace('file:///Users/lorenzo', '~') : ''); },
+      logSession: () => this.toast('info', r.log), replySession: id => this.upd(id, { status: 'running', activity: L === 'it' ? 'Continuo con la tua risposta' : 'Continuing with your answer' }),
+      stopSession: id => { this.upd(id, { status: 'cancelled', finishedAt: Date.now() }); if (this.pendingReq && this.pendingReq.sid === id) { this.pendingReq = null; this.setPill(null); } },
+      dismissSession: id => this.setState(x => ({ sessions: x.sessions.filter(y => y.id !== id) })),
+      reviewSession: id => { if (this.pendingReq && this.pendingReq.sid === id) { this.flow++; this.setPill({ kind: 'approval', request: this.pendingReq.req }); } },
+      hasPill: !!ps, pillState: ps, privateMode: s.privateMode,
+      pillPos: { position: 'absolute', top: topOffset + 12, left: '50%', transform: 'translateX(-50%)', zIndex: 20 },
+      stopPill: () => this.stopPill(), quickReply: x => this.quickReply(x), errorAction: () => { this.setPill(null); this.setState({ view: 'settings', settingsTab: 'privacy' }); }, decide: (id, dd) => this.decide(id, dd),
+      replay: () => {},
+      rail, railHome: s.rail === 'home', railMemory: s.rail === 'memory', railEmpty: s.rail === 'history' || s.rail === 'projects', emptyTitle: emptyDef[0], emptyBody: emptyDef[1], memory,
+      homeOrbState: ps ? (orbStateMap[ps.kind] || 'idle') : s.muted ? 'muted' : 'idle',
+      greeting: `${hr < 12 ? t.morning : hr < 18 ? t.afternoon : t.evening}, Lorenzo`, statusBits, cats, chips, msgs,
+      recording, notRecording: !recording, wave, composer, micBtn, sendBtn, cantSend,
+      text: s.text, onText: e => this.setState({ text: e.target.value }), onTextKey: e => { if (e.key === 'Enter') this.sendText(); }, send: () => this.sendText(),
+      placeholder: t.placeholder.replace('{k}', kAlt),
+      micClick: () => recording ? this.stopPill() : this.micFlow(),
+      attachClip: () => this.toast('info', r.clip), attachShot: () => this.toast('info', r.shot),
+      brainMenu: s.brainMenu, toggleBrainMenu: () => this.setState(x => ({ brainMenu: !x.brainMenu })), brainOpts, brainLabel,
+      micInd, hasToast: !!tst, toast, toastStyle: { ...toastBox, position: 'absolute', right: 20, bottom: 104, zIndex: 6, animation: motionOn ? 'jv-toast-in 240ms var(--ease-standard)' : 'none' }, closeToast: () => this.setState({ toast: null }),
+      runBuild: () => { this.setState({ view: 'prototype', rail: 'home' }); this.runBuild(); },
+      reset: () => { this.flow++; this.pendingReq = null; clearTimeout(this.toastT); this.setState(this.seed()); },
+      pillStates, allSessions, noSessions: [], approvalSamples, chatSamples, composerSamples, marks, badges, meters, keyRows, buttonRows, empties, settingsLinks, orbSizes, orbStates,
+      iconRows, trayIconSamples, banners, toastSamples, notifs,
+      settingsTab: s.settingsTab, finishOnboarding: () => this.setState({ view: 'prototype' }),
+      setTheme: v => this.setState({ theme: v }), setMaterial: v => this.setState({ material: v }), setHue: v => this.setState({ hue: v }), setLocale: v => this.setState({ locale: v })
+    };
+  }
+}
+</script>
+</body>
+</html>

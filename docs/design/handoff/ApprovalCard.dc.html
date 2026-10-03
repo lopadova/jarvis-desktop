@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div role="alertdialog" aria-labelledby="{{ titleId }}" aria-describedby="{{ detailId }}" style="{{ box }}">
+  <div style="display:flex; align-items:flex-start; gap:12px;">
+    <div style="{{ kindTile }}"><i class="{{ kindIcon }}" style="font-size:18px; line-height:1;"></i></div>
+    <div style="flex:1; min-width:0; display:flex; flex-direction:column; gap:4px;">
+      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+        <span id="{{ titleId }}" style="font-size:15px; font-weight:600; color:var(--color-text); letter-spacing:-0.01em;">{{ req.title }}</span>
+        <span style="{{ riskChip }}"><i class="{{ risk.icon }}" style="font-size:12px; line-height:1;"></i>{{ risk.label }}</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:6px; font-size:12px; color:var(--color-text-muted); flex-wrap:wrap;">
+        <span style="{{ agentTile }}">{{ agent.glyph }}</span>
+        <span>{{ agent.name }}</span>
+        <sc-if value="{{ hasProject }}" hint-placeholder-val="{{ true }}"><span style="color:var(--color-text-subtle);">·</span><span>{{ t.project }} <b style="font-weight:600; color:var(--color-text);">{{ req.project }}</b></span></sc-if>
+      </div>
+    </div>
+    <sc-if value="{{ hasCountdown }}" hint-placeholder-val="{{ false }}">
+      <div title="{{ t.expires }}" style="position:relative; width:34px; height:34px; flex-shrink:0;">
+        <svg width="34" height="34" viewBox="0 0 34 34" style="transform:rotate(-90deg);"><circle cx="17" cy="17" r="14" fill="none" stroke="var(--color-border-strong)" stroke-width="2.5"></circle><circle cx="17" cy="17" r="14" fill="none" stroke="var(--color-warning)" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="88" stroke-dashoffset="{{ dash }}"></circle></svg>
+        <span style="position:absolute; inset:0; display:grid; place-items:center; font-size:10.5px; font-weight:600; color:var(--color-text-muted); font-variant-numeric:tabular-nums;">{{ secs }}</span>
+      </div>
+    </sc-if>
+  </div>
+  <div id="{{ detailId }}" style="background:var(--color-surface-sunken); border:1px solid var(--color-border); border-radius:10px; padding:12px 14px; display:flex; flex-direction:column; gap:6px;">
+    <code style="font-family:var(--font-mono); font-size:13px; line-height:1.55; color:var(--color-text); word-break:break-all; display:flex; flex-wrap:wrap; column-gap:0.6ch;">
+      <span style="color:var(--color-text-subtle); user-select:none;">{{ prompt }}</span>
+      <sc-for list="{{ tokens }}" as="tk" hint-placeholder-count="4"><span style="{{ tk.style }}">{{ tk.t }}</span></sc-for>
+    </code>
+    <sc-if value="{{ hasCwd }}" hint-placeholder-val="{{ true }}"><span style="font-family:var(--font-mono); font-size:11.5px; color:var(--color-text-subtle);">{{ t.in }} {{ req.cwd }}</span></sc-if>
+  </div>
+  <sc-if value="{{ hasReason }}" hint-placeholder-val="{{ true }}">
+    <div style="display:flex; gap:8px; font-size:13px; line-height:1.5; color:var(--color-text-muted);"><i class="icon-message-square-quote" style="font-size:14px; line-height:1.5; color:var(--color-text-subtle);"></i><span style="text-wrap:pretty;">{{ req.reason }}</span></div>
+  </sc-if>
+  <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+    <span style="flex:1; min-width:160px; font-size:12px; color:var(--color-text-subtle); display:flex; align-items:center; gap:6px;"><i class="{{ hintIcon }}" style="font-size:13px; line-height:1;"></i>{{ hint }}</span>
+    <button ref="{{ denyRef }}" onClick="{{ onDeny }}" style="height:36px; padding:0 14px; border-radius:10px; border:1px solid var(--color-border-strong); background:var(--color-surface-raised); color:var(--color-text); font:600 13px var(--font-sans); cursor:pointer;" style-hover="background:var(--color-surface-sunken);">{{ t.deny }}</button>
+    <sc-if value="{{ showAlways }}" hint-placeholder-val="{{ true }}">
+      <button onClick="{{ onAlways }}" style="height:36px; padding:0 12px; border-radius:10px; border:none; background:transparent; color:var(--color-text-muted); font:500 13px var(--font-sans); cursor:pointer;" style-hover="background:var(--color-surface-raised); color:var(--color-text);">{{ t.always }}</button>
+    </sc-if>
+    <button onClick="{{ onAllow }}" style="{{ allowBtn }}">{{ t.allow }}</button>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:600,&quot;height&quot;:340},&quot;request&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;ApprovalRequest&quot;},&quot;locale&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;en&quot;,&quot;it&quot;],&quot;default&quot;:&quot;en&quot;,&quot;tsType&quot;:&quot;Locale&quot;},&quot;embedded&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;},&quot;now&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;onDecision&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;(id: string, d: ApprovalDecision) =&gt; void&quot;}}">
+const AP_T = {
+  en: { deny: 'Deny', allow: 'Allow once', always: 'Always allow in this project', project: 'in', in: 'in', expires: 'Expires', voice: 'Say “yes” to allow, “no” to deny', high: 'Click to confirm — voice approval is off for high‑risk actions', risk: { low: 'Low risk', medium: 'Medium risk', high: 'High risk' } },
+  it: { deny: 'Nega', allow: 'Consenti una volta', always: 'Consenti sempre in questo progetto', project: 'in', in: 'in', expires: 'Scade', voice: 'Di’ “sì” per consentire, “no” per negare', high: 'Clicca per confermare — l’approvazione vocale è disattivata per le azioni ad alto rischio', risk: { low: 'Rischio basso', medium: 'Rischio medio', high: 'Rischio alto' } }
+};
+const AGENTS = {
+  claude: { name: 'Claude Code', glyph: 'Cl', bg: 'oklch(0.6 0.13 45)' },
+  codex: { name: 'Codex', glyph: 'Cx', bg: 'oklch(0.48 0.04 260)' },
+  home: { name: 'Jarvis Home', glyph: 'J', bg: 'oklch(0.55 0.12 var(--accent-hue))' }
+};
+class Component extends DCLogic {
+  denyRef = React.createRef();
+  componentDidMount() {
+    const r = this.props.request;
+    if (r && r.risk === 'high' && this.props.autoFocus !== false && this.denyRef.current) this.denyRef.current.focus({ preventScroll: true });
+  }
+  renderVals() {
+    const p = this.props;
+    const t = AP_T[p.locale] || AP_T.en;
+    const req = p.request || { id: 'r1', kind: 'shell', risk: 'medium', title: 'Run a shell command', detail: 'pnpm add @radix-ui/react-separator', cwd: '~/code/shop', agent: 'claude', project: 'shop', reason: 'The new footer uses a separator component that isn’t installed yet.', expiresAt: Date.now() + 42000 };
+    const risk = req.risk;
+    const rc = risk === 'high' ? 'var(--color-danger)' : risk === 'medium' ? 'var(--color-warning)' : 'var(--color-success)';
+    const icons = { shell: 'icon-terminal', 'file-write': 'icon-file-pen', 'file-delete': 'icon-file-x', network: 'icon-globe', 'mcp-tool': 'icon-plug' };
+    const rIcons = { low: 'icon-shield-check', medium: 'icon-shield-alert', high: 'icon-triangle-alert' };
+    const prompts = { shell: '$', 'file-write': '✎', 'file-delete': '✕', network: '→', 'mcp-tool': '⚙' };
+    const words = String(req.detail).split(' ');
+    const tokens = words.map((w, i) => ({ t: w, style: { color: i === 0 && req.kind === 'shell' ? 'var(--color-accent)' : w.startsWith('-') ? 'var(--color-ember)' : /[\/.~]/.test(w) ? 'var(--color-text-muted)' : 'var(--color-text)', fontWeight: i === 0 && req.kind === 'shell' ? 600 : 400 } }));
+    const now = p.now || Date.now();
+    const hasCountdown = !!req.expiresAt && !p.hideCountdown;
+    const left = hasCountdown ? Math.max(0, req.expiresAt - now) : 0;
+    const agent = AGENTS[req.agent] || AGENTS.home;
+    const decide = d => () => p.onDecision && p.onDecision(req.id, d);
+    const embedded = !!p.embedded;
+    return {
+      t, req, prompt: prompts[req.kind] || '$', tokens,
+      titleId: 'ap-t-' + req.id, detailId: 'ap-d-' + req.id,
+      box: embedded ? { display: 'flex', flexDirection: 'column', gap: 14, fontFamily: 'var(--font-sans)' } : { display: 'flex', flexDirection: 'column', gap: 14, padding: 18, borderRadius: 16, background: 'var(--color-surface-raised)', border: `1px solid ${risk === 'high' ? 'var(--color-danger)' : 'var(--color-border)'}`, boxShadow: 'var(--shadow-md)', fontFamily: 'var(--font-sans)', maxWidth: 560 },
+      kindTile: { width: 38, height: 38, borderRadius: 10, display: 'grid', placeItems: 'center', flexShrink: 0, background: `color-mix(in oklab, ${rc} 16%, transparent)`, color: rc },
+      kindIcon: icons[req.kind] || 'icon-terminal',
+      risk: { label: t.risk[risk], icon: rIcons[risk] },
+      riskChip: { display: 'inline-flex', alignItems: 'center', gap: 4, height: 20, padding: '0 8px', borderRadius: 999, fontSize: 11, fontWeight: 600, color: rc, background: `color-mix(in oklab, ${rc} 14%, transparent)`, border: `1px solid color-mix(in oklab, ${rc} 35%, transparent)` },
+      agent, agentTile: { width: 18, height: 18, borderRadius: 5, display: 'inline-grid', placeItems: 'center', fontSize: 9, fontWeight: 700, color: '#fff', background: agent.bg },
+      hasProject: !!req.project, hasCwd: !!req.cwd, hasReason: !!req.reason,
+      hasCountdown, secs: Math.ceil(left / 1000) + 's', dash: 88 - 88 * Math.min(1, left / 60000),
+      showAlways: risk !== 'high',
+      hint: risk === 'high' ? t.high : t.voice, hintIcon: risk === 'high' ? 'icon-mouse-pointer-click' : 'icon-mic',
+      allowBtn: { height: 36, padding: '0 16px', borderRadius: 10, border: 'none', background: risk === 'high' ? 'var(--color-danger)' : 'var(--color-accent)', color: risk === 'high' ? 'var(--color-text-inverse)' : 'var(--color-accent-contrast)', font: '600 13px var(--font-sans)', cursor: 'pointer' },
+      denyRef: this.denyRef,
+      onDeny: decide('deny'), onAllow: decide('allow-once'), onAlways: decide('always-allow-project')
+    };
+  }
+}
+</script>
+</body>
+</html>

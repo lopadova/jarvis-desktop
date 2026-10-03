@@ -1,0 +1,306 @@
+{
+  "title": "Jarvis",
+  "url": "https://jarvis-desktop.pages.dev",
+  "src": "docs",
+  "out": "_site",
+  "base": "/",
+  "engine": "js",
+  "layout": {
+    "spa": true,
+    "header": {
+      "enabled": true
+    },
+    "sidebar": {
+      "enabled": true,
+      "collapsible": true,
+      "defaultCollapsed": false,
+      "position": "left"
+    },
+    "optionsMenu": {
+      "position": "sidebar-top",
+      "components": {
+        "search": true,
+        "themeSwitch": true
+      }
+    },
+    "footer": {
+      "style": "complete",
+      "content": "MIT © Lorenzo Padovani",
+      "description": "Jarvis: a voice-first personal assistant for macOS, Windows and Linux.",
+      "branding": true,
+      "columns": [
+        {
+          "title": "Project",
+          "links": [
+            {
+              "label": "GitHub",
+              "href": "https://github.com/lopadova/jarvis-desktop"
+            },
+            {
+              "label": "Releases",
+              "href": "https://github.com/lopadova/jarvis-desktop/releases"
+            },
+            {
+              "label": "Issues",
+              "href": "https://github.com/lopadova/jarvis-desktop/issues"
+            }
+          ]
+        },
+        {
+          "title": "Community",
+          "links": [
+            {
+              "label": "Contributing",
+              "href": "https://github.com/lopadova/jarvis-desktop/blob/main/CONTRIBUTING.md"
+            },
+            {
+              "label": "Security policy",
+              "href": "https://github.com/lopadova/jarvis-desktop/blob/main/SECURITY.md"
+            },
+            {
+              "label": "Roadmap",
+              "href": "https://github.com/lopadova/jarvis-desktop/blob/main/ROADMAP.md"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "theme": {
+    "name": "default",
+    "appearance": "system",
+    "codeHighlight": true,
+    "primaryColor": "#22b8e6",
+    "customCss": ["assets/custom.css"]
+  },
+  "copyCode": true,
+  "pageNavigation": true,
+  "minify": true,
+  "autoTitleFromH1": true,
+  "navigation": [
+    {
+      "title": "Overview",
+      "path": "/",
+      "icon": "layout-dashboard"
+    },
+    {
+      "title": "Get Started",
+      "icon": "rocket",
+      "children": [
+        {
+          "title": "Quickstart",
+          "path": "/get-started/quickstart",
+          "icon": "zap"
+        },
+        {
+          "title": "Install",
+          "path": "/get-started/install",
+          "icon": "download"
+        },
+        {
+          "title": "First run",
+          "path": "/get-started/first-run",
+          "icon": "sparkles"
+        },
+        {
+          "title": "Install with an AI helper",
+          "path": "/get-started/install-with-ai",
+          "icon": "bot"
+        }
+      ]
+    },
+    {
+      "title": "Everyday",
+      "icon": "sun",
+      "children": [
+        {
+          "title": "What Jarvis can do",
+          "path": "/everyday/features",
+          "icon": "list-checks"
+        },
+        {
+          "title": "Examples by persona",
+          "path": "/everyday/examples",
+          "icon": "messages-square"
+        }
+      ]
+    },
+    {
+      "title": "Guides",
+      "icon": "book-open",
+      "children": [
+        {
+          "title": "Brains & subscriptions",
+          "path": "/guides/brains",
+          "icon": "brain"
+        },
+        {
+          "title": "Voices",
+          "path": "/guides/voices",
+          "icon": "audio-lines"
+        },
+        {
+          "title": "Microphone & wake word",
+          "path": "/guides/microphone",
+          "icon": "mic"
+        },
+        {
+          "title": "Permissions & approvals",
+          "path": "/guides/permissions",
+          "icon": "shield-check"
+        },
+        {
+          "title": "Troubleshooting",
+          "path": "/guides/troubleshooting",
+          "icon": "life-buoy"
+        },
+        {
+          "title": "FAQ",
+          "path": "/guides/faq",
+          "icon": "circle-help"
+        }
+      ]
+    },
+    {
+      "title": "Developers",
+      "icon": "code",
+      "children": [
+        {
+          "title": "Agents, projects & sessions",
+          "path": "/developers/agents",
+          "icon": "bot"
+        },
+        {
+          "title": "Use Jarvis from your agents",
+          "path": "/developers/mcp-for-agents",
+          "icon": "plug"
+        }
+      ]
+    },
+    {
+      "title": "Integrations",
+      "icon": "blocks",
+      "children": [
+        {
+          "title": "Claude Desktop & Cowork",
+          "path": "/integrations/cowork-claude-desktop",
+          "icon": "puzzle"
+        },
+        {
+          "title": "ChatGPT",
+          "path": "/integrations/chatgpt",
+          "icon": "cloud"
+        }
+      ]
+    },
+    {
+      "title": "Security & Privacy",
+      "icon": "lock",
+      "children": [
+        {
+          "title": "Security model",
+          "path": "/security/model",
+          "icon": "shield"
+        },
+        {
+          "title": "Memory & privacy",
+          "path": "/security/privacy",
+          "icon": "eye-off"
+        }
+      ]
+    },
+    {
+      "title": "Reference",
+      "icon": "braces",
+      "children": [
+        {
+          "title": "Settings",
+          "path": "/reference/settings",
+          "icon": "sliders-horizontal"
+        },
+        {
+          "title": "MCP tools",
+          "path": "/reference/mcp-tools",
+          "icon": "wrench"
+        },
+        {
+          "title": "Voice commands",
+          "path": "/reference/voice-commands",
+          "icon": "message-square-quote"
+        }
+      ]
+    },
+    {
+      "title": "Architecture",
+      "icon": "network",
+      "children": [
+        {
+          "title": "Overview",
+          "path": "/architecture/overview",
+          "icon": "boxes"
+        },
+        {
+          "title": "Relay protocol",
+          "path": "/architecture/relay-protocol",
+          "icon": "radio-tower"
+        },
+        {
+          "title": "Decisions (ADR)",
+          "path": "/architecture/adr",
+          "icon": "file-check"
+        }
+      ]
+    },
+    {
+      "title": "Contributing",
+      "icon": "git-pull-request",
+      "children": [
+        {
+          "title": "Development setup",
+          "path": "/contributing/dev-setup",
+          "icon": "terminal"
+        },
+        {
+          "title": "How to contribute",
+          "path": "/contributing/guidelines",
+          "icon": "heart-handshake"
+        }
+      ]
+    }
+  ],
+  "plugins": {
+    "search": {
+      "semantic": true,
+      "model": "Xenova/all-MiniLM-L6-v2",
+      "include": ["**/*.md"],
+      "exclude": ["**/drafts/**"],
+      "showConfidence": true,
+      "showFilters": true
+    },
+    "git": {
+      "repo": "https://github.com/lopadova/jarvis-desktop",
+      "branch": "main",
+      "editLink": true,
+      "lastUpdated": true,
+      "commitHistory": true,
+      "maxCommits": 5,
+      "dateFormat": "relative"
+    },
+    "seo": {
+      "titleTemplate": "%s | Jarvis",
+      "description": "Jarvis: an open-source voice assistant for macOS, Windows and Linux that works with ChatGPT, Claude Code, Codex or fully local models.",
+      "ogImage": "/assets/jarvis-banner.svg"
+    },
+    "sitemap": {
+      "defaultChangefreq": "weekly",
+      "defaultPriority": 0.8,
+      "rootPriority": 1
+    },
+    "mermaid": {
+      "theme": "default"
+    },
+    "llms": {},
+    "analytics": false
+  },
+  "favicon": "assets/favicon.svg"
+}

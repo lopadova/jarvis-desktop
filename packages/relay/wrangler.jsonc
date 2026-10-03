@@ -1,0 +1,23 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "jarvis-relay",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-01",
+  "observability": { "enabled": true },
+  // OAuth clients/grants/tokens (workers-oauth-provider requires the binding name OAUTH_KV).
+  // No "id": Deploy-to-Cloudflare and `wrangler deploy` provision the namespace automatically.
+  "kv_namespaces": [{ "binding": "OAUTH_KV" }],
+  // SQLite-backed Durable Objects are the only kind available on the Workers Free plan.
+  "durable_objects": {
+    "bindings": [
+      { "name": "DESKTOP_LINK", "class_name": "DesktopLink" },
+      { "name": "PAIR_REGISTRY", "class_name": "PairRegistry" }
+    ]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["DesktopLink", "PairRegistry"] }],
+  "vars": {
+    // Relay-side timeout for one tool call (jarvis_ask_user may wait for a spoken answer).
+    "CALL_TIMEOUT_MS": "120000",
+    "CALLS_PER_MINUTE": "60"
+  }
+}

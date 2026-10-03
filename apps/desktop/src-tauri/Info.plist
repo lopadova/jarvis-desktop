@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>NSMicrophoneUsageDescription</key>
+  <string>Jarvis listens for its name on your Mac and records your request only after you speak to it.</string>
+  <key>NSAppleEventsUsageDescription</key>
+  <string>Jarvis opens Terminal in your project folder when you ask it to.</string>
+  <key>LSUIElement</key>
+  <true/>
+</dict>
+</plist>

@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="width:820px; height:600px; position:relative; display:flex; flex-direction:column; border-radius:{{ winRadius }}; background:var(--color-surface); backdrop-filter:var(--backdrop); -webkit-backdrop-filter:var(--backdrop); border:1px solid var(--color-border); box-shadow:var(--shadow-lg); overflow:hidden; font-family:var(--font-sans); color:var(--color-text);">
+  <div data-tauri-drag-region="true" style="height:44px; flex-shrink:0; display:flex; align-items:center; padding:0 0 0 14px; gap:8px; border-bottom:1px solid var(--color-border);">
+    <sc-if value="{{ isMac }}" hint-placeholder-val="{{ true }}"><div style="display:flex; gap:8px; margin-right:8px;"><span style="width:12px; height:12px; border-radius:50%; background:#ff5f57;"></span><span style="width:12px; height:12px; border-radius:50%; background:#febc2e;"></span><span style="width:12px; height:12px; border-radius:50%; background:#28c840;"></span></div></sc-if>
+    <span style="font-size:13px; font-weight:600; color:var(--color-text-muted);">{{ t.title }}</span>
+    <span style="flex:1;"></span>
+    <sc-if value="{{ isWin }}" hint-placeholder-val="{{ false }}"><div style="display:flex; align-self:stretch;"><span style="width:46px; display:grid; place-items:center; color:var(--color-text-muted);"><i class="icon-minus" style="font-size:15px; line-height:1;"></i></span><span style="width:46px; display:grid; place-items:center; color:var(--color-text-muted);"><i class="icon-square" style="font-size:12px; line-height:1;"></i></span><span style="width:46px; display:grid; place-items:center; color:var(--color-text-muted);" style-hover="background:#c42b1c; color:#fff;"><i class="icon-x" style="font-size:15px; line-height:1;"></i></span></div></sc-if>
+    <sc-if value="{{ isLinux }}" hint-placeholder-val="{{ false }}"><div style="display:flex; gap:8px; padding-right:12px;"><span style="width:24px; height:24px; border-radius:50%; background:var(--color-surface-raised); display:grid; place-items:center; color:var(--color-text-muted);"><i class="icon-minus" style="font-size:12px; line-height:1;"></i></span><span style="width:24px; height:24px; border-radius:50%; background:var(--color-surface-raised); display:grid; place-items:center; color:var(--color-text-muted);"><i class="icon-x" style="font-size:12px; line-height:1;"></i></span></div></sc-if>
+  </div>
+  <div style="flex:1; min-height:0; display:flex;">
+    <nav role="tablist" aria-orientation="vertical" aria-label="{{ t.title }}" style="width:212px; flex-shrink:0; padding:12px 10px; display:flex; flex-direction:column; gap:2px; background:var(--color-surface-sunken); overflow-y:auto;">
+      <sc-for list="{{ tabs }}" as="tb" hint-placeholder-count="9">
+        <button role="tab" aria-selected="{{ tb.on }}" onClick="{{ tb.pick }}" style="{{ tb.style }}" style-hover="background:var(--color-surface-raised); color:var(--color-text);"><i class="{{ tb.icon }}" style="font-size:16px; line-height:1; width:18px;"></i><span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ tb.label }}</span></button>
+      </sc-for>
+    </nav>
+    <main role="tabpanel" style="flex:1; min-width:0; overflow-y:auto; padding:24px 28px 32px; display:flex; flex-direction:column; gap:28px;">
+      <h1 style="margin:0; font-size:20px; font-weight:650; letter-spacing:-0.02em;">{{ tabTitle }}</h1>
+
+      <sc-if value="{{ tabAccounts }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <sc-for list="{{ accounts }}" as="a" hint-placeholder-count="5">
+            <div style="display:flex; flex-direction:column; gap:10px; padding:14px 16px; border-radius:14px; background:var(--color-surface-raised); border:1px solid var(--color-border);">
+              <div style="display:flex; align-items:center; gap:12px;">
+                <span style="{{ a.tile }}"><i class="{{ a.icon }}" style="font-size:16px; line-height:1;"></i></span>
+                <div style="flex:1; min-width:0; display:flex; flex-direction:column; gap:1px;">
+                  <span style="display:flex; align-items:center; gap:8px; font-size:14px; font-weight:600;">{{ a.name }}<sc-if value="{{ a.primary }}" hint-placeholder-val="{{ false }}"><span style="height:18px; padding:0 7px; border-radius:999px; font-size:10.5px; font-weight:600; background:var(--color-accent-soft); color:var(--color-text); display:inline-flex; align-items:center;">{{ t.primary }}</span></sc-if></span>
+                  <span style="font-size:12.5px; color:var(--color-text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ a.line }}</span>
+                </div>
+                <span style="{{ a.chip }}"><i class="{{ a.chipIcon }}" style="font-size:12px; line-height:1;"></i>{{ a.chipLabel }}</span>
+                <button onClick="{{ a.act }}" style="{{ a.btnStyle }}">{{ a.btn }}</button>
+              </div>
+              <sc-if value="{{ a.hasUsage }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex; flex-direction:column; gap:6px; padding-left:44px;">
+                  <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--color-text-muted);"><span>{{ a.usageLabel }}</span><span style="font-variant-numeric:tabular-nums; font-weight:600; color:{{ a.usageColor }};">{{ a.usagePct }}</span></div>
+                  <div role="progressbar" aria-valuenow="{{ a.usage }}" aria-valuemin="0" aria-valuemax="100" aria-label="{{ a.usageLabel }}" style="height:6px; border-radius:999px; background:var(--color-surface-sunken); overflow:hidden;"><div style="{{ a.bar }}"></div></div>
+                  <sc-if value="{{ a.capped }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px; color:var(--color-danger); display:flex; gap:6px; align-items:center;"><i class="icon-octagon-alert" style="font-size:13px; line-height:1;"></i>{{ t.capMsg }}</span></sc-if>
+                </div>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ tabProjects }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <div style="display:flex; align-items:center; gap:12px;"><span style="flex:1; font-size:12px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--color-text-subtle);">{{ t.projects }}</span><button style="height:30px; padding:0 10px; border-radius:8px; border:1px solid var(--color-border-strong); background:var(--color-surface-raised); color:var(--color-text); font:600 12.5px var(--font-sans); cursor:pointer; display:inline-flex; align-items:center; gap:6px;"><i class="icon-folder-plus" style="font-size:14px; line-height:1;"></i>{{ t.addProject }}</button></div>
+          <sc-for list="{{ projects }}" as="pr" hint-placeholder-count="3">
+            <div style="display:flex; align-items:center; gap:14px; padding:14px 16px; border-radius:14px; background:var(--color-surface-raised); border:1px solid var(--color-border); flex-wrap:wrap;">
+              <div style="flex:1; min-width:180px; display:flex; flex-direction:column; gap:2px;">
+                <span style="font-size:14px; font-weight:600;">{{ pr.name }}</span>
+                <span style="font-family:var(--font-mono); font-size:11.5px; color:var(--color-text-subtle);">{{ pr.path }}</span>
+                <span style="font-size:12px; color:var(--color-text-muted);">{{ pr.agentLine }}</span>
+              </div>
+              <div role="radiogroup" aria-label="{{ t.permission }}" style="display:flex; padding:3px; border-radius:10px; background:var(--color-surface-sunken); border:1px solid var(--color-border);">
+                <sc-for list="{{ pr.levels }}" as="lv" hint-placeholder-count="3"><button role="radio" aria-checked="{{ lv.on }}" onClick="{{ lv.pick }}" style="{{ lv.style }}"><i class="{{ lv.icon }}" style="font-size:13px; line-height:1;"></i>{{ lv.label }}</button></sc-for>
+              </div>
+            </div>
+          </sc-for>
+          <p style="margin:4px 0 0; font-size:12.5px; line-height:1.5; color:var(--color-text-muted); text-wrap:pretty;">{{ t.permHelp }}</p>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ tabIntegrations }}" hint-placeholder-val="{{ false }}">
+        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:12px;">
+          <div style="display:flex; flex-direction:column; gap:10px; padding:16px; border-radius:14px; background:var(--color-surface-raised); border:1px solid var(--color-border);">
+            <span style="display:flex; align-items:center; gap:8px; font-size:14px; font-weight:600;"><i class="icon-app-window" style="font-size:16px; line-height:1; color:var(--color-text-muted);"></i>Claude Desktop / Cowork</span>
+            <span style="font-size:12.5px; line-height:1.45; color:var(--color-text-muted); text-wrap:pretty;">{{ t.cdDesc }}</span>
+            <div><button onClick="{{ installExt }}" style="{{ extBtn }}"><i class="{{ extIcon }}" style="font-size:14px; line-height:1;"></i>{{ extLabel }}</button></div>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:10px; padding:16px; border-radius:14px; background:var(--color-surface-raised); border:1px solid var(--color-border);">
+            <span style="display:flex; align-items:center; gap:8px; font-size:14px; font-weight:600;"><i class="icon-terminal" style="font-size:16px; line-height:1; color:var(--color-text-muted);"></i>Codex / Claude Code</span>
+            <span style="font-size:12.5px; line-height:1.45; color:var(--color-text-muted); text-wrap:pretty;">{{ t.cliDesc }}</span>
+            <div style="display:flex; align-items:center; gap:6px; padding:4px 4px 4px 10px; border-radius:9px; background:var(--color-surface-sunken); border:1px solid var(--color-border);"><code style="flex:1; min-width:0; font-family:var(--font-mono); font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">claude mcp add jarvis -- jarvis-mcp</code><button onClick="{{ copyCmd }}" aria-label="{{ t.copy }}" style="height:28px; padding:0 8px; border-radius:7px; border:none; background:var(--color-surface-raised); color:var(--color-text); font:600 12px var(--font-sans); cursor:pointer; display:inline-flex; align-items:center; gap:5px;"><i class="{{ copyIcon }}" style="font-size:13px; line-height:1;"></i>{{ copyLabel }}</button></div>
+          </div>
+          <div style="grid-column:1 / -1; display:flex; gap:20px; padding:16px; border-radius:14px; background:var(--color-surface-raised); border:1px solid var(--color-border); flex-wrap:wrap;">
+            <div style="flex:1; min-width:220px; display:flex; flex-direction:column; gap:10px;">
+              <span style="display:flex; align-items:center; gap:8px; font-size:14px; font-weight:600;"><i class="icon-radio-tower" style="font-size:16px; line-height:1; color:var(--color-text-muted);"></i>{{ t.relay }}</span>
+              <span style="font-size:12.5px; line-height:1.45; color:var(--color-text-muted); text-wrap:pretty;">{{ t.relayDesc }}</span>
+              <span style="{{ pairChip }}"><i class="{{ pairIcon }}" style="font-size:12px; line-height:1;"></i>{{ pairLabel }}</span>
+              <div style="display:flex; gap:6px;"><sc-if value="{{ pairWaiting }}" hint-placeholder-val="{{ true }}"><button onClick="{{ simPair }}" style="height:30px; padding:0 10px; border-radius:8px; border:none; background:transparent; color:var(--color-accent); font:600 12.5px var(--font-sans); cursor:pointer;">{{ t.simPair }}</button></sc-if><button onClick="{{ newCode }}" style="height:30px; padding:0 10px; border-radius:8px; border:1px solid var(--color-border-strong); background:var(--color-surface-raised); color:var(--color-text); font:600 12.5px var(--font-sans); cursor:pointer; display:inline-flex; align-items:center; gap:6px;"><i class="icon-refresh-cw" style="font-size:13px; line-height:1;"></i>{{ t.newCode }}</button></div>
+            </div>
+            <div style="display:flex; flex-direction:column; align-items:center; gap:8px;">
+              <div style="{{ qrBox }}"><svg width="132" height="132" viewBox="0 0 25 25" shape-rendering="crispEdges" aria-label="{{ t.qrAria }}"><path d="{{ qrPath }}" fill="#111"></path></svg></div>
+              <span style="font-family:var(--font-mono); font-size:16px; font-weight:600; letter-spacing:.12em;">{{ pairCode }}</span>
+              <span style="font-size:11.5px; color:var(--color-text-subtle); font-variant-numeric:tabular-nums;">{{ pairExpiry }}</span>
+            </div>
+          </div>
+          <div style="grid-column:1 / -1; display:flex; flex-direction:column; gap:4px; padding:12px 16px; border-radius:14px; background:var(--color-surface-raised); border:1px solid var(--color-border);">
+            <span style="font-size:14px; font-weight:600; padding:4px 0 6px;">{{ t.mcp }}</span>
+            <sc-for list="{{ mcp }}" as="m" hint-placeholder-count="4">
+              <div style="display:flex; align-items:center; gap:12px; min-height:40px;">
+                <i class="icon-plug" style="font-size:15px; line-height:1; color:var(--color-text-subtle);"></i>
+                <span style="flex:1; min-width:0; display:flex; flex-direction:column;"><span style="font-family:var(--font-mono); font-size:13px;">{{ m.name }}</span><span style="font-size:11.5px; color:var(--color-text-subtle);">{{ m.meta }}</span></span>
+                <span style="{{ m.chip }}">{{ m.status }}</span>
+                <button role="switch" aria-checked="{{ m.on }}" aria-label="{{ m.name }}" onClick="{{ m.toggle }}" style="{{ m.track }}"><span style="{{ m.knob }}"></span></button>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ tabAbout }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex; flex-direction:column; gap:20px; align-items:flex-start;">
+          <div style="display:flex; align-items:center; gap:16px;"><dc-import name="Orb" size="{{ 64 }}" state="idle" animated="{{ animated }}" hint-size="64px,64px"></dc-import><div style="display:flex; flex-direction:column; gap:2px;"><span style="font-size:28px; font-weight:650; letter-spacing:-0.03em;">Jarvis</span><span style="font-size:13px; color:var(--color-text-muted); font-variant-numeric:tabular-nums;">{{ t.version }} 0.9.0 · Tauri 2 · React 19</span></div></div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;"><button style="height:36px; padding:0 14px; border-radius:10px; border:none; background:var(--color-accent); color:var(--color-accent-contrast); font:600 13px var(--font-sans); cursor:pointer;">{{ t.updates }}</button><button style="height:36px; padding:0 14px; border-radius:10px; border:1px solid var(--color-border-strong); background:var(--color-surface-raised); color:var(--color-text); font:600 13px var(--font-sans); cursor:pointer;">{{ t.notes }}</button><button style="height:36px; padding:0 14px; border-radius:10px; border:none; background:transparent; color:var(--color-text-muted); font:500 13px var(--font-sans); cursor:pointer;">{{ t.licenses }}</button></div>
+          <p style="margin:0; max-width:460px; font-size:13px; line-height:1.55; color:var(--color-text-muted); text-wrap:pretty;">{{ t.aboutText }}</p>
+        </div>
+      </sc-if>
+
+      <sc-for list="{{ sections }}" as="sec" hint-placeholder-count="2">
+        <section style="{{ sec.box }}">
+          <sc-if value="{{ sec.hasHeading }}" hint-placeholder-val="{{ true }}"><h2 style="{{ sec.headStyle }}">{{ sec.heading }}</h2></sc-if>
+          <sc-for list="{{ sec.rows }}" as="r" hint-placeholder-count="3">
+            <div style="{{ r.rowStyle }}">
+              <div style="flex:1; min-width:180px; display:flex; flex-direction:column; gap:2px;">
+                <span style="font-size:13.5px; font-weight:550; color:var(--color-text); display:flex; align-items:center; gap:8px;"><sc-if value="{{ r.hasIcon }}" hint-placeholder-val="{{ false }}"><i class="{{ r.icon }}" style="{{ r.iconStyle }}"></i></sc-if>{{ r.label }}</span>
+                <sc-if value="{{ r.hasDesc }}" hint-placeholder-val="{{ true }}"><span style="font-size:12.5px; line-height:1.45; color:var(--color-text-muted); text-wrap:pretty;">{{ r.desc }}</span></sc-if>
+                <sc-if value="{{ r.hasNote }}" hint-placeholder-val="{{ false }}"><span style="{{ r.noteStyle }}"><i class="{{ r.noteIcon }}" style="font-size:12px; line-height:1;"></i>{{ r.note }}</span></sc-if>
+              </div>
+              <sc-if value="{{ r.isSwitch }}" hint-placeholder-val="{{ true }}"><button role="switch" aria-checked="{{ r.on }}" aria-label="{{ r.label }}" onClick="{{ r.toggle }}" style="{{ r.track }}"><span style="{{ r.knob }}"></span></button></sc-if>
+              <sc-if value="{{ r.isSeg }}" hint-placeholder-val="{{ false }}"><div role="radiogroup" aria-label="{{ r.label }}" style="display:flex; padding:3px; border-radius:10px; background:var(--color-surface-sunken); border:1px solid var(--color-border);"><sc-for list="{{ r.opts }}" as="o" hint-placeholder-count="2"><button role="radio" aria-checked="{{ o.on }}" onClick="{{ o.pick }}" style="{{ o.style }}">{{ o.label }}</button></sc-for></div></sc-if>
+              <sc-if value="{{ r.isSelect }}" hint-placeholder-val="{{ false }}"><select aria-label="{{ r.label }}" value="{{ r.value }}" onChange="{{ r.onChange }}" style="height:32px; min-width:180px; padding:0 10px; border-radius:8px; border:1px solid var(--color-border-strong); background:var(--color-surface-raised); color:var(--color-text); font:13px var(--font-sans);"><sc-for list="{{ r.options }}" as="op" hint-placeholder-count="3"><option value="{{ op }}">{{ op }}</option></sc-for></select></sc-if>
+              <sc-if value="{{ r.isSlider }}" hint-placeholder-val="{{ false }}"><div style="display:flex; align-items:center; gap:10px;"><input type="range" aria-label="{{ r.label }}" min="{{ r.min }}" max="{{ r.max }}" step="{{ r.step }}" value="{{ r.value }}" onChange="{{ r.onChange }}" style="width:160px; accent-color:var(--color-accent);"></input><span style="width:40px; font-size:12.5px; color:var(--color-text-muted); font-variant-numeric:tabular-nums; text-align:right;">{{ r.display }}</span></div></sc-if>
+              <sc-if value="{{ r.isSwatches }}" hint-placeholder-val="{{ false }}"><div role="radiogroup" aria-label="{{ r.label }}" style="display:flex; gap:8px;"><sc-for list="{{ r.opts }}" as="o" hint-placeholder-count="5"><button role="radio" aria-checked="{{ o.on }}" aria-label="{{ o.label }}" title="{{ o.label }}" onClick="{{ o.pick }}" style="{{ o.style }}"></button></sc-for></div></sc-if>
+              <sc-if value="{{ r.isKeys }}" hint-placeholder-val="{{ false }}"><button onClick="{{ r.record }}" aria-label="{{ r.recordAria }}" style="{{ r.keysBox }}"><sc-if value="{{ r.recording }}" hint-placeholder-val="{{ false }}"><span style="font-size:12.5px; color:var(--color-accent); font-weight:600;">{{ t.pressKeys }}</span></sc-if><sc-for list="{{ r.keys }}" as="k" hint-placeholder-count="2"><kbd style="min-width:22px; height:22px; padding:0 6px; border-radius:6px; border:1px solid var(--color-border-strong); border-bottom-width:2px; background:var(--color-surface-sunken); color:var(--color-text); font:600 11.5px var(--font-sans); display:inline-grid; place-items:center;">{{ k }}</kbd></sc-for></button></sc-if>
+              <sc-if value="{{ r.isMeter }}" hint-placeholder-val="{{ false }}"><div style="display:flex; align-items:center; gap:2px; height:24px; width:180px;"><sc-for list="{{ r.bars }}" as="b" hint-placeholder-count="20"><span style="{{ b }}"></span></sc-for></div></sc-if>
+              <sc-if value="{{ r.isButton }}" hint-placeholder-val="{{ false }}"><button onClick="{{ r.act }}" style="{{ r.btnStyle }}">{{ r.btn }}</button></sc-if>
+            </div>
+          </sc-for>
+        </section>
+      </sc-for>
+    </main>
+  </div>
+  <sc-if value="{{ confirming }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute; inset:0; background:var(--color-overlay); display:grid; place-items:center; z-index:5;">
+      <div role="alertdialog" aria-modal="true" aria-labelledby="fa-title" style="width:420px; display:flex; flex-direction:column; gap:14px; padding:22px; border-radius:18px; background:var(--color-surface-raised); border:1px solid var(--color-danger); box-shadow:var(--shadow-lg);">
+        <span style="width:40px; height:40px; border-radius:12px; display:grid; place-items:center; color:var(--color-danger); background:color-mix(in oklab, var(--color-danger) 15%, transparent);"><i class="icon-shield-alert" style="font-size:20px; line-height:1;"></i></span>
+        <h2 id="fa-title" style="margin:0; font-size:17px; font-weight:650; letter-spacing:-0.01em;">{{ confirmTitle }}</h2>
+        <p style="margin:0; font-size:13.5px; line-height:1.55; color:var(--color-text-muted); text-wrap:pretty;">{{ t.faBody }}</p>
+        <label style="display:flex; gap:8px; align-items:center; font-size:13px; cursor:pointer;"><input type="checkbox" checked="{{ understood }}" onChange="{{ toggleUnderstood }}" style="accent-color:var(--color-danger); margin:0; width:16px; height:16px;"></input>{{ t.faCheck }}</label>
+        <div style="display:flex; justify-content:flex-end; gap:8px; padding-top:4px;">
+          <button ref="{{ cancelRef }}" onClick="{{ cancelFull }}" style="height:36px; padding:0 14px; border-radius:10px; border:1px solid var(--color-border-strong); background:var(--color-surface); color:var(--color-text); font:600 13px var(--font-sans); cursor:pointer;">{{ t.cancel }}</button>
+          <button onClick="{{ confirmFull }}" disabled="{{ notUnderstood }}" style="{{ faBtn }}">{{ t.faConfirm }}</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:860,&quot;height&quot;:640},&quot;locale&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;en&quot;,&quot;it&quot;],&quot;default&quot;:&quot;en&quot;,&quot;tsType&quot;:&quot;Locale&quot;},&quot;platform&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;mac&quot;,&quot;win&quot;,&quot;linux&quot;],&quot;default&quot;:&quot;mac&quot;,&quot;tsType&quot;:&quot;Platform&quot;},&quot;initialTab&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;general&quot;,&quot;accounts&quot;,&quot;projects&quot;,&quot;voice&quot;,&quot;mic&quot;,&quot;privacy&quot;,&quot;integrations&quot;,&quot;shortcuts&quot;,&quot;about&quot;],&quot;default&quot;:&quot;general&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+const ST_T = {
+  en: { title: 'Settings', primary: 'Primary', projects: 'Projects', addProject: 'Add project', permission: 'Permission level', copy: 'Copy', copied: 'Copied', relay: 'ChatGPT relay', mcp: 'MCP servers', version: 'Version', updates: 'Check for updates', notes: 'Release notes', licenses: 'Licenses', pressKeys: 'Press keys…', cancel: 'Cancel',
+    tabs: { general: 'General', accounts: 'Brain & accounts', projects: 'Agents & projects', voice: 'Voice', mic: 'Microphone & wake word', privacy: 'Privacy', integrations: 'Integrations', shortcuts: 'Shortcuts', about: 'About' },
+    capMsg: 'Weekly cap reached — Jarvis will not switch to paid API automatically.', usage: 'of weekly cap used', onDevice: 'On device · no cap', disconnect: 'Disconnect', signIn: 'Sign in', addKey: 'Add key',
+    st: { ok: 'Connected', 'needs-login': 'Needs login', 'cap-reached': 'Cap reached', error: 'Error', 'not-installed': 'Not set up' },
+    perm: { safe: 'Safe', trusted: 'Trusted', 'full-auto': 'Full auto' },
+    permHelp: 'Safe asks before every command or file change. Trusted lets agents edit files and run common commands on their own. Full auto skips almost every question — high‑risk actions still need you.',
+    faTitle: 'Turn on Full auto for', faBody: 'Agents will run commands, install packages and edit or delete files in this project without asking. High‑risk actions (deleting folders, pushing code, spending money) still show a card.', faCheck: 'I understand the risk', faConfirm: 'Turn on Full auto',
+    cdDesc: 'Lets Claude Desktop and Cowork hand tasks to Jarvis and hear its voice.', install: 'Install extension', installed: 'Installed',
+    cliDesc: 'Adds Jarvis as an MCP server so agents can speak progress and ask for approval.',
+    relayDesc: 'Pair the ChatGPT app on your phone to talk to Jarvis from anywhere. Scan the code or type it in.', simPair: 'Simulate pairing', newCode: 'New code', waiting: 'Waiting for your phone', paired: 'Paired · iPhone di Lorenzo', expired: 'Code expired', expiresIn: 'Expires in', qrAria: 'Pairing QR code',
+    aboutText: 'Jarvis is a calm voice assistant for macOS, Windows and Linux. Inter and JetBrains Mono are used under the SIL Open Font License.',
+    appearance: 'Appearance', theme: 'Theme', themeD: 'Dark is the default. System follows your OS.', dark: 'Dark', light: 'Light', system: 'System', material: 'Material', materialD: 'Glass lets your wallpaper through. Solid is opaque and easier to read.', glass: 'Glass', solid: 'Solid', accent: 'Accent colour', accentD: 'Drives the orb, focus rings and highlights.',
+    behaviour: 'Behaviour', language: 'Language', languageD: 'Voice and interface.', login: 'Open at login', pillWake: 'Show the pill when I say “Jarvis”', sounds: 'Soft sounds', soundsD: 'A short chime when Jarvis starts and stops listening.',
+    vProvider: 'Voice provider', vVoice: 'Voice', speed: 'Speaking speed', speak: 'Speak replies out loud', speakD: 'Off means Jarvis only shows text.', longA: 'Long answers', always: 'Read all', short: 'Summarise', never: 'Text only',
+    input: 'Input device', level: 'Input level', wake: 'Wake word', wakeWord: 'Wake word', wakeWordD: '“Jarvis” is detected on this computer — audio isn’t sent anywhere until you’re heard.', sens: 'Sensitivity', clap: 'Double‑clap to wake', clapD: 'Experimental. Works best in a quiet room.', ptt: 'Hold to talk', focus: 'Pause during Focus / Do Not Disturb',
+    local: 'Everything local', localD: 'Speech, brain and voice all run on this computer. Nothing leaves it.', localNote: 'Uses Ollama + Piper. Answers may be slower.', retention: 'Keep history for', d1: '24 h', d7: '7 days', d30: '30 days', forever: 'Forever', audio: 'Save audio recordings', audioD: 'Off: only text transcripts are kept.', screen: 'Allow “what’s on my screen?”', micInd: 'Microphone indicator', whileL: 'While listening', alwaysOn: 'Always',
+    danger: 'Danger zone', delHist: 'Delete history', delHistD: 'Removes every conversation and transcript.', delMem: 'Delete all memory', delMemD: 'Jarvis forgets everything it learned about you.', reset: 'Reset Jarvis', resetD: 'Disconnects accounts and restarts setup.', del: 'Delete', resetBtn: 'Reset',
+    sc: { talk: 'Talk to Jarvis (hold)', sessions: 'Show or hide Sessions', home: 'Open Home', stop: 'Stop speaking', dictate: 'Dictate into the current app' }, conflict: 'Already used by', saved: 'Saved', rec: 'Change shortcut for' },
+  it: { title: 'Impostazioni', primary: 'Principale', projects: 'Progetti', addProject: 'Aggiungi progetto', permission: 'Livello di permesso', copy: 'Copia', copied: 'Copiato', relay: 'Relay ChatGPT', mcp: 'Server MCP', version: 'Versione', updates: 'Cerca aggiornamenti', notes: 'Note di rilascio', licenses: 'Licenze', pressKeys: 'Premi i tasti…', cancel: 'Annulla',
+    tabs: { general: 'Generali', accounts: 'Cervello e account', projects: 'Agenti e progetti', voice: 'Voce', mic: 'Microfono e attivazione', privacy: 'Privacy', integrations: 'Integrazioni', shortcuts: 'Scorciatoie', about: 'Info' },
+    capMsg: 'Limite settimanale raggiunto — Jarvis non passerà automaticamente all’API a pagamento.', usage: 'del limite settimanale', onDevice: 'Sul dispositivo · nessun limite', disconnect: 'Scollega', signIn: 'Accedi', addKey: 'Aggiungi chiave',
+    st: { ok: 'Collegato', 'needs-login': 'Serve l’accesso', 'cap-reached': 'Limite raggiunto', error: 'Errore', 'not-installed': 'Non configurato' },
+    perm: { safe: 'Sicuro', trusted: 'Fidato', 'full-auto': 'Automatico' },
+    permHelp: 'Sicuro chiede prima di ogni comando o modifica. Fidato lascia agli agenti le modifiche ai file e i comandi comuni. Automatico salta quasi tutte le domande — le azioni ad alto rischio richiedono sempre te.',
+    faTitle: 'Attivare la modalità automatica per', faBody: 'Gli agenti eseguiranno comandi, installeranno pacchetti e modificheranno o cancelleranno file in questo progetto senza chiedere. Le azioni ad alto rischio (cancellare cartelle, pubblicare codice, spendere soldi) mostrano comunque una scheda.', faCheck: 'Ho capito il rischio', faConfirm: 'Attiva modalità automatica',
+    cdDesc: 'Permette a Claude Desktop e Cowork di affidare compiti a Jarvis e usare la sua voce.', install: 'Installa estensione', installed: 'Installata',
+    cliDesc: 'Aggiunge Jarvis come server MCP: gli agenti possono raccontare i progressi e chiedere approvazioni.',
+    relayDesc: 'Abbina l’app ChatGPT sul telefono per parlare con Jarvis ovunque. Inquadra il codice o digitalo.', simPair: 'Simula abbinamento', newCode: 'Nuovo codice', waiting: 'In attesa del telefono', paired: 'Abbinato · iPhone di Lorenzo', expired: 'Codice scaduto', expiresIn: 'Scade tra', qrAria: 'Codice QR di abbinamento',
+    aboutText: 'Jarvis è un assistente vocale discreto per macOS, Windows e Linux. Inter e JetBrains Mono sono usati con licenza SIL Open Font License.',
+    appearance: 'Aspetto', theme: 'Tema', themeD: 'Scuro è il predefinito. Sistema segue il sistema operativo.', dark: 'Scuro', light: 'Chiaro', system: 'Sistema', material: 'Materiale', materialD: 'Vetro lascia trasparire lo sfondo. Solido è opaco e più leggibile.', glass: 'Vetro', solid: 'Solido', accent: 'Colore d’accento', accentD: 'Colora l’orb, gli anelli di focus e le evidenziazioni.',
+    behaviour: 'Comportamento', language: 'Lingua', languageD: 'Voce e interfaccia.', login: 'Apri all’avvio', pillWake: 'Mostra la pillola quando dico “Jarvis”', sounds: 'Suoni discreti', soundsD: 'Un breve suono quando Jarvis inizia e smette di ascoltare.',
+    vProvider: 'Fornitore della voce', vVoice: 'Voce', speed: 'Velocità', speak: 'Leggi le risposte ad alta voce', speakD: 'Se spento, Jarvis mostra solo il testo.', longA: 'Risposte lunghe', always: 'Leggi tutto', short: 'Riassumi', never: 'Solo testo',
+    input: 'Dispositivo di ingresso', level: 'Livello di ingresso', wake: 'Parola di attivazione', wakeWord: 'Parola di attivazione', wakeWordD: '“Jarvis” viene riconosciuto su questo computer — l’audio non viene inviato finché non vieni sentito.', sens: 'Sensibilità', clap: 'Doppio battito di mani', clapD: 'Sperimentale. Funziona meglio in una stanza silenziosa.', ptt: 'Tieni premuto per parlare', focus: 'Pausa durante Focus / Non disturbare',
+    local: 'Tutto in locale', localD: 'Riconoscimento, cervello e voce girano su questo computer. Nulla esce.', localNote: 'Usa Ollama + Piper. Le risposte possono essere più lente.', retention: 'Conserva la cronologia per', d1: '24 h', d7: '7 giorni', d30: '30 giorni', forever: 'Sempre', audio: 'Salva le registrazioni audio', audioD: 'Spento: si conservano solo le trascrizioni.', screen: 'Consenti “cosa c’è sullo schermo?”', micInd: 'Indicatore del microfono', whileL: 'Durante l’ascolto', alwaysOn: 'Sempre',
+    danger: 'Zona pericolosa', delHist: 'Elimina cronologia', delHistD: 'Rimuove tutte le conversazioni e le trascrizioni.', delMem: 'Elimina tutta la memoria', delMemD: 'Jarvis dimentica tutto ciò che ha imparato su di te.', reset: 'Reimposta Jarvis', resetD: 'Scollega gli account e riavvia la configurazione.', del: 'Elimina', resetBtn: 'Reimposta',
+    sc: { talk: 'Parla con Jarvis (tieni premuto)', sessions: 'Mostra o nascondi Sessioni', home: 'Apri Home', stop: 'Smetti di parlare', dictate: 'Detta nell’app corrente' }, conflict: 'Già usata da', saved: 'Salvata', rec: 'Cambia scorciatoia per' }
+};
+const HUES = [[200, 'Arc'], [255, 'Indigo'], [165, 'Teal'], [300, 'Violet'], [25, 'Coral']];
+function qrPath(seed) {
+  const N = 25; let x = seed || 7; const rnd = () => (x = (x * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff;
+  const dark = Array.from({ length: N }, () => Array(N).fill(false));
+  const finder = (ox, oy) => { for (let i = 0; i < 7; i++) for (let j = 0; j < 7; j++) dark[oy + i][ox + j] = i === 0 || i === 6 || j === 0 || j === 6 || (i > 1 && i < 5 && j > 1 && j < 5); };
+  const inFinder = (i, j) => (i < 8 && j < 8) || (i < 8 && j > N - 9) || (i > N - 9 && j < 8);
+  for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) if (!inFinder(i, j)) dark[i][j] = i === 6 || j === 6 ? (i + j) % 2 === 0 : rnd() > 0.52;
+  finder(0, 0); finder(N - 7, 0); finder(0, N - 7);
+  let d = ''; for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) if (dark[i][j]) d += `M${j} ${i}h1v1h-1z`;
+  return d;
+}
+class Component extends DCLogic {
+  state = { tab: null, perms: { shop: 'trusted', 'strategy-briefs': 'safe', General: 'safe' }, confirm: null, understood: false, sw: { login: true, pillWake: true, sounds: true, speak: true, clap: false, focus: true, local: false, audio: false, screen: true }, seg: { long: 'short', retention: 'd30', micInd: 'whileL', agent: 'claude' }, sel: { provider: 'ElevenLabs', voice: 'Aria — warm', input: 'MacBook Pro Microphone' }, sl: { speed: 1, sens: 0.6 }, keys: null, recording: null, keyNote: null, ext: false, copied: false, pair: 'waiting', pairStart: Date.now(), pairSeed: 7, mcpOn: { filesystem: true, calendar: true, gmail: false, 'shopify-admin': true }, conn: { codex: true, 'api-anthropic': false } };
+  cancelRef = React.createRef();
+  componentDidMount() {
+    this.onKey = e => {
+      if (!this.state.recording) return;
+      e.preventDefault();
+      if (e.key === 'Escape') return this.setState({ recording: null });
+      if (['Meta', 'Control', 'Alt', 'Shift'].includes(e.key)) return;
+      const mac = (this.props.platform || 'mac') === 'mac';
+      const k = [];
+      if (e.ctrlKey) k.push(mac ? '⌃' : 'Ctrl'); if (e.altKey) k.push(mac ? '⌥' : 'Alt'); if (e.shiftKey) k.push(mac ? '⇧' : 'Shift'); if (e.metaKey) k.push(mac ? '⌘' : 'Win');
+      k.push(e.code === 'Space' ? 'Space' : e.key.length === 1 ? e.key.toUpperCase() : e.key);
+      const id = this.state.recording; const all = this.allKeys();
+      const clash = Object.keys(all).find(o => o !== id && all[o].join('+') === k.join('+'));
+      if (clash) return this.setState({ recording: null, keyNote: { id, type: 'conflict', with: clash, keys: k } });
+      this.setState(s => ({ recording: null, keys: { ...all, [id]: k }, keyNote: { id, type: 'saved' } }));
+      setTimeout(() => this.setState(s => s.keyNote && s.keyNote.type === 'saved' ? { keyNote: null } : null), 2200);
+    };
+    window.addEventListener('keydown', this.onKey);
+    this.iv = setInterval(() => this.forceUpdate(), 1000);
+  }
+  componentDidUpdate() {
+    const prev = this._prevS || this.state; const pt = this._prevTab; this._prevS = this.state; this._prevTab = this.props.initialTab;
+    if (pt !== undefined && pt !== this.props.initialTab && this.props.initialTab) this.setState({ tab: null }); if (this.state.confirm && !prev.confirm && this.cancelRef.current) this.cancelRef.current.focus({ preventScroll: true }); }
+  componentWillUnmount() { window.removeEventListener('keydown', this.onKey); clearInterval(this.iv); }
+  allKeys() {
+    const mac = (this.props.platform || 'mac') === 'mac';
+    const A = mac ? '⌥' : 'Alt', S = mac ? '⇧' : 'Shift';
+    return this.state.keys || { talk: [A, 'Space'], sessions: [A, S, 'S'], home: [A, S, 'J'], stop: ['Esc'], dictate: [A, S, 'D'] };
+  }
+  renderVals() {
+    const p = this.props; const s = this.state;
+    const t = ST_T[p.locale] || ST_T.en;
+    const platform = p.platform || 'mac';
+    const tab = s.tab || p.initialTab || 'general';
+    const tabIcons = { general: 'icon-settings-2', accounts: 'icon-brain', projects: 'icon-folder-kanban', voice: 'icon-audio-lines', mic: 'icon-mic', privacy: 'icon-shield', integrations: 'icon-plug', shortcuts: 'icon-keyboard', about: 'icon-info' };
+    const tabs = Object.keys(tabIcons).map(id => ({ label: t.tabs[id], icon: tabIcons[id], on: tab === id, pick: () => this.setState({ tab: id }), style: { height: 34, padding: '0 10px', borderRadius: 8, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10, textAlign: 'left', font: `${tab === id ? 600 : 500} 13px var(--font-sans)`, background: tab === id ? 'var(--color-surface-raised)' : 'transparent', color: tab === id ? 'var(--color-text)' : 'var(--color-text-muted)', boxShadow: tab === id ? 'var(--shadow-sm)' : 'none' } }));
+    const segStyle = on => ({ height: 28, padding: '0 12px', borderRadius: 7, border: 'none', cursor: 'pointer', font: '600 12.5px var(--font-sans)', whiteSpace: 'nowrap', background: on ? 'var(--color-surface-raised)' : 'transparent', color: on ? 'var(--color-text)' : 'var(--color-text-muted)', boxShadow: on ? 'var(--shadow-sm)' : 'none' });
+    const chip = c => ({ display: 'inline-flex', alignItems: 'center', gap: 4, height: 22, padding: '0 8px', borderRadius: 999, fontSize: 11.5, fontWeight: 600, whiteSpace: 'nowrap', color: c, background: `color-mix(in oklab, ${c} 14%, transparent)` });
+    const sw = (on, green) => ({ track: { width: 38, height: 22, borderRadius: 999, border: 'none', padding: 0, cursor: 'pointer', position: 'relative', flexShrink: 0, background: on ? (green ? 'var(--color-private)' : 'var(--color-accent)') : 'var(--color-border-strong)', transition: 'background 160ms' }, knob: { position: 'absolute', top: 3, left: 3, width: 16, height: 16, borderRadius: 999, background: '#fff', boxShadow: '0 1px 2px rgba(0,0,0,.3)', transform: on ? 'translateX(16px)' : 'none', transition: 'transform 160ms var(--ease-standard)' } });
+    const rowBase = { display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap', padding: '12px 0', borderTop: '1px solid var(--color-border)' };
+    const R = (o) => ({ rowStyle: rowBase, hasDesc: !!o.desc, hasIcon: !!o.icon, iconStyle: { fontSize: 15, lineHeight: 1, color: o.iconColor || 'var(--color-text-muted)' }, hasNote: !!o.note, noteStyle: { fontSize: 12, display: 'flex', gap: 5, alignItems: 'center', color: o.noteColor || 'var(--color-text-subtle)', marginTop: 2 }, noteIcon: o.noteIcon || 'icon-info', ...o });
+    const Sw = (key, label, desc, extra = {}) => { const on = s.sw[key]; return R({ isSwitch: true, label, desc, on, toggle: () => this.setState(st => ({ sw: { ...st.sw, [key]: !st.sw[key] } })), ...sw(on, extra.green), ...extra }); };
+    const Seg = (key, label, desc, opts, value, onPick) => R({ isSeg: true, label, desc, opts: opts.map(([id, l]) => { const on = (value ?? s.seg[key]) === id; return { label: l, on, style: segStyle(on), pick: () => onPick ? onPick(id) : this.setState(st => ({ seg: { ...st.seg, [key]: id } })) }; }) });
+    const Sel = (key, label, desc, options) => R({ isSelect: true, label, desc, value: s.sel[key], options, onChange: e => this.setState(st => ({ sel: { ...st.sel, [key]: e.target.value } })) });
+    const Sl = (key, label, desc, min, max, step, fmt) => R({ isSlider: true, label, desc, min, max, step, value: s.sl[key], display: fmt(s.sl[key]), onChange: e => this.setState(st => ({ sl: { ...st.sl, [key]: +e.target.value } })) });
+    const allKeys = this.allKeys();
+    const Keys = id => { const rec = s.recording === id; const note = s.keyNote && s.keyNote.id === id ? s.keyNote : null; return R({ isKeys: true, label: t.sc[id], keys: rec ? [] : (note && note.type === 'conflict' ? note.keys : allKeys[id]), recording: rec, record: () => this.setState({ recording: rec ? null : id, keyNote: null }), recordAria: `${t.rec} ${t.sc[id]}`, note: note ? (note.type === 'conflict' ? `${t.conflict} “${t.sc[note.with]}”` : t.saved) : '', noteColor: note && note.type === 'conflict' ? 'var(--color-warning)' : 'var(--color-success)', noteIcon: note && note.type === 'conflict' ? 'icon-triangle-alert' : 'icon-check', keysBox: { minWidth: 120, height: 34, padding: '0 8px', borderRadius: 9, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 4, background: rec ? 'var(--color-accent-soft)' : 'transparent', border: `1px ${rec ? 'solid var(--color-accent)' : note && note.type === 'conflict' ? 'solid var(--color-warning)' : 'dashed var(--color-border-strong)'}` } }); };
+    const Btn = (label, desc, btn, danger) => R({ isButton: true, label, desc, btn, act: () => {}, btnStyle: { height: 32, padding: '0 12px', borderRadius: 8, cursor: 'pointer', font: '600 12.5px var(--font-sans)', background: 'transparent', border: `1px solid ${danger ? 'var(--color-danger)' : 'var(--color-border-strong)'}`, color: danger ? 'var(--color-danger)' : 'var(--color-text)' } });
+    const bars = Array.from({ length: 20 }, (_, i) => ({ flex: 1, height: '100%', borderRadius: 2, background: i < 9 ? 'var(--color-accent)' : 'var(--color-border-strong)', opacity: i < 9 ? 0.5 + i * 0.05 : 1 }));
+    const Sec = (heading, rows, danger) => ({ heading, hasHeading: !!heading, rows, headStyle: { margin: '0 0 4px', fontSize: 12, fontWeight: 600, letterSpacing: '.06em', textTransform: 'uppercase', color: danger ? 'var(--color-danger)' : 'var(--color-text-subtle)' }, box: danger ? { display: 'flex', flexDirection: 'column', padding: '14px 16px 4px', borderRadius: 14, border: '1px solid color-mix(in oklab, var(--color-danger) 60%, transparent)', background: 'color-mix(in oklab, var(--color-danger) 5%, transparent)' } : { display: 'flex', flexDirection: 'column' } });
+    let sections = [];
+    if (tab === 'general') sections = [
+      Sec(t.appearance, [
+        Seg('theme', t.theme, t.themeD, [['dark', t.dark], ['light', t.light], ['system', t.system]], p.theme || 'dark', v => p.onTheme && p.onTheme(v === 'system' ? 'dark' : v)),
+        Seg('material', t.material, t.materialD, [['glass', t.glass], ['solid', t.solid]], p.material || 'glass', v => p.onMaterial && p.onMaterial(v)),
+        R({ isSwatches: true, label: t.accent, desc: t.accentD, opts: HUES.map(([h, l]) => { const on = (p.hue ?? 200) === h; return { label: l, on, pick: () => p.onHue && p.onHue(h), style: { width: 26, height: 26, borderRadius: 999, cursor: 'pointer', border: 'none', background: `oklch(0.7 0.14 ${h})`, boxShadow: on ? '0 0 0 2px var(--color-surface), 0 0 0 4px var(--color-text)' : 'none' } }; }) })
+      ]),
+      Sec(t.behaviour, [Seg('lang', t.language, t.languageD, [['en', 'English'], ['it', 'Italiano']], p.locale || 'en', v => p.onLocale && p.onLocale(v)), Sw('login', t.login), Sw('pillWake', t.pillWake), Sw('sounds', t.sounds, t.soundsD)])
+    ];
+    if (tab === 'accounts') sections = [Sec('', [R({ ...sw(true), isSwitch: true, label: p.locale === 'it' ? 'Mai passare all’API a pagamento' : 'Never fall back to paid API', desc: p.locale === 'it' ? 'Quando un piano raggiunge il limite, Jarvis si ferma e te lo dice.' : 'When a plan hits its cap, Jarvis stops and tells you instead.', on: true, toggle: () => {}, icon: 'icon-wallet', rowStyle: { ...rowBase, borderTop: 'none' } })])];
+    if (tab === 'projects') sections = [Sec('', [Seg('agent', p.locale === 'it' ? 'Agente predefinito' : 'Default agent', p.locale === 'it' ? 'Usato quando non ne nomini uno.' : 'Used when you don’t name one.', [['claude', 'Claude Code'], ['codex', 'Codex'], ['home', 'Jarvis Home']])])];
+    if (tab === 'voice') sections = [Sec('', [Sel('provider', t.vProvider, '', ['ElevenLabs', 'Fish Audio', 'OpenAI', 'Local (Piper)', 'System voice']), Sel('voice', t.vVoice, '', ['Aria — warm', 'Leo — calm', 'Giulia — bright', 'Marco — deep']), Sl('speed', t.speed, '', 0.75, 1.5, 0.05, v => v.toFixed(2) + '×'), Sw('speak', t.speak, t.speakD), Seg('long', t.longA, '', [['always', t.always], ['short', t.short], ['never', t.never]])])];
+    if (tab === 'mic') sections = [Sec('', [Sel('input', t.input, '', ['MacBook Pro Microphone', 'AirPods Pro', 'Shure MV7']), R({ isMeter: true, label: t.level, bars })]), Sec(t.wake, [R({ isButton: false, label: t.wakeWord + ': “Jarvis”', desc: t.wakeWordD, icon: 'icon-lock', iconColor: 'var(--color-private)' }), Sl('sens', t.sens, '', 0, 1, 0.05, v => Math.round(v * 100) + '%'), Sw('clap', t.clap, t.clapD), Keys('talk'), Sw('focus', t.focus)])];
+    if (tab === 'privacy') sections = [
+      Sec('', [Sw('local', t.local, t.localD, { green: true, icon: 'icon-shield-check', iconColor: 'var(--color-private)', note: s.sw.local ? t.localNote : '', noteColor: 'var(--color-private)', rowStyle: { ...rowBase, borderTop: 'none', padding: '14px 16px', borderRadius: 14, background: s.sw.local ? 'color-mix(in oklab, var(--color-private) 10%, transparent)' : 'var(--color-surface-raised)', border: `1px solid ${s.sw.local ? 'color-mix(in oklab, var(--color-private) 40%, transparent)' : 'var(--color-border)'}` } })]),
+      Sec('', [Seg('retention', t.retention, '', [['d1', t.d1], ['d7', t.d7], ['d30', t.d30], ['forever', t.forever]]), Sw('audio', t.audio, t.audioD), Sw('screen', t.screen), Seg('micInd', t.micInd, '', [['whileL', t.whileL], ['always', t.alwaysOn]])]),
+      Sec(t.danger, [Btn(t.delHist, t.delHistD, t.del, true), Btn(t.delMem, t.delMemD, t.del, true), Btn(t.reset, t.resetD, t.resetBtn, true)], true)
+    ];
+    if (tab === 'shortcuts') sections = [Sec('', ['talk', 'sessions', 'home', 'stop', 'dictate'].map(Keys))];
+    sections.forEach(sec => { if (sec.rows[0] && !sec.rows[0].rowStyle.padding?.toString().includes('16')) sec.rows[0] = { ...sec.rows[0], rowStyle: { ...sec.rows[0].rowStyle, borderTop: 'none' } }; });
+    const accDefs = [
+      { id: 'chatgpt', name: 'ChatGPT', icon: 'icon-message-circle', bg: 'oklch(0.6 0.1 160)', account: 'lorenzo@padosoft.com', plan: 'ChatGPT Plus', usage: 12, state: 'ok', primary: true },
+      { id: 'claude', name: 'Claude Code', icon: 'icon-terminal', bg: 'oklch(0.6 0.13 45)', account: 'lorenzo@padosoft.com', plan: 'Claude Max', usage: 84, state: 'ok' },
+      { id: 'codex', name: 'Codex', icon: 'icon-braces', bg: 'oklch(0.48 0.04 260)', account: 'via ChatGPT Plus', plan: '', usage: 100, state: s.conn.codex ? 'cap-reached' : 'needs-login' },
+      { id: 'api-anthropic', name: 'Anthropic API', icon: 'icon-key-round', bg: 'oklch(0.5 0.03 60)', account: '', plan: '', state: 'not-installed' },
+      { id: 'local', name: 'Ollama', icon: 'icon-cpu', bg: 'var(--color-private)', account: 'llama3.2 · 3B', plan: '', state: 'ok', local: true }
+    ];
+    const stCol = { ok: 'var(--color-success)', 'needs-login': 'var(--color-warning)', 'cap-reached': 'var(--color-danger)', error: 'var(--color-danger)', 'not-installed': 'var(--color-text-subtle)' };
+    const stIcon = { ok: 'icon-circle-check', 'needs-login': 'icon-log-in', 'cap-reached': 'icon-octagon-alert', error: 'icon-circle-x', 'not-installed': 'icon-circle-dashed' };
+    const accounts = accDefs.map(a => { const c = a.usage >= 100 ? 'var(--color-danger)' : a.usage >= 80 ? 'var(--color-warning)' : 'var(--color-accent)'; const connected = a.state === 'ok' || a.state === 'cap-reached'; return {
+      ...a, line: a.local ? `${a.account} · ${t.onDevice}` : [a.account, a.plan].filter(Boolean).join(' · ') || '—',
+      tile: { width: 32, height: 32, borderRadius: 9, display: 'grid', placeItems: 'center', color: '#fff', background: a.bg, flexShrink: 0 },
+      chip: chip(stCol[a.state]), chipIcon: stIcon[a.state], chipLabel: t.st[a.state],
+      btn: connected ? t.disconnect : a.state === 'needs-login' ? t.signIn : t.addKey,
+      btnStyle: { height: 30, padding: '0 10px', borderRadius: 8, cursor: 'pointer', font: '600 12px var(--font-sans)', whiteSpace: 'nowrap', border: connected ? 'none' : '1px solid var(--color-border-strong)', background: connected ? 'transparent' : 'var(--color-surface-raised)', color: connected ? 'var(--color-text-muted)' : 'var(--color-text)' },
+      act: () => { if (a.id === 'codex') this.setState(st => ({ conn: { ...st.conn, codex: !st.conn.codex } })); },
+      hasUsage: a.usage !== undefined && connected, usagePct: (a.usage || 0) + '%', usageLabel: `${a.plan || a.name} · ${t.usage}`, usageColor: c, capped: a.usage >= 100,
+      bar: { height: '100%', width: Math.min(100, a.usage || 0) + '%', borderRadius: 999, background: c }
+    }; });
+    const projDefs = [['shop', '~/code/shop', 'Claude Code'], ['strategy-briefs', '~/Documents/strategy-briefs', 'Jarvis Home'], ['General', '—', 'Jarvis Home']];
+    const lvIcons = { safe: 'icon-shield', trusted: 'icon-shield-check', 'full-auto': 'icon-shield-alert' };
+    const projects = projDefs.map(([name, path, agent]) => ({ name, path, agentLine: agent, levels: ['safe', 'trusted', 'full-auto'].map(l => { const on = s.perms[name] === l; const danger = l === 'full-auto'; return { label: t.perm[l], icon: lvIcons[l], on, pick: () => danger && !on ? this.setState({ confirm: name, understood: false }) : this.setState(st => ({ perms: { ...st.perms, [name]: l } })), style: { ...segStyle(on), display: 'inline-flex', alignItems: 'center', gap: 6, background: on ? (danger ? 'var(--color-danger)' : 'var(--color-surface-raised)') : 'transparent', color: on ? (danger ? 'var(--color-text-inverse)' : 'var(--color-text)') : danger ? 'var(--color-danger)' : 'var(--color-text-muted)' } }; }) }));
+    const elapsed = Date.now() - s.pairStart; const left = Math.max(0, 300000 - elapsed);
+    const pairState = s.pair === 'paired' ? 'paired' : left === 0 ? 'expired' : 'waiting';
+    const pc = { waiting: 'var(--color-accent)', paired: 'var(--color-success)', expired: 'var(--color-danger)' }[pairState];
+    const mcpDefs = [['filesystem', 'stdio · 11 tools', 'running'], ['calendar', 'http · 6 tools', 'running'], ['gmail', 'http · needs authorisation', 'auth'], ['shopify-admin', 'http · 24 tools', 'running']];
+    const mcp = mcpDefs.map(([name, meta, st]) => { const on = s.mcpOn[name]; const c = !on ? 'var(--color-text-subtle)' : st === 'auth' ? 'var(--color-warning)' : 'var(--color-success)'; return { name, meta, on, status: !on ? 'Off' : st === 'auth' ? (p.locale === 'it' ? 'Autorizza' : 'Authorise') : (p.locale === 'it' ? 'Attivo' : 'Running'), chip: chip(c), toggle: () => this.setState(x => ({ mcpOn: { ...x.mcpOn, [name]: !x.mcpOn[name] } })), ...sw(on) }; });
+    const confirmOn = !!s.confirm;
+    return {
+      t, tabs, tabTitle: t.tabs[tab], sections, animated: p.animated !== false,
+      isMac: platform === 'mac', isWin: platform === 'win', isLinux: platform === 'linux', winRadius: platform === 'mac' ? '12px' : platform === 'win' ? '8px' : '12px',
+      tabAccounts: tab === 'accounts', tabProjects: tab === 'projects', tabIntegrations: tab === 'integrations', tabAbout: tab === 'about',
+      accounts, projects, mcp,
+      installExt: () => this.setState({ ext: true }), extLabel: s.ext ? t.installed : t.install, extIcon: s.ext ? 'icon-check' : 'icon-download',
+      extBtn: { height: 32, padding: '0 12px', borderRadius: 8, cursor: 'pointer', font: '600 12.5px var(--font-sans)', display: 'inline-flex', alignItems: 'center', gap: 6, border: 'none', background: s.ext ? 'color-mix(in oklab, var(--color-success) 15%, transparent)' : 'var(--color-accent)', color: s.ext ? 'var(--color-success)' : 'var(--color-accent-contrast)' },
+      copyCmd: () => { this.setState({ copied: true }); setTimeout(() => this.setState({ copied: false }), 1600); }, copyLabel: s.copied ? t.copied : t.copy, copyIcon: s.copied ? 'icon-check' : 'icon-copy',
+      qrPath: qrPath(s.pairSeed), qrBox: { padding: 10, borderRadius: 12, background: '#fff', opacity: pairState === 'waiting' ? 1 : 0.35, transition: 'opacity 200ms' },
+      pairCode: ['K7F‑2QX', 'M4R‑9TD', 'Z2H‑6PL'][s.pairSeed % 3], pairExpiry: pairState === 'waiting' ? `${t.expiresIn} ${Math.floor(left / 60000)}:${String(Math.floor(left / 1000) % 60).padStart(2, '0')}` : '',
+      pairChip: { ...chip(pc), alignSelf: 'flex-start' }, pairIcon: { waiting: 'icon-loader-circle', paired: 'icon-smartphone', expired: 'icon-clock-alert' }[pairState], pairLabel: t[pairState], pairWaiting: pairState === 'waiting',
+      simPair: () => this.setState({ pair: 'paired' }), newCode: () => this.setState(x => ({ pair: 'waiting', pairStart: Date.now(), pairSeed: x.pairSeed + 1 })),
+      confirming: confirmOn, confirmTitle: `${t.faTitle} ${s.confirm}?`, understood: s.understood, notUnderstood: !s.understood,
+      toggleUnderstood: () => this.setState(x => ({ understood: !x.understood })), cancelRef: this.cancelRef,
+      cancelFull: () => this.setState({ confirm: null }), confirmFull: () => this.setState(x => ({ perms: { ...x.perms, [x.confirm]: 'full-auto' }, confirm: null })),
+      faBtn: { height: 36, padding: '0 14px', borderRadius: 10, border: 'none', background: 'var(--color-danger)', color: 'var(--color-text-inverse)', font: '600 13px var(--font-sans)', cursor: s.understood ? 'pointer' : 'not-allowed', opacity: s.understood ? 1 : 0.45 }
+    };
+  }
+}
+</script>
+</body>
+</html>

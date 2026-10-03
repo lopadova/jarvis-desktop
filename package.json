@@ -1,0 +1,29 @@
+{
+  "name": "jarvis-desktop-monorepo",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Jarvis Desktop — a voice-first personal assistant for macOS, Windows and Linux.",
+  "license": "MIT",
+  "type": "module",
+  "packageManager": "pnpm@12.6.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @jarvis/desktop tauri dev",
+    "build": "pnpm -r --filter ./packages/** build",
+    "typecheck": "pnpm -r typecheck",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "biome check .",
+    "format": "biome format --write .",
+    "sidecar:build": "pnpm --filter @jarvis/agent-host build:binary",
+    "e2e": "pnpm --filter @jarvis/mcp build && node scripts/e2e-smoke.mjs"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.15",
+    "@types/node": "^24.0.0",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.3"
+  }
+}

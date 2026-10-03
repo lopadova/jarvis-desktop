@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/lopadova/jarvis-desktop/security/advisories/new
+    about: Please report security issues privately, never in a public issue.
+  - name: Install help
+    url: https://github.com/lopadova/jarvis-desktop/blob/main/docs/guides/install.md
+    about: Unsigned installers, microphone permission and first-run help.
+  - name: Troubleshooting and FAQ
+    url: https://github.com/lopadova/jarvis-desktop/blob/main/docs/guides/troubleshooting.md
+    about: Common problems and their fixes.
+  - name: Documentation site
+    url: https://jarvis-desktop.pages.dev
+    about: Guides, reference and architecture.
