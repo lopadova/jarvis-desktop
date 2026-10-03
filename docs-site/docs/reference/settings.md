@@ -87,6 +87,7 @@ the same tab and stored separately.
 | Key | Type | Default | Meaning |
 |---|---|---|---|
 | `privateMode` | boolean | `false` | Use only local components; nothing leaves the computer |
+| `screenAccess` | boolean | `false` | Opt-in for "what's on my screen?": one screenshot per request (≤ 2 MB, never stored) shown to a vision-capable brain |
 | `openResults` | boolean | `true` | Auto-open viewable results (HTML files, localhost URLs) when a session finishes |
 | `historyRetentionDays` | integer 0–3650 | `30` | Days of history to keep; 0 = keep nothing |
 
