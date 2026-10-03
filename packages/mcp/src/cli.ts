@@ -19,6 +19,8 @@ Usage:
   jarvis-mcp                         Run over stdio (default; used by Claude, Codex, …)
   jarvis-mcp --http [--port <n>]     Run Streamable HTTP on http://127.0.0.1:<n>/mcp (default 8765)
             [--allow-origin <url>]   Allow a browser Origin (repeatable)
+            [--path-token]           Also accept the token as /mcp/<token> (for clients that
+                                     can't send headers, e.g. ChatGPT through a tunnel)
 
 Environment:
   JARVIS_MCP_HTTP_TOKEN   bearer token required by --http (at least 32 characters)
@@ -31,6 +33,7 @@ async function main(): Promise<void> {
       http: { type: 'boolean', default: false },
       port: { type: 'string', default: '8765' },
       'allow-origin': { type: 'string', multiple: true, default: [] },
+      'path-token': { type: 'boolean', default: false },
       version: { type: 'boolean', default: false },
       help: { type: 'boolean', default: false },
     },
@@ -51,6 +54,7 @@ async function main(): Promise<void> {
     bearerToken: token,
     forward: createSidecarForwarder(sidecar, 'http'),
     allowedOrigins: values['allow-origin'],
+    allowPathToken: values['path-token'],
   });
   process.stderr.write(`jarvis-mcp: listening on ${http.url}\n`);
   const stop = () => void http.close().then(() => process.exit(0));

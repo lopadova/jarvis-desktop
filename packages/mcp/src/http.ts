@@ -3,7 +3,9 @@
  *
  * Security:
  *  - binds to 127.0.0.1 by default (never 0.0.0.0);
- *  - every request needs `Authorization: Bearer <token>` (compared in constant time);
+ *  - every request needs `Authorization: Bearer <token>` (compared in constant time), or — only when
+ *    `allowPathToken` is set, for clients such as ChatGPT that cannot send custom headers — the token
+ *    as the last path segment (`/mcp/<token>`, a capability URL);
  *  - a request carrying an `Origin` header is rejected unless that origin is allow-listed
  *    (browsers always send it, server-side MCP clients do not) — this blocks DNS-rebinding and
  *    drive-by requests from web pages;
@@ -29,6 +31,12 @@ export interface HttpMcpServerOptions {
   allowedOrigins?: string[];
   /** URL path of the endpoint. Default `/mcp`. */
   path?: string;
+  /**
+   * Also accept the token as a path segment, `<path>/<token>`. Off by default: URLs end up in logs and
+   * client configs, so use it only when the client can't send an Authorization header (ChatGPT
+   * connectors with "No authentication" behind a tunnel).
+   */
+  allowPathToken?: boolean;
 }
 
 export interface HttpMcpServer {
@@ -63,12 +71,18 @@ export async function createHttpMcpServer(options: HttpMcpServerOptions): Promis
   const handle = async (req: IncomingMessage, res: ServerResponse) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
     const url = new URL(req.url ?? '/', 'http://localhost');
-    if (url.pathname !== path) return reject(res, 404, 'Not found');
+    const pathToken =
+      options.allowPathToken && url.pathname.startsWith(`${path}/`) ? url.pathname.slice(path.length + 1) : null;
+    if (url.pathname !== path && pathToken === null) return reject(res, 404, 'Not found');
 
     const origin = req.headers.origin;
     if (origin !== undefined && !allowedOrigins.has(origin)) return reject(res, 403, 'Origin not allowed');
 
-    if (!bearerMatches(req.headers.authorization, expected)) {
+    const authorized =
+      pathToken !== null
+        ? timingSafeEqual(digest(decodeURIComponent(pathToken)), expected)
+        : bearerMatches(req.headers.authorization, expected);
+    if (!authorized) {
       return reject(res, 401, 'Unauthorized', { 'WWW-Authenticate': 'Bearer realm="jarvis"' });
     }
 

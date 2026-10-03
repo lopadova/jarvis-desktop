@@ -85,6 +85,27 @@ describe('HTTP MCP endpoint', () => {
     expect(calls).toEqual([['jarvis_speak', { text: 'Hi' }, 'local-agent/1.0']]);
   });
 
+  it('accepts the token as a path segment only when allowPathToken is set', async () => {
+    http = await createHttpMcpServer({ port: 0, bearerToken: TOKEN, forward });
+    const noAuth = { Authorization: '' };
+    expect((await fetch(`${http.url}/${TOKEN}`, { method: 'POST', headers: noAuth, body: '{}' })).status).toBe(404);
+    await http.close();
+
+    http = await createHttpMcpServer({ port: 0, bearerToken: TOKEN, forward, allowPathToken: true });
+    const ok = await fetch(`${http.url}/${TOKEN}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json, text/event-stream' },
+      body: JSON.stringify(initialize),
+    });
+    expect(ok.status).toBe(200);
+    const wrong = await fetch(`${http.url}/${'c'.repeat(40)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json, text/event-stream' },
+      body: JSON.stringify(initialize),
+    });
+    expect(wrong.status).toBe(401);
+  });
+
   it('answers 404 elsewhere and 405 for GET', async () => {
     http = await createHttpMcpServer({ port: 0, bearerToken: TOKEN, forward });
     const base = http.url.replace(/\/mcp$/, '');
