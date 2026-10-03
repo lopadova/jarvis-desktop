@@ -47,6 +47,7 @@ xattr -dr com.apple.quarantine /Applications/Jarvis.app
 == tab "Windows"
 1. Run `Jarvis_{version}_x64-setup.exe`.
 2. If **Microsoft Defender SmartScreen** appears, click **More info › Run anyway**.
+   (The portable zip also needs the Microsoft **WebView2 Runtime**, included in Windows 11; on a clean install or Windows 10, install the Evergreen Bootstrapper from Microsoft once. Keep `agent-host.exe` next to `jarvis-desktop.exe`.)
 3. Follow the installer. Jarvis starts in the system tray (click the `^` arrow near the clock if you
    don't see it).
 4. If no sound is captured: **Settings › Privacy & security › Microphone** and enable
