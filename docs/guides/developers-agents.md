@@ -79,13 +79,15 @@ Each session keeps a raw event log at `logs/sessions/<id>.ndjson` in the data di
 The other direction works too: Claude Code and Codex can call Jarvis to speak, ask you a question, or start a task.
 
 ```bash
-claude mcp add jarvis -- jarvis-mcp
+claude mcp add jarvis -- node /path/to/jarvis-mcp.mjs
 ```
 
 ```toml
 # ~/.codex/config.toml
 [mcp_servers.jarvis]
-command = "jarvis-mcp"
+command = "node"
+args = ["/path/to/jarvis-mcp.mjs"]
+tool_timeout_sec = 620
 ```
 
-Settings › Integrations › **Copy command** gives the full path of `jarvis-mcp` for your OS. Tools are listed in the [MCP tools reference](../reference/mcp-tools.md).
+Settings › Integrations › **Copy command** gives the full path of `jarvis-mcp.mjs` for your OS (Node.js 20+ required). Tools are listed in the [MCP tools reference](../reference/mcp-tools.md).

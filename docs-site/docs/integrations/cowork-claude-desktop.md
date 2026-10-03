@@ -37,12 +37,12 @@ Add to Claude Desktop's `claude_desktop_config.json` (**Settings › Developer �
 ```json
 {
   "mcpServers": {
-    "jarvis": { "command": "jarvis-mcp" }
+    "jarvis": { "command": "node", "args": ["/path/to/jarvis-mcp.mjs"] }
   }
 }
 ```
 
-If `jarvis-mcp` is not on your PATH, use the full path from **Jarvis › Settings › Integrations › Copy
+Replace `/path/to/jarvis-mcp.mjs` with the real path from **Jarvis › Settings › Integrations › Copy
 command**.
 
 ## What Claude can do with it

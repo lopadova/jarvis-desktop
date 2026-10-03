@@ -16,7 +16,7 @@ to choose between Postgres and SQLite" and wait for your spoken answer — even 
 
 ## How it connects
 
-The command `jarvis-mcp` is installed with the app. It is a small **stdio** bridge that finds the running
+The MCP bridge is a single file, `jarvis-mcp.mjs`, shipped with the app and in the `jarvis-mcp-bundle.zip` release asset (run it with Node.js 20+). It is a small **stdio** bridge that finds the running
 Jarvis through a connection file in the data directory (`run/agent-host.json`, owner-only permissions)
 and forwards tool calls over the local, token-protected socket. Jarvis must be running.
 
@@ -25,7 +25,7 @@ Find the exact command for your OS in **Settings › Integrations › Copy comma
 ::: tabs
 == tab "Claude Code"
 ```bash
-claude mcp add jarvis -- jarvis-mcp
+claude mcp add jarvis -- node /path/to/jarvis-mcp.mjs
 ```
 Or install the plugin (MCP server + a skill that teaches Claude when to use Jarvis):
 ```text
@@ -37,14 +37,16 @@ Or install the plugin (MCP server + a skill that teaches Claude when to use Jarv
 Add to `~/.codex/config.toml`:
 ```toml
 [mcp_servers.jarvis]
-command = "jarvis-mcp"
+command = "node"
+args = ["/path/to/jarvis-mcp.mjs"]
+tool_timeout_sec = 620
 ```
 
 == tab "Any MCP client"
 ```json
 {
   "mcpServers": {
-    "jarvis": { "command": "jarvis-mcp" }
+    "jarvis": { "command": "node", "args": ["/path/to/jarvis-mcp.mjs"] }
   }
 }
 ```

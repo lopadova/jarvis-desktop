@@ -71,7 +71,7 @@ cloudflared tunnel run --url http://127.0.0.1:8765 jarvis
 ## Security
 
 - **Treat the URL as a password.** Don't paste it in shared chats or screenshots. Anyone holding it can use every tool Jarvis exposes over HTTP.
-- **Rotate it.** Restart `jarvis-mcp --http` with a new `JARVIS_MCP_HTTP_TOKEN` and update the connector. The old URL stops working at once.
+- **Rotate it.** Restart `node jarvis-mcp.mjs --http` with a new `JARVIS_MCP_HTTP_TOKEN` and update the connector. The old URL stops working at once.
 - **Stop the tunnel** when you don't need it (`Ctrl+C`). A quick tunnel dies with the process.
 - **Logs.** The full URL path, token included, can show up in the Cloudflare and ChatGPT logs of *your* accounts. For OAuth with nothing secret in the URL, use the relay.
 - **Optional extra layer.** With a named tunnel you can add a [Cloudflare WAF rule](https://developers.cloudflare.com/waf/custom-rules/) on your hostname that allows only `POST /mcp/*` and blocks everything else.

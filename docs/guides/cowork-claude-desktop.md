@@ -36,7 +36,7 @@ In Claude Code (or Cowork, where plugins are supported):
 Claude Code:
 
 ```bash
-claude mcp add jarvis -- jarvis-mcp
+claude mcp add jarvis -- node /path/to/jarvis-mcp.mjs
 ```
 
 Claude Desktop (`claude_desktop_config.json`):
@@ -44,12 +44,12 @@ Claude Desktop (`claude_desktop_config.json`):
 ```json
 {
   "mcpServers": {
-    "jarvis": { "command": "jarvis-mcp" }
+    "jarvis": { "command": "node", "args": ["/path/to/jarvis-mcp.mjs"] }
   }
 }
 ```
 
-If `jarvis-mcp` is not on your `PATH`, use the full path from Jarvis › Settings › Integrations › **Copy command**.
+Replace `/path/to/jarvis-mcp.mjs` with the real path: Jarvis › Settings › Integrations › **Copy command** gives it for your OS (the file also ships in the `jarvis-mcp-bundle.zip` release asset). It needs Node.js 20 or later.
 
 ## Safety
 

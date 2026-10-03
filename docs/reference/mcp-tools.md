@@ -131,8 +131,10 @@ List what Jarvis remembers about the user. No parameters.
 | Client | How |
 |---|---|
 | Claude Desktop / Cowork | `jarvis.mcpb` extension or plugin — see [guide](../guides/cowork-claude-desktop.md) |
-| Claude Code | `claude mcp add jarvis -- jarvis-mcp` |
-| Codex | `~/.codex/config.toml` → `[mcp_servers.jarvis]` with `command = "jarvis-mcp"` |
+| Claude Code | `claude mcp add jarvis -- node /path/to/jarvis-mcp.mjs` |
+| Codex | `~/.codex/config.toml` → `[mcp_servers.jarvis]` with `command = "node"
+args = ["/path/to/jarvis-mcp.mjs"]
+tool_timeout_sec = 620` |
 | ChatGPT | Relay — see [guide](../guides/chatgpt.md) |
 
 The local bridge connects to the running app using `run/agent-host.json` in the data directory; its token only authorises MCP tool calls.
