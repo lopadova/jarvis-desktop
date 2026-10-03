@@ -143,10 +143,7 @@ shortcut, or click a suggestion — and speak normally.
 
 ## See it
 
-::: callout tip "Screenshots arrive with v0.1.0" icon:camera
-Jarvis is being built in the open. Real screenshots and a short demo video will land here with the first
-release. Until then, here is what you will see.
-:::
+![Jarvis Home: suggestion chips, chat and composer](/assets/screenshots/home-dark.png)
 
 Jarvis has three main surfaces:
 
@@ -158,19 +155,11 @@ Jarvis has three main surfaces:
 - **The sessions panel** — live cards for background work: which agent, which project, what it is doing
   right now, and buttons to open the result, read the log, reply or stop.
 
-An approval looks like this:
+An approval looks like this — high-risk actions are click-only, with **Deny** focused:
 
-```text
-┌───────────────────────────────────────────────────────────┐
-│ ●  Claude · project shop                     risk: MEDIUM │
-│    Run a shell command                                    │
-│    $ pnpm add -D @fontsource-variable/inter               │
-│    in ~/Projects/shop                                     │
-│                                                           │
-│  [ Allow once ]  [ Deny ]  [ Always allow in this project ]│
-│  Say "yes" to allow                                       │
-└───────────────────────────────────────────────────────────┘
-```
+![High-risk approval card](/assets/screenshots/pill-approval-high-dark.png)
+
+![Sessions panel](/assets/screenshots/sessions-dark.png)
 
 High-risk requests (for example `git push` or deleting files outside the project) drop the voice hint and
 the "always allow" button: **click to confirm**.
