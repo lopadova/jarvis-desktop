@@ -1,0 +1,34 @@
+:root {
+  --brand-primary: #22b8e6; /* Arc: listening / active */
+  --brand-accent: #f5a524; /* Ember: speaking / attention */
+  --brand-private: #22c55e; /* local / private mode */
+  --brand-danger: #ef4444;
+}
+
+.site-title,
+.footer-title {
+  letter-spacing: 0;
+}
+
+.docmd-card,
+.callout,
+.collapsible {
+  border-radius: 10px;
+}
+
+.docmd-card {
+  border-top: 3px solid var(--brand-primary);
+}
+
+.docmd-card:hover {
+  border-top-color: var(--brand-accent);
+}
+
+.content table code {
+  white-space: nowrap;
+}
+
+.content img[src$="jarvis-banner.svg"] {
+  width: 100%;
+  border-radius: 14px;
+}
