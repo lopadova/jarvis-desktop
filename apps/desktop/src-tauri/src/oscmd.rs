@@ -84,8 +84,12 @@ impl Platform {
 /// agent session by id. Anything else is refused (defense in depth: the sidecar is not trusted to name
 /// arbitrary executables, absolute paths or interpreters).
 fn valid_program_and_args(p: &str, args: &[String]) -> bool {
+    // An id must start with an alphanumeric character so it can never be parsed as an option
+    // (e.g. `--dangerously-skip-permissions` is made only of id characters).
     let is_id = |s: &str| {
-        !s.is_empty() && s.len() <= 64 && s.chars().all(|c| c.is_ascii_alphanumeric() || c == '-')
+        s.len() <= 64
+            && s.chars().next().is_some_and(|c| c.is_ascii_alphanumeric())
+            && s.chars().all(|c| c.is_ascii_alphanumeric() || c == '-')
     };
     let resume_flag = match p {
         "claude" => "--resume",
@@ -388,6 +392,13 @@ mod tests {
                 "--dangerously-skip-permissions".to_string(),
                 "x".to_string(),
             ],
+            // An "id" that is really an option must never pass.
+            vec![
+                "--resume".to_string(),
+                "--dangerously-skip-permissions".to_string(),
+            ],
+            vec!["--resume".to_string(), "-x".to_string()],
+            vec!["--resume".to_string(), String::new()],
         ] {
             assert_eq!(
                 open_terminal_candidates(Platform::Linux, &dir, Some("claude"), &bad),
