@@ -10,16 +10,27 @@ import { existsSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import {
   type AgentId,
+  type BrainImage,
   type BrainMessage,
   type BrainProvider,
+  type BrainRequest,
+  briefingTask,
   type ChatMessage,
+  type ContentSource,
+  contentJsonSchema,
+  contentSystemPrompt,
+  contentUserPrompt,
   enforceGrounding,
   type FastIntent,
   isTaskGrounded,
   type Logger,
+  locationMemory,
+  MAX_SCREENSHOT_BASE64,
+  matchContentSource,
   matchFastIntent,
   type Project,
   ProviderError,
+  parseContentReply,
   parseRouterAction,
   phrases,
   REPAIR_PROMPT,
@@ -31,6 +42,7 @@ import {
   type Settings,
   type SystemCardData,
   spokenDuration,
+  spokenList,
   type Turn,
   toSessionView,
 } from '@jarvis/core';
@@ -79,6 +91,18 @@ interface PendingAsk {
   timer: ReturnType<typeof setTimeout>;
 }
 
+/** How long dictation mode waits for the utterance to type. */
+export const DICTATION_TIMEOUT_MS = 60_000;
+/** Brains tried, in order, when the primary one cannot see images (never a pay-per-use API: R10). */
+const VISION_FALLBACKS = ['chatgpt', 'local'] as const;
+
+interface ReplyOptions {
+  /** Shown/spoken but never written to the database (captured clipboard/screen derivatives, dictation). */
+  ephemeral?: boolean;
+  /** With `ephemeral`: do not even record that the turn happened (e.g. "delete today's history"). */
+  noRecord?: boolean;
+}
+
 export type BrainPick = { ok: true; brain: BrainProvider } | { ok: false; message: string };
 
 export class Orchestrator {
@@ -87,6 +111,9 @@ export class Orchestrator {
   private inflight: AbortController | null = null;
   private clarifyContext: string | undefined;
   private pendingAsk: PendingAsk | null = null;
+  private dictationTimer: ReturnType<typeof setTimeout> | null = null;
+  /** Last full text produced from clipboard/screen content, for "copy it" (memory only, never persisted). */
+  private lastResult: string | null = null;
   private readonly now: () => number;
 
   constructor(private readonly deps: OrchestratorDeps) {
@@ -97,10 +124,16 @@ export class Orchestrator {
     return this.clarifyContext;
   }
 
+  /** True while the next utterance will be typed into the active app instead of answered. */
+  get dictating(): boolean {
+    return this.dictationTimer !== null;
+  }
+
   /** Entry point for typed text, chips and final voice transcripts. Resolves when the turn is done. */
   submit(text: string, source: TurnSource): Promise<void> {
     const clean = text.trim();
     if (!clean) return Promise.resolve();
+    if (this.dictating) return this.dictate(clean, source);
     this.chat({ id: newId('u_'), role: 'user', text: clean, at: this.now(), viaVoice: source === 'voice' });
     if (this.deps.approvals.handleUtterance(clean)) return Promise.resolve();
     if (this.pendingAsk) {
@@ -130,6 +163,7 @@ export class Orchestrator {
     this.inflight?.abort();
     this.inflight = null;
     this.clarifyContext = undefined;
+    this.endDictation();
     this.deps.voice.stop();
     this.deps.pill.clearSticky('clarify');
     this.deps.pill.set({ kind: 'hidden' });
@@ -172,12 +206,39 @@ export class Orchestrator {
     return { ok: true, brain };
   }
 
+  /**
+   * A brain that can look at images. The primary one when it can (private mode: local only); otherwise a
+   * connected subscription/local vision brain. Never switches to a pay-per-use API on its own (R10).
+   */
+  async pickVisionBrain(): Promise<BrainPick> {
+    const s = this.deps.settings();
+    const p = phrases(s.locale);
+    const pick = this.pickBrain();
+    if (!pick.ok) return pick;
+    if (pick.brain.vision) return pick;
+    if (!s.privateMode) {
+      for (const id of VISION_FALLBACKS) {
+        const b = this.deps.brains.get(id);
+        if (!b?.vision || b.id === pick.brain.id) continue;
+        try {
+          const st = await b.status();
+          if (st.connected && st.state === 'ok') return { ok: true, brain: b };
+        } catch {
+          /* not usable */
+        }
+      }
+    }
+    return { ok: false, message: p.screenNoVision(pick.brain.label) };
+  }
+
   // ───────── internals ─────────
 
   private async runTurn(text: string, epoch: number, fast: FastIntent | null): Promise<void> {
     if (epoch !== this.epoch) return;
     try {
+      const source = fast ? null : matchContentSource(text);
       if (fast) await this.fastPath(fast, text);
+      else if (source) await this.content(source, text, epoch);
       else await this.routed(text, epoch);
     } catch (e) {
       this.deps.logger.error('turn failed', { error: e });
@@ -288,6 +349,112 @@ export class Orchestrator {
     this.clarifyContext = action.action === 'clarify' ? userText.slice(-1000) : undefined;
     if (action.action !== 'clarify') this.deps.pill.clearSticky('clarify');
     await this.execute(action, text, speech?.started ? speech : undefined);
+  }
+
+  /**
+   * Clipboard / screen questions. The captured content goes to the brain as untrusted data (R4) — the
+   * reply is only spoken and shown, never parsed into an action — and nothing captured is persisted:
+   * the clipboard text and the screenshot live in this call only, the result is shown ephemerally.
+   */
+  private async content(source: ContentSource, text: string, epoch: number): Promise<void> {
+    const s = this.deps.settings();
+    const p = phrases(s.locale);
+    const action = `content:${source}`;
+    let pick: BrainPick;
+    let clipboard: string | undefined;
+    let images: BrainImage[] | undefined;
+    if (source === 'screen') {
+      if (!s.screenAccess) {
+        await this.reply(text, p.screenOff, `${action}:off`);
+        return;
+      }
+      // Pick the brain before capturing: nothing is captured when it could not be sent (private mode, no vision).
+      pick = await this.pickVisionBrain();
+      if (!pick.ok) {
+        await this.reply(text, pick.message, `${action}:no-brain`);
+        return;
+      }
+      if (!this.deps.host.connected) {
+        await this.reply(text, p.screenFailed, `${action}:failed`);
+        return;
+      }
+      this.deps.pill.set({ kind: 'thinking', transcript: text, brain: pick.brain.id });
+      this.deps.voice.setListening('busy');
+      try {
+        const shot = await this.deps.host.call('host.screenshot', {});
+        if (!shot.pngBase64 || shot.pngBase64.length > MAX_SCREENSHOT_BASE64) throw new Error('screenshot too large');
+        images = [{ mime: 'image/png', base64: shot.pngBase64 }];
+      } catch (e) {
+        this.deps.logger.warn('screenshot failed', { error: errorMessage(e) });
+        await this.reply(text, p.screenFailed, `${action}:failed`);
+        return;
+      }
+    } else {
+      pick = this.pickBrain();
+      if (!pick.ok) {
+        await this.reply(text, pick.message, `${action}:no-brain`);
+        return;
+      }
+      try {
+        if (!this.deps.host.connected) throw new Error('shell not connected');
+        clipboard = (await this.deps.host.call('host.clipboard.read', {})).text ?? '';
+      } catch (e) {
+        this.deps.logger.warn('clipboard read failed', { error: errorMessage(e) });
+        await this.reply(text, p.clipboardUnavailable, `${action}:failed`);
+        return;
+      }
+      if (!clipboard.trim()) {
+        await this.reply(text, p.clipboardEmpty, `${action}:empty`);
+        return;
+      }
+      this.deps.pill.set({ kind: 'thinking', transcript: text, brain: pick.brain.id });
+      this.deps.voice.setListening('busy');
+    }
+    if (epoch !== this.epoch) return;
+
+    const brain = pick.brain;
+    const abort = new AbortController();
+    this.inflight = abort;
+    const req: BrainRequest = {
+      messages: [
+        { role: 'system', content: contentSystemPrompt(s.locale, source) },
+        { role: 'user', content: contentUserPrompt(text, source, clipboard) },
+      ],
+      jsonSchema: contentJsonSchema,
+      tier: 'smart',
+      signal: abort.signal,
+    };
+    if (images) req.images = images;
+    let answer: ReturnType<typeof parseContentReply> = null;
+    try {
+      const res = await brain.complete(req);
+      answer = parseContentReply(res.json, res.text);
+    } catch (e) {
+      if (epoch !== this.epoch || abort.signal.aborted) return;
+      if (source === 'screen' && e instanceof ProviderError && e.code === 'not-configured') {
+        this.deps.logger.warn('vision request refused', { brain: brain.id, error: e.message });
+        await this.reply(text, p.screenNoVision(brain.label), `${action}:no-vision`);
+        return;
+      }
+      await this.brainFailure(text, brain, e);
+      return;
+    } finally {
+      if (this.inflight === abort) this.inflight = null;
+      // Drop the captured data as soon as the request is over.
+      clipboard = undefined;
+      images = undefined;
+      req.images = undefined;
+    }
+    if (epoch !== this.epoch) return;
+    if (!answer) {
+      await this.reply(text, p.brainError, `${action}:invalid`);
+      return;
+    }
+    if (answer.result && answer.result !== answer.speak) {
+      this.lastResult = answer.result.slice(0, 20_000);
+      this.card({ type: 'text-result', source, text: this.lastResult }, { ephemeral: true });
+    } else this.lastResult = answer.speak;
+    await this.reply(text, answer.speak, action, {}, undefined, { ephemeral: true });
   }
 
   /**
@@ -545,7 +712,196 @@ export class Orchestrator {
           await this.deps.host.call('host.showWindow', { window: 'settings' }).catch(() => undefined);
         this.record({ at: this.now(), heard, said: '', action });
         return;
+      case 'dictate': {
+        if (!this.deps.host.connected) {
+          await this.reply(heard, p.dictationNoShell, action);
+          return;
+        }
+        await this.reply(heard, p.dictationOn, action);
+        this.startDictation();
+        return;
+      }
+      case 'dictate-stop':
+        // Only reached when not dictating (an active dictation handles its own stop phrases).
+        await this.reply(heard, p.dictationIdle, action);
+        return;
+      case 'copy-result': {
+        if (!this.lastResult) {
+          await this.reply(heard, p.nothingToCopy, action);
+          return;
+        }
+        const ok = this.deps.host.connected
+          ? await this.deps.host
+              .call('host.clipboard.write', { text: this.lastResult })
+              .then(() => true)
+              .catch(() => false)
+          : false;
+        await this.reply(heard, ok ? p.copied : p.clipboardUnavailable, action);
+        return;
+      }
+      case 'shopping-add': {
+        const added = this.deps.store.addShopping(f.items, () => newId('s_'), this.now());
+        const items = this.publishShopping();
+        if (!added.length) {
+          await this.reply(heard, p.shoppingAlready(spokenList(f.items, s.locale)), action);
+          return;
+        }
+        const names = added.map((i) => i.text);
+        this.card({ type: 'shopping', items, added: names });
+        await this.reply(heard, p.shoppingAdded(spokenList(names, s.locale)), action);
+        return;
+      }
+      case 'shopping-remove': {
+        const removed = this.deps.store.removeShoppingByText(f.items);
+        if (!removed.length) {
+          await this.reply(heard, p.shoppingNotFound(spokenList(f.items, s.locale)), action);
+          return;
+        }
+        const items = this.publishShopping();
+        const names = removed.map((i) => i.text);
+        this.card({ type: 'shopping', items, removed: names });
+        await this.reply(heard, p.shoppingRemoved(spokenList(names, s.locale)), action);
+        return;
+      }
+      case 'shopping-list': {
+        const items = this.deps.store.listShopping();
+        if (!items.length) {
+          await this.reply(heard, p.shoppingEmpty, action);
+          return;
+        }
+        this.card({ type: 'shopping', items });
+        const names = items.slice(0, 12).map((i) => i.text);
+        await this.reply(heard, p.shoppingList(items.length, spokenList(names, s.locale)), action);
+        return;
+      }
+      case 'shopping-clear': {
+        const n = this.deps.store.clearShopping();
+        this.publishShopping();
+        await this.reply(heard, n ? p.shoppingCleared : p.shoppingEmpty, action);
+        return;
+      }
+      case 'forget-today': {
+        // Clear first (this request included), then confirm without writing anything new.
+        this.clearHistory('today');
+        await this.reply(heard, p.todayForgotten, action, {}, undefined, { ephemeral: true, noRecord: true });
+        return;
+      }
+      case 'what-you-know': {
+        const list = this.deps.memory.list();
+        this.deps.ui.emit('ui.navigate', { view: 'memory' });
+        if (this.deps.host.connected)
+          void this.deps.host.call('host.showWindow', { window: 'home' }).catch(() => undefined);
+        if (!list.length) {
+          await this.reply(heard, p.memoryNone, action);
+          return;
+        }
+        const latest = list
+          .slice(-5)
+          .reverse()
+          .map((m) => m.text.replace(/[.;\s]+$/, ''));
+        await this.reply(heard, p.memorySummary(list.length, latest.join('; '), Math.max(0, list.length - 5)), action);
+        return;
+      }
+      case 'briefing':
+        await this.briefing(heard);
+        return;
     }
+  }
+
+  /** Clears turns + chat since the start of today (or everything) and tells the UI. */
+  clearHistory(scope: 'today' | 'all'): void {
+    const d = new Date(this.now());
+    d.setHours(0, 0, 0, 0);
+    const since = scope === 'today' ? d.getTime() : 0;
+    this.deps.store.clearHistory(since);
+    this.deps.ui.emit('ui.history', { since });
+  }
+
+  private publishShopping() {
+    const items = this.deps.store.listShopping();
+    this.deps.ui.emit('ui.shopping', { items });
+    return items;
+  }
+
+  // ───────── dictation ─────────
+
+  private startDictation(): void {
+    this.endDictation();
+    this.dictationTimer = setTimeout(() => this.endDictation(), DICTATION_TIMEOUT_MS);
+    this.dictationTimer.unref?.();
+    this.deps.pill.setSticky({ kind: 'listening', level: 0, partial: '', committed: '', dictation: true });
+    // Keep the microphone open for the dictated sentence even when conversation mode is off.
+    this.deps.voice.setListening('conversation', 15_000);
+  }
+
+  private endDictation(): void {
+    if (!this.dictationTimer) return;
+    clearTimeout(this.dictationTimer);
+    this.dictationTimer = null;
+    this.deps.pill.clearSticky('listening');
+  }
+
+  /** The utterance after "dictate": typed into the active app (never sent to a brain, never stored). */
+  private async dictate(text: string, source: TurnSource): Promise<void> {
+    const p = phrases(this.deps.settings().locale);
+    const f = matchFastIntent(text);
+    this.endDictation();
+    if (f?.kind === 'dictate-stop' || f?.kind === 'stop-speaking' || f?.kind === 'cancel-all') {
+      this.deps.voice.stop();
+      await this.reply(text, p.dictationCancelled, 'fast:dictate-stop');
+      return;
+    }
+    this.chat({ id: newId('u_'), role: 'user', text, at: this.now(), viaVoice: source === 'voice' }, false);
+    this.deps.pill.set({ kind: 'hidden' });
+    try {
+      if (!this.deps.host.connected) throw new Error('shell not connected');
+      await this.deps.host.call('host.typeText', { text });
+      this.record({ at: this.now(), heard: '[dictation]', said: '', action: 'fast:dictation-typed' });
+    } catch (e) {
+      this.deps.logger.warn('typing failed', { error: errorMessage(e) });
+      await this.reply('[dictation]', p.dictationNoShell, 'fast:dictation-failed', {}, undefined, { ephemeral: true });
+    }
+  }
+
+  // ───────── morning briefing ─────────
+
+  private async briefing(heard: string): Promise<void> {
+    const s = this.deps.settings();
+    const p = phrases(s.locale);
+    const available = await this.deps.availableAgents();
+    const agent: AgentId | undefined = available.includes('home')
+      ? 'home'
+      : available.includes(s.defaultAgent)
+        ? s.defaultAgent
+        : available[0];
+    if (!agent) {
+      await this.reply(heard, p.noAgent, 'fast:briefing');
+      return;
+    }
+    const location = locationMemory(this.deps.memory.list())?.text;
+    const task = briefingTask(s.locale, {
+      now: new Date(this.now()),
+      timeZone: this.deps.timeZone ?? Intl.DateTimeFormat().resolvedOptions().timeZone,
+      ...(location ? { location } : {}),
+    });
+    const r = this.deps.sessions.start({
+      agent,
+      project: null,
+      task,
+      coding: false,
+      origin: 'voice',
+      purpose: 'briefing',
+    });
+    if (!r.ok) {
+      await this.reply(
+        heard,
+        r.reason === 'limit' ? p.tooManySessions(s.maxConcurrentSessions) : p.agentMissing(agent),
+        'fast:briefing',
+      );
+      return;
+    }
+    this.card({ type: 'session-started', session: toSessionView(r.session) });
+    await this.reply(heard, p.briefingStarted, 'fast:briefing', { task: 'morning briefing' });
   }
 
   private statusLine(): string {
@@ -563,13 +919,14 @@ export class Orchestrator {
 
   // ───────── output helpers ─────────
 
-  chat(m: ChatMessage): void {
-    this.deps.store.addChat(m);
+  /** `persist: false` shows the message without storing it (it disappears on reload). */
+  chat(m: ChatMessage, persist = true): void {
+    if (persist) this.deps.store.addChat(m);
     this.deps.ui.emit('ui.chat', { message: m });
   }
 
-  private card(card: SystemCardData): void {
-    this.chat({ id: newId('c_'), role: 'system', card, at: this.now() });
+  card(card: SystemCardData, opts: ReplyOptions = {}): void {
+    this.chat({ id: newId('c_'), role: 'system', card, at: this.now() }, !opts.ephemeral);
   }
 
   private record(t: Turn): void {
@@ -577,10 +934,10 @@ export class Orchestrator {
   }
 
   /** Jarvis line outside a turn (ask_user, MCP speak). */
-  jarvisSays(text: string): Promise<void> {
+  jarvisSays(text: string, ephemeral = false): Promise<void> {
     const s = this.deps.settings();
     const spoken = s.speakReplies && !this.deps.voice.muted;
-    this.chat({ id: newId('j_'), role: 'jarvis', text, at: this.now(), spoken });
+    this.chat({ id: newId('j_'), role: 'jarvis', text, at: this.now(), spoken }, !ephemeral);
     return spoken ? this.deps.voice.speak(text) : Promise.resolve();
   }
 
@@ -590,17 +947,23 @@ export class Orchestrator {
     action: string,
     meta: { task?: string | undefined; project?: string | undefined } = {},
     speech?: ReplySpeechStream,
+    opts: ReplyOptions = {},
   ): Promise<void> {
-    const turn: Turn = { at: this.now(), heard, said, action };
-    if (meta.task) turn.task = meta.task;
-    if (meta.project) turn.project = meta.project;
-    this.record(turn);
+    if (opts.ephemeral) {
+      // History keeps that the request happened, never what was derived from captured content.
+      if (!opts.noRecord) this.record({ at: this.now(), heard, said: '', action });
+    } else {
+      const turn: Turn = { at: this.now(), heard, said, action };
+      if (meta.task) turn.task = meta.task;
+      if (meta.project) turn.project = meta.project;
+      this.record(turn);
+    }
     if (this.deps.pill.state.kind === 'thinking') this.deps.pill.set({ kind: 'hidden' });
     if (speech?.started) {
       // The beginning is already being spoken: record the line and say only what is missing.
-      this.chat({ id: newId('j_'), role: 'jarvis', text: said, at: this.now(), spoken: true });
+      this.chat({ id: newId('j_'), role: 'jarvis', text: said, at: this.now(), spoken: true }, !opts.ephemeral);
       await speech.finish(said);
-    } else await this.jarvisSays(said);
+    } else await this.jarvisSays(said, opts.ephemeral);
     if (!this.deps.voice.busy)
       this.deps.voice.setListening(this.deps.settings().conversationMode ? 'conversation' : 'idle');
   }

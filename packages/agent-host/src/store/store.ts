@@ -18,6 +18,7 @@ import {
   type SessionStatus,
   type Settings,
   SettingsSchema,
+  type ShoppingItem,
   type Turn,
 } from '@jarvis/core';
 import type { SqlDb, SqlValue } from './sqlite.js';
@@ -62,7 +63,26 @@ export const MIGRATIONS: string[] = [
   ALTER TABLE sessions ADD COLUMN pid INTEGER;
   ALTER TABLE sessions ADD COLUMN pid_start INTEGER;
   `,
+  // v3 — local shopping list (no LLM); `key` is the normalised text used for de-duplication and removal
+  `
+  CREATE TABLE shopping_items (
+    id TEXT PRIMARY KEY, text TEXT NOT NULL, key TEXT NOT NULL UNIQUE, created_at INTEGER NOT NULL
+  );
+  `,
 ];
+
+/** Normalised shopping key: case/accents/punctuation-insensitive, simple plural folding ("eggs" ≈ "egg"). */
+export function shoppingKey(text: string): string {
+  return text
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[^\p{L}\p{N}]+/gu, ' ')
+    .trim()
+    .split(' ')
+    .map((w) => (w.length > 3 && w.endsWith('s') && !w.endsWith('ss') ? w.slice(0, -1) : w))
+    .join(' ');
+}
 
 export function migrate(db: SqlDb): number {
   const row = db.get<{ user_version: number }>('PRAGMA user_version');
@@ -429,6 +449,53 @@ export class Store {
       kind,
       pattern,
     );
+  }
+
+  // ───────── shopping list ─────────
+  listShopping(): ShoppingItem[] {
+    return this.db
+      .all<{ id: string; text: string; created_at: number }>(
+        'SELECT id, text, created_at FROM shopping_items ORDER BY created_at ASC, rowid ASC',
+      )
+      .map((r) => ({ id: r.id, text: r.text, createdAt: Number(r.created_at) }));
+  }
+  /** Adds items not already on the list; returns the ones actually added. */
+  addShopping(texts: string[], makeId: () => string, now: number): ShoppingItem[] {
+    const added: ShoppingItem[] = [];
+    this.db.transaction(() => {
+      for (const raw of texts) {
+        const text = raw.trim().slice(0, 80);
+        const key = shoppingKey(text);
+        if (!key) continue;
+        const item = { id: makeId(), text, createdAt: now };
+        if (
+          this.db.run(
+            'INSERT OR IGNORE INTO shopping_items (id, text, key, created_at) VALUES (?, ?, ?, ?)',
+            item.id,
+            text,
+            key,
+            now,
+          ).changes
+        )
+          added.push(item);
+      }
+    });
+    return added;
+  }
+  /** Removes items by spoken text (normalised match); returns the removed items. */
+  removeShoppingByText(texts: string[]): ShoppingItem[] {
+    const keys = new Set(texts.map(shoppingKey).filter(Boolean));
+    const gone = this.listShopping().filter((i) => keys.has(shoppingKey(i.text)));
+    this.db.transaction(() => {
+      for (const i of gone) this.db.run('DELETE FROM shopping_items WHERE id = ?', i.id);
+    });
+    return gone;
+  }
+  removeShopping(id: string): boolean {
+    return this.db.run('DELETE FROM shopping_items WHERE id = ?', id).changes > 0;
+  }
+  clearShopping(): number {
+    return this.db.run('DELETE FROM shopping_items').changes;
   }
 
   // ───────── kv ─────────

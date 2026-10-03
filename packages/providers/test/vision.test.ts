@@ -23,7 +23,9 @@ const completed = { type: 'response.completed', response: { status: 'completed' 
 
 describe('vision (images on the last user message)', () => {
   it('chatgpt plan: Responses input_image data URL', async () => {
-    const m = mockFetch([['/responses', () => sse([{ type: 'response.output_text.delta', delta: 'A code editor.' }, completed])]]);
+    const m = mockFetch([
+      ['/responses', () => sse([{ type: 'response.output_text.delta', delta: 'A code editor.' }, completed])],
+    ]);
     const { deps } = makeDeps({ fetch: m.fetch, patch: { chatgptModel: 'gpt-5.5' } });
     const auth = {
       getAccessToken: async () => 't',
@@ -82,10 +84,7 @@ describe('vision (images on the last user message)', () => {
 
   it('local: image_url parts; a non-vision model fails with a clear ProviderError', async () => {
     const ok = mockFetch([
-      [
-        '/chat/completions',
-        () => sse([{ choices: [{ delta: { content: 'ok' }, finish_reason: 'stop' }] }, '[DONE]']),
-      ],
+      ['/chat/completions', () => sse([{ choices: [{ delta: { content: 'ok' }, finish_reason: 'stop' }] }, '[DONE]'])],
     ]);
     await new LocalBrain(makeDeps({ fetch: ok.fetch }).deps).complete(req);
     const msgs = bodyOf(ok.calls[0]).messages as Array<{ content: unknown }>;
@@ -94,7 +93,9 @@ describe('vision (images on the last user message)', () => {
       { type: 'image_url', image_url: { url: `data:image/png;base64,${PNG}` } },
     ]);
 
-    const bad = mockFetch([['/chat/completions', () => json({ error: { message: 'model does not support images' } }, 400)]]);
+    const bad = mockFetch([
+      ['/chat/completions', () => json({ error: { message: 'model does not support images' } }, 400)],
+    ]);
     await expect(new LocalBrain(makeDeps({ fetch: bad.fetch }).deps).complete(req)).rejects.toMatchObject({
       code: 'not-configured',
       message: expect.stringMatching(/cannot read images/),

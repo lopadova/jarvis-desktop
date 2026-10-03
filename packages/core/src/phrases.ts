@@ -128,7 +128,9 @@ const P = {
     shoppingNotFound: (items: string) => `Non trovo ${items} nella lista della spesa.`,
     shoppingEmpty: 'La lista della spesa è vuota.',
     shoppingList: (n: number, items: string) =>
-      n === 1 ? `Nella lista della spesa c’è una cosa: ${items}.` : `Nella lista della spesa ci sono ${n} cose: ${items}.`,
+      n === 1
+        ? `Nella lista della spesa c’è una cosa: ${items}.`
+        : `Nella lista della spesa ci sono ${n} cose: ${items}.`,
     shoppingCleared: 'Lista della spesa svuotata.',
     todayForgotten: 'Fatto. Ho cancellato la cronologia di oggi.',
     memoryNone: 'Non so ancora niente di te. Dimmi per esempio: ricordati che preferisco risposte brevi.',

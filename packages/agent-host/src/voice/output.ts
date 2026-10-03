@@ -151,11 +151,11 @@ export class VoiceOutput {
     }
   }
 
-  setListening(mode: ListeningMode): void {
+  setListening(mode: ListeningMode, conversationMs?: number): void {
     if (!this.deps.host.connected) return;
     const s = this.deps.settings();
     const params: HostMethods['host.setListening']['params'] =
-      mode === 'conversation' ? { mode, conversationMs: s.conversationWindowMs } : { mode };
+      mode === 'conversation' ? { mode, conversationMs: conversationMs ?? s.conversationWindowMs } : { mode };
     void this.deps.host.call('host.setListening', params).catch(() => undefined);
   }
 
