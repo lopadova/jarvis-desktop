@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@keyframes jv-confetti{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(var(--dx),var(--dy)) scale(.6);opacity:0}}
+@keyframes jv-step{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+</style>
+</helmet>
+<div role="dialog" aria-label="{{ t.aria }}" style="width:720px; height:560px; display:flex; flex-direction:column; border-radius:{{ winRadius }}; background:var(--color-surface); backdrop-filter:var(--backdrop); -webkit-backdrop-filter:var(--backdrop); border:1px solid var(--color-border); box-shadow:var(--shadow-lg); overflow:hidden; font-family:var(--font-sans); color:var(--color-text);">
+  <div data-tauri-drag-region="true" style="height:40px; flex-shrink:0; display:flex; align-items:center; padding:0 14px; gap:8px;">
+    <sc-if value="{{ isMac }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex; gap:8px;"><button onClick="{{ onClose }}" aria-label="Close" style="width:12px; height:12px; border-radius:50%; border:none; background:#ff5f57; padding:0; cursor:pointer;"></button><span style="width:12px; height:12px; border-radius:50%; background:var(--color-border-strong);"></span><span style="width:12px; height:12px; border-radius:50%; background:var(--color-border-strong);"></span></div>
+    </sc-if>
+    <span style="flex:1;"></span>
+    <span style="font-size:12px; color:var(--color-text-subtle); font-variant-numeric:tabular-nums;">{{ stepLabel }}</span>
+    <sc-if value="{{ notMac }}" hint-placeholder-val="{{ false }}">
+      <button onClick="{{ onClose }}" aria-label="Close" style="width:32px; height:28px; border-radius:6px; border:none; background:transparent; color:var(--color-text-muted); cursor:pointer; display:grid; place-items:center; margin-left:8px;" style-hover="background:#c42b1c; color:#fff;"><i class="icon-x" style="font-size:15px; line-height:1;"></i></button>
+    </sc-if>
+  </div>
+  <div style="flex:1; min-height:0; padding:4px 40px 0; display:flex; flex-direction:column; overflow:hidden;">
+    <sc-if value="{{ s0 }}" hint-placeholder-val="{{ true }}">
+      <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:28px; animation:{{ stepAnim }};">
+        <dc-import name="Orb" size="{{ 160 }}" state="idle" animated="{{ animated }}" hint-size="160px,160px"></dc-import>
+        <div style="display:flex; flex-direction:column; gap:12px; align-items:center;">
+          <h1 style="margin:0; font-size:40px; font-weight:650; letter-spacing:-0.03em; line-height:1.05;">{{ t.welcome }}</h1>
+          <p style="margin:0; max-width:440px; font-size:16px; line-height:1.55; color:var(--color-text-muted); text-wrap:pretty;">{{ t.welcomeSub }}</p>
+        </div>
+      </div>
+    </sc-if>
+    <sc-if value="{{ s1 }}" hint-placeholder-val="{{ false }}">
+      <div style="flex:1; display:flex; flex-direction:column; gap:24px; padding-top:20px; animation:{{ stepAnim }};">
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <h2 style="margin:0; font-size:26px; font-weight:650; letter-spacing:-0.02em;">{{ t.micTitle }}</h2>
+          <p style="margin:0; max-width:520px; font-size:14.5px; line-height:1.55; color:var(--color-text-muted); text-wrap:pretty;">{{ t.micWhy }}</p>
+        </div>
+        <div style="display:flex; gap:14px; align-items:flex-start; padding:16px 18px; border-radius:14px; background:color-mix(in oklab, var(--color-private) 9%, transparent); border:1px solid color-mix(in oklab, var(--color-private) 30%, transparent);">
+          <i class="icon-shield-check" style="font-size:20px; line-height:1.2; color:var(--color-private);"></i>
+          <div style="display:flex; flex-direction:column; gap:4px;"><b style="font-size:14px; font-weight:600;">{{ t.promiseTitle }}</b><span style="font-size:13.5px; line-height:1.5; color:var(--color-text-muted); text-wrap:pretty;">{{ t.promise }}</span></div>
+        </div>
+        <sc-if value="{{ micOff }}" hint-placeholder-val="{{ true }}">
+          <div><button onClick="{{ allowMic }}" style="height:44px; padding:0 20px; border-radius:12px; border:none; background:var(--color-accent); color:var(--color-accent-contrast); font:600 14px var(--font-sans); cursor:pointer; display:inline-flex; align-items:center; gap:8px;"><i class="icon-mic" style="font-size:16px; line-height:1;"></i>{{ t.allowMic }}</button></div>
+        </sc-if>
+        <sc-if value="{{ micOn }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; flex-direction:column; gap:12px;">
+            <div role="meter" aria-label="{{ t.level }}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ levelPct }}" style="display:flex; align-items:center; gap:3px; height:48px; padding:0 16px; border-radius:12px; background:var(--color-surface-sunken); border:1px solid var(--color-border);">
+              <sc-for list="{{ bars }}" as="b" hint-placeholder-count="32"><span style="{{ b }}"></span></sc-for>
+            </div>
+            <span style="font-size:13px; color:var(--color-success); display:flex; align-items:center; gap:6px;"><i class="icon-circle-check" style="font-size:14px; line-height:1;"></i>{{ t.micWorks }}</span>
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
+    <sc-if value="{{ s2 }}" hint-placeholder-val="{{ false }}">
+      <div style="flex:1; display:flex; flex-direction:column; gap:16px; padding-top:8px; animation:{{ stepAnim }};">
+        <div style="display:flex; flex-direction:column; gap:4px;">
+          <h2 style="margin:0; font-size:24px; font-weight:650; letter-spacing:-0.02em;">{{ t.brainTitle }}</h2>
+          <p style="margin:0; font-size:13.5px; color:var(--color-text-muted);">{{ t.brainSub }}</p>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+          <sc-for list="{{ brains }}" as="b" hint-placeholder-count="4">
+            <div style="{{ b.box }}">
+              <div style="display:flex; align-items:center; gap:10px;">
+                <span style="{{ b.tile }}"><i class="{{ b.icon }}" style="font-size:16px; line-height:1;"></i></span>
+                <span style="flex:1; font-size:14px; font-weight:600;">{{ b.title }}</span>
+                <sc-if value="{{ b.connected }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex; align-items:center; gap:4px; font-size:11.5px; font-weight:600; color:var(--color-success);"><i class="icon-circle-check" style="font-size:12px; line-height:1;"></i>{{ t.connected }}</span></sc-if>
+              </div>
+              <span style="font-size:12.5px; line-height:1.45; color:var(--color-text-muted); text-wrap:pretty;">{{ b.sub }}</span>
+              <span style="flex:1;"></span>
+              <sc-if value="{{ b.isChatgpt }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ b.act }}" aria-label="Sign in with ChatGPT" style="width:280px; height:44px; border-radius:10px; border:1.5px dashed var(--color-border-strong); background:var(--color-surface-sunken); color:var(--color-text-subtle); font:500 11.5px var(--font-mono); cursor:pointer; display:grid; place-items:center;">{{ t.slot }}</button>
+              </sc-if>
+              <sc-if value="{{ b.hasBtn }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <span style="{{ b.stateChip }}">{{ b.stateLabel }}</span>
+                  <span style="flex:1;"></span>
+                  <sc-if value="{{ b.hasInput }}" hint-placeholder-val="{{ false }}"><input aria-label="API key" placeholder="sk-…" style="flex:1; min-width:0; width:120px; height:32px; padding:0 10px; border-radius:8px; border:1px solid var(--color-border-strong); background:var(--color-surface-sunken); color:var(--color-text); font:12.5px var(--font-mono); outline:none;" style-focus="border-color:var(--color-accent);"></input></sc-if>
+                  <button onClick="{{ b.act }}" style="height:32px; padding:0 12px; border-radius:8px; border:1px solid var(--color-border-strong); background:var(--color-surface-raised); color:var(--color-text); font:600 12.5px var(--font-sans); cursor:pointer; white-space:nowrap;">{{ b.btnLabel }}</button>
+                </div>
+              </sc-if>
+              <sc-if value="{{ b.connected }}" hint-placeholder-val="{{ false }}">
+                <label style="display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--color-text-muted); cursor:pointer;"><input type="radio" name="primary-brain" checked="{{ b.primary }}" onChange="{{ b.makePrimary }}" style="accent-color:var(--color-accent); margin:0;"></input>{{ b.primaryLabel }}</label>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+    <sc-if value="{{ s3 }}" hint-placeholder-val="{{ false }}">
+      <div style="flex:1; display:flex; flex-direction:column; gap:16px; padding-top:8px; animation:{{ stepAnim }};">
+        <div style="display:flex; align-items:flex-end; gap:16px;">
+          <div style="flex:1; display:flex; flex-direction:column; gap:4px;"><h2 style="margin:0; font-size:24px; font-weight:650; letter-spacing:-0.02em;">{{ t.voiceTitle }}</h2><p style="margin:0; font-size:13.5px; color:var(--color-text-muted);">{{ t.voiceSub }}</p></div>
+          <div role="radiogroup" aria-label="{{ t.language }}" style="display:flex; padding:3px; border-radius:10px; background:var(--color-surface-sunken); border:1px solid var(--color-border);">
+            <sc-for list="{{ langs }}" as="l" hint-placeholder-count="2"><button role="radio" aria-checked="{{ l.on }}" onClick="{{ l.pick }}" style="{{ l.style }}">{{ l.label }}</button></sc-for>
+          </div>
+        </div>
+        <div role="radiogroup" aria-label="{{ t.voiceTitle }}" style="display:flex; flex-direction:column; gap:8px;">
+          <sc-for list="{{ voices }}" as="v" hint-placeholder-count="5">
+            <div role="radio" aria-checked="{{ v.on }}" tabindex="0" onClick="{{ v.pick }}" style="{{ v.row }}">
+              <span style="{{ v.dot }}"></span>
+              <div style="flex:1; min-width:0; display:flex; flex-direction:column; gap:1px;"><span style="font-size:14px; font-weight:600;">{{ v.name }}</span><span style="font-size:12.5px; color:var(--color-text-muted);">{{ v.sub }}</span></div>
+              <sc-if value="{{ v.local }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex; align-items:center; gap:4px; height:20px; padding:0 7px; border-radius:999px; font-size:11px; font-weight:600; color:var(--color-private); background:color-mix(in oklab, var(--color-private) 14%, transparent);"><i class="icon-lock" style="font-size:10px; line-height:1;"></i>{{ t.onDevice }}</span></sc-if>
+              <button onClick="{{ v.play }}" aria-label="{{ v.playLabel }}" style="width:34px; height:34px; border-radius:999px; border:1px solid var(--color-border-strong); background:var(--color-surface-raised); color:var(--color-text); cursor:pointer; display:grid; place-items:center;"><i class="{{ v.playIcon }}" style="font-size:13px; line-height:1;"></i></button>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+    <sc-if value="{{ s4 }}" hint-placeholder-val="{{ false }}">
+      <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:28px; text-align:center; position:relative; animation:{{ stepAnim }};">
+        <div style="display:flex; flex-direction:column; gap:8px; align-items:center;">
+          <h2 style="margin:0; font-size:26px; font-weight:650; letter-spacing:-0.02em;">{{ t.tryTitle }}</h2>
+          <p style="margin:0; font-size:15px; color:var(--color-text-muted);">{{ t.trySay }} <em style="color:var(--color-text); font-weight:600;">{{ t.tryUtter }}</em></p>
+        </div>
+        <div style="position:relative; height:64px; display:grid; place-items:center;">
+          <dc-import name="ListeningPill" state="{{ tryPill }}" platform="{{ platform }}" locale="{{ locale }}" private-mode="{{ false }}" animated="{{ animated }}" hint-size="360px,64px"></dc-import>
+          <sc-for list="{{ confetti }}" as="c" hint-placeholder-count="0"><span style="{{ c }}"></span></sc-for>
+        </div>
+        <sc-if value="{{ tryDone }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px; font-weight:600; color:var(--color-success); display:flex; align-items:center; gap:6px;"><i class="icon-party-popper" style="font-size:16px; line-height:1;"></i>{{ t.tryOk }}</span></sc-if>
+        <sc-if value="{{ tryIdle }}" hint-placeholder-val="{{ true }}"><button onClick="{{ runTry }}" style="height:36px; padding:0 14px; border-radius:10px; border:1px solid var(--color-border-strong); background:var(--color-surface-raised); color:var(--color-text); font:500 13px var(--font-sans); cursor:pointer; display:inline-flex; align-items:center; gap:6px;"><i class="icon-mic" style="font-size:14px; line-height:1;"></i>{{ t.simulate }}</button></sc-if>
+      </div>
+    </sc-if>
+  </div>
+  <div style="height:72px; flex-shrink:0; display:flex; align-items:center; gap:12px; padding:0 24px 0 40px;">
+    <div role="tablist" aria-label="{{ t.progress }}" style="display:flex; gap:6px; flex:1;">
+      <sc-for list="{{ dots }}" as="d" hint-placeholder-count="5"><span role="tab" aria-selected="{{ d.on }}" aria-label="{{ d.label }}" style="{{ d.style }}"></span></sc-for>
+    </div>
+    <sc-if value="{{ canBack }}" hint-placeholder-val="{{ false }}"><button onClick="{{ back }}" style="height:44px; padding:0 18px; border-radius:12px; border:none; background:transparent; color:var(--color-text-muted); font:600 14px var(--font-sans); cursor:pointer;" style-hover="background:var(--color-surface-raised); color:var(--color-text);">{{ t.back }}</button></sc-if>
+    <button onClick="{{ next }}" style="height:44px; padding:0 22px; border-radius:12px; border:none; background:var(--color-accent); color:var(--color-accent-contrast); font:600 14px var(--font-sans); cursor:pointer; display:inline-flex; align-items:center; gap:8px;" style-active="transform:scale(.98);">{{ nextLabel }}<i class="icon-arrow-right" style="font-size:15px; line-height:1;"></i></button>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:760,&quot;height&quot;:600},&quot;locale&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;en&quot;,&quot;it&quot;],&quot;default&quot;:&quot;en&quot;,&quot;tsType&quot;:&quot;Locale&quot;},&quot;platform&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;mac&quot;,&quot;win&quot;,&quot;linux&quot;],&quot;default&quot;:&quot;mac&quot;,&quot;tsType&quot;:&quot;Platform&quot;},&quot;animated&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;}}">
+const OB_T = {
+  en: { aria: 'Set up Jarvis', step: 'Step', of: 'of', progress: 'Setup progress', welcome: 'Meet Jarvis', welcomeSub: 'A calm voice assistant that lives in your menu bar, answers out loud and hands real work to agents — asking before anything risky.', start: 'Get started', next: 'Continue', back: 'Back', finish: 'Finish',
+    micTitle: 'Jarvis needs your microphone', micWhy: 'So you can talk instead of type. Jarvis only listens for its name until you speak to it.', promiseTitle: 'The wake word runs on your computer', promise: 'Nothing you say leaves this computer until you say “Jarvis”. You can mute it from the menu bar at any time.', allowMic: 'Allow microphone', level: 'Microphone level', micWorks: 'Your microphone works — say something and watch the bars.',
+    brainTitle: 'Choose your brain', brainSub: 'Use subscriptions you already pay for. Connect several — one is primary.', connected: 'Connected', primary: 'Primary', makePrimary: 'Make primary', slot: 'Official “Sign in with ChatGPT” · 280×44',
+    gpt: 'Continue with ChatGPT', gptSub: 'Uses your Plus/Pro plan — no API key.', claude: 'Use Claude Code', claudeSub: 'Uses your Claude subscription via Claude Code.', api: 'Use an API key', apiSub: 'Anthropic or OpenAI. Billed by usage.', local: 'Run locally', localSub: 'Ollama. Private, needs a capable computer.',
+    found: 'Found · needs login', signIn: 'Sign in', ready: 'Signed in', save: 'Save key', noKey: 'No key', notFound: 'Ollama not found', detect: 'Detect again', detected: 'llama3.2 · 3B',
+    voiceTitle: 'Pick a voice', voiceSub: 'You can change it later in Settings.', language: 'Language', onDevice: 'On device', preview: 'Preview', stop: 'Stop preview',
+    tryTitle: 'Try it', trySay: 'Say', tryUtter: '“Jarvis, what time is it?”', simulate: 'Simulate saying it', tryOk: 'That’s it. Jarvis is ready.', tryAnswer: 'It’s 9:41. Have a good morning, Lorenzo.' },
+  it: { aria: 'Configura Jarvis', step: 'Passo', of: 'di', progress: 'Avanzamento', welcome: 'Ecco Jarvis', welcomeSub: 'Un assistente vocale discreto che vive nella barra dei menu, risponde a voce e affida il lavoro vero agli agenti — chiedendo prima di fare qualcosa di rischioso.', start: 'Iniziamo', next: 'Continua', back: 'Indietro', finish: 'Fine',
+    micTitle: 'Jarvis ha bisogno del microfono', micWhy: 'Così puoi parlare invece di scrivere. Jarvis ascolta solo il suo nome finché non gli parli.', promiseTitle: 'La parola di attivazione gira sul tuo computer', promise: 'Nulla di ciò che dici lascia questo computer finché non dici “Jarvis”. Puoi silenziarlo dalla barra dei menu in qualsiasi momento.', allowMic: 'Consenti microfono', level: 'Livello del microfono', micWorks: 'Il microfono funziona — di’ qualcosa e guarda le barre.',
+    brainTitle: 'Scegli il cervello', brainSub: 'Usa gli abbonamenti che già paghi. Collegane più di uno — uno è il principale.', connected: 'Collegato', primary: 'Principale', makePrimary: 'Rendi principale', slot: 'Pulsante ufficiale “Sign in with ChatGPT” · 280×44',
+    gpt: 'Continua con ChatGPT', gptSub: 'Usa il tuo piano Plus/Pro — nessuna chiave API.', claude: 'Usa Claude Code', claudeSub: 'Usa l’abbonamento Claude tramite Claude Code.', api: 'Usa una chiave API', apiSub: 'Anthropic o OpenAI. Pagamento a consumo.', local: 'Esegui in locale', localSub: 'Ollama. Privato, serve un computer potente.',
+    found: 'Trovato · serve l’accesso', signIn: 'Accedi', ready: 'Accesso fatto', save: 'Salva chiave', noKey: 'Nessuna chiave', notFound: 'Ollama non trovato', detect: 'Rileva di nuovo', detected: 'llama3.2 · 3B',
+    voiceTitle: 'Scegli una voce', voiceSub: 'Potrai cambiarla nelle Impostazioni.', language: 'Lingua', onDevice: 'Sul dispositivo', preview: 'Ascolta', stop: 'Ferma',
+    tryTitle: 'Prova', trySay: 'Di’', tryUtter: '“Jarvis, che ore sono?”', simulate: 'Simula la frase', tryOk: 'Fatto. Jarvis è pronto.', tryAnswer: 'Sono le 9:41. Buona giornata, Lorenzo.' }
+};
+const VOICES = [
+  { id: 'eleven', name: 'ElevenLabs', en: 'Natural, expressive · cloud', it: 'Naturale, espressiva · cloud' },
+  { id: 'fish', name: 'Fish Audio', en: 'Expressive, multilingual · cloud', it: 'Espressiva, multilingue · cloud' },
+  { id: 'openai', name: 'OpenAI', en: 'Uses your OpenAI account', it: 'Usa il tuo account OpenAI' },
+  { id: 'local', name: 'Local (Piper)', en: 'Private · runs on this computer', it: 'Privata · gira su questo computer', local: true },
+  { id: 'system', name: 'System voice', en: 'Your OS voice · offline', it: 'La voce del sistema · offline', local: true }
+];
+class Component extends DCLogic {
+  state = { step: 0, mic: false, level: 0, hist: Array(32).fill(0.05), conn: { chatgpt: false, claude: false, api: false, local: false }, primary: null, voice: 'eleven', lang: null, playing: null, tryPhase: 'idle', tryProgress: 0, tryWords: 0 };
+  componentDidMount() {
+    this.iv = setInterval(() => {
+      const s = this.state; const live = (s.step === 1 && s.mic) || s.tryPhase === 'listening' || s.tryPhase === 'speaking';
+      if (!live) return;
+      const target = Math.random() < 0.25 ? Math.random() * 0.2 : 0.25 + Math.random() * 0.7;
+      const level = s.level * 0.45 + target * 0.55;
+      this.setState({ level, hist: [...s.hist.slice(1), level] });
+    }, 90);
+  }
+  componentWillUnmount() { clearInterval(this.iv); (this.tos || []).forEach(clearTimeout); }
+  later(fn, ms) { (this.tos = this.tos || []).push(setTimeout(fn, ms)); }
+  runTry() {
+    const words = (this.t().tryUtter).replace(/[“”]/g, '').split(' ');
+    this.setState({ tryPhase: 'listening', tryWords: 0 });
+    words.forEach((_, i) => this.later(() => this.setState({ tryWords: i + 1 }), 300 + i * 260));
+    const tEnd = 300 + words.length * 260 + 400;
+    this.later(() => this.setState({ tryPhase: 'thinking' }), tEnd);
+    this.later(() => this.setState({ tryPhase: 'speaking', tryProgress: 0 }), tEnd + 900);
+    for (let i = 1; i <= 20; i++) this.later(() => this.setState({ tryProgress: i / 20 }), tEnd + 900 + i * 110);
+    this.later(() => this.setState({ tryPhase: 'done' }), tEnd + 900 + 2600);
+  }
+  t() { return OB_T[this.props.locale] || OB_T.en; }
+  renderVals() {
+    const p = this.props; const s = this.state; const t = this.t();
+    const anim = p.animated !== false;
+    const mac = (p.platform || 'mac') === 'mac';
+    const step = s.step;
+    const btnChip = c => ({ display: 'inline-flex', alignItems: 'center', height: 22, padding: '0 8px', borderRadius: 999, fontSize: 11.5, fontWeight: 600, color: c, background: `color-mix(in oklab, ${c} 14%, transparent)`, whiteSpace: 'nowrap' });
+    const conns = s.conn; const primary = s.primary || ['chatgpt', 'claude', 'api', 'local'].find(k => conns[k]);
+    const connect = k => () => this.setState(st => ({ conn: { ...st.conn, [k]: true } }));
+    const brainDefs = [
+      { id: 'chatgpt', title: t.gpt, sub: t.gptSub, icon: 'icon-message-circle', tile: 'oklch(0.6 0.1 160)', isChatgpt: !conns.chatgpt },
+      { id: 'claude', title: t.claude, sub: t.claudeSub, icon: 'icon-terminal', tile: 'oklch(0.6 0.13 45)', state: conns.claude ? [t.ready, 'var(--color-success)'] : [t.found, 'var(--color-warning)'], btn: conns.claude ? null : t.signIn },
+      { id: 'api', title: t.api, sub: t.apiSub, icon: 'icon-key-round', tile: 'oklch(0.5 0.04 260)', state: conns.api ? ['Anthropic', 'var(--color-success)'] : null, btn: conns.api ? null : t.save, input: !conns.api },
+      { id: 'local', title: t.local, sub: t.localSub, icon: 'icon-cpu', tile: 'var(--color-private)', state: conns.local ? [t.detected, 'var(--color-success)'] : [t.notFound, 'var(--color-text-subtle)'], btn: conns.local ? null : t.detect }
+    ];
+    const brains = brainDefs.map(b => ({
+      ...b, connected: !!conns[b.id], primary: primary === b.id,
+      primaryLabel: primary === b.id ? t.primary : t.makePrimary,
+      makePrimary: () => this.setState({ primary: b.id }),
+      hasBtn: !b.isChatgpt && !(conns[b.id] && b.id === 'chatgpt') && b.id !== 'chatgpt' && (!!b.btn || !!b.state),
+      btnLabel: b.btn, hasInput: !!b.input,
+      stateLabel: b.state ? b.state[0] : '', stateChip: b.state ? btnChip(b.state[1]) : { display: 'none' },
+      act: connect(b.id),
+      tile: { width: 32, height: 32, borderRadius: 9, display: 'grid', placeItems: 'center', color: '#fff', background: b.tile, flexShrink: 0 },
+      icon: b.icon,
+      box: { display: 'flex', flexDirection: 'column', gap: 8, padding: 16, minHeight: 168, boxSizing: 'border-box', borderRadius: 14, background: conns[b.id] ? 'color-mix(in oklab, var(--color-accent) 7%, var(--color-surface-raised))' : 'var(--color-surface-raised)', border: `1px solid ${primary === b.id ? 'var(--color-accent)' : 'var(--color-border)'}`, transition: 'border-color 200ms, background 200ms' }
+    }));
+    const locale = s.lang || p.locale || 'en';
+    const langs = [['en', 'English'], ['it', 'Italiano']].map(([id, label]) => ({ label, on: locale === id, pick: () => this.setState({ lang: id }), style: { height: 30, padding: '0 14px', borderRadius: 8, border: 'none', cursor: 'pointer', font: '600 12.5px var(--font-sans)', background: locale === id ? 'var(--color-surface-raised)' : 'transparent', color: locale === id ? 'var(--color-text)' : 'var(--color-text-muted)', boxShadow: locale === id ? 'var(--shadow-sm)' : 'none' } }));
+    const voices = VOICES.map(v => { const on = s.voice === v.id; const playing = s.playing === v.id; return {
+      name: v.name, sub: v[p.locale === 'it' ? 'it' : 'en'], local: !!v.local, on,
+      pick: () => this.setState({ voice: v.id }),
+      play: e => { e.stopPropagation(); this.setState({ playing: playing ? null : v.id }); if (!playing) this.later(() => this.setState(st => st.playing === v.id ? { playing: null } : null), 2400); },
+      playIcon: playing ? 'icon-pause' : 'icon-play', playLabel: (playing ? t.stop : t.preview) + ' ' + v.name,
+      row: { display: 'flex', alignItems: 'center', gap: 14, height: 56, padding: '0 10px 0 16px', borderRadius: 12, cursor: 'pointer', background: on ? 'color-mix(in oklab, var(--color-accent) 8%, var(--color-surface-raised))' : 'var(--color-surface-raised)', border: `1px solid ${on ? 'var(--color-accent)' : 'var(--color-border)'}`, outlineOffset: 2 },
+      dot: { width: 16, height: 16, borderRadius: 999, boxSizing: 'border-box', border: on ? '5px solid var(--color-accent)' : '1.5px solid var(--color-border-strong)', flexShrink: 0 }
+    }; });
+    const bars = s.hist.map(l => ({ flex: 1, height: Math.max(3, Math.round(l * 36)), borderRadius: 2, background: l > 0.85 ? 'var(--color-ember)' : 'var(--color-accent)', opacity: 0.35 + l * 0.65, transition: 'height 90ms linear' }));
+    const utter = t.tryUtter.replace(/[“”]/g, '');
+    const words = utter.split(' ');
+    let tryPill = { kind: 'idle-hint', shortcut: mac ? ['⌥', 'Space'] : ['Alt', 'Space'] };
+    if (s.tryPhase === 'listening') tryPill = { kind: 'listening', level: s.level, committed: words.slice(0, s.tryWords).join(' '), partial: '' };
+    if (s.tryPhase === 'thinking') tryPill = { kind: 'thinking', transcript: utter, brain: primary === 'claude' ? 'claude' : primary === 'local' ? 'local' : 'chatgpt' };
+    if (s.tryPhase === 'speaking' || s.tryPhase === 'done') tryPill = { kind: 'speaking', text: t.tryAnswer, progress: s.tryProgress, level: s.tryPhase === 'done' ? 0 : s.level };
+    const cols = ['var(--color-accent)', 'var(--color-ember)', 'var(--color-private)', 'var(--color-text-muted)'];
+    const confetti = s.tryPhase === 'done' && anim ? Array.from({ length: 14 }, (_, i) => { const a = (i / 14) * Math.PI * 2; return { position: 'absolute', left: '50%', top: '50%', width: 6, height: 6, borderRadius: i % 2 ? 2 : 999, background: cols[i % 4], '--dx': Math.round(Math.cos(a) * 220) + 'px', '--dy': Math.round(Math.sin(a) * 70) + 'px', animation: `jv-confetti 900ms var(--ease-standard) ${i * 18}ms both`, pointerEvents: 'none' }; }) : [];
+    const last = step === 4;
+    return {
+      t, platform: p.platform || 'mac', locale: p.locale || 'en', animated: anim,
+      isMac: mac, notMac: !mac, winRadius: mac ? '14px' : '10px',
+      stepLabel: `${t.step} ${step + 1} ${t.of} 5`,
+      stepAnim: anim ? 'jv-step 260ms var(--ease-standard)' : 'none',
+      s0: step === 0, s1: step === 1, s2: step === 2, s3: step === 3, s4: step === 4,
+      micOff: !s.mic, micOn: s.mic, allowMic: () => this.setState({ mic: true }), bars, levelPct: Math.round(s.level * 100),
+      brains, langs, voices,
+      tryPill, tryDone: s.tryPhase === 'done', tryIdle: s.tryPhase === 'idle' || s.tryPhase === 'done', runTry: () => this.runTry(), confetti,
+      dots: [0, 1, 2, 3, 4].map(i => ({ on: i === step, label: `${t.step} ${i + 1}`, style: { width: i === step ? 22 : 8, height: 8, borderRadius: 999, background: i <= step ? 'var(--color-accent)' : 'var(--color-border-strong)', transition: 'width 240ms var(--ease-standard), background 200ms' } })),
+      canBack: step > 0,
+      back: () => this.setState({ step: Math.max(0, step - 1) }),
+      next: () => last ? (p.onFinish && p.onFinish()) : this.setState({ step: step + 1 }),
+      nextLabel: step === 0 ? t.start : last ? t.finish : t.next,
+      onClose: () => p.onClose && p.onClose()
+    };
+  }
+}
+</script>
+</body>
+</html>

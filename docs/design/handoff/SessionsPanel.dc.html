@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<section aria-label="{{ t.title }}" style="width:380px; max-height:{{ maxH }}; display:flex; flex-direction:column; border-radius:18px; background:var(--color-surface); backdrop-filter:var(--backdrop); -webkit-backdrop-filter:var(--backdrop); border:1px solid var(--color-border); box-shadow:var(--shadow-lg); font-family:var(--font-sans); overflow:hidden;">
+  <header data-tauri-drag-region="true" style="display:flex; align-items:center; gap:8px; height:48px; padding:0 8px 0 16px; flex-shrink:0; cursor:grab;">
+    <span style="font-size:14px; font-weight:600; color:var(--color-text); letter-spacing:-0.01em;">{{ t.title }}</span>
+    <span aria-label="{{ countLabel }}" style="min-width:20px; height:20px; padding:0 6px; border-radius:999px; background:var(--color-accent-soft); color:var(--color-text); font-size:11.5px; font-weight:600; display:grid; place-items:center; font-variant-numeric:tabular-nums;">{{ runningCount }}</span>
+    <span style="flex:1;"></span>
+    <sc-if value="{{ hasFinished }}" hint-placeholder-val="{{ true }}">
+      <button onClick="{{ onClearFinished }}" style="height:28px; padding:0 8px; border-radius:7px; border:none; background:transparent; color:var(--color-text-muted); font:500 12px var(--font-sans); cursor:pointer;" style-hover="background:var(--color-surface-raised); color:var(--color-text);">{{ t.clear }}</button>
+    </sc-if>
+    <button onClick="{{ toggleCompact }}" aria-pressed="{{ compact }}" title="{{ t.compact }}" aria-label="{{ t.compact }}" style="width:30px; height:30px; border-radius:7px; border:none; background:{{ compactBg }}; color:var(--color-text-muted); cursor:pointer; display:grid; place-items:center;" style-hover="background:var(--color-surface-raised); color:var(--color-text);"><i class="icon-rows-3" style="font-size:15px; line-height:1;"></i></button>
+    <button onClick="{{ toggleCollapse }}" title="{{ t.collapse }}" aria-label="{{ t.collapse }}" aria-expanded="{{ expanded }}" style="width:30px; height:30px; border-radius:7px; border:none; background:transparent; color:var(--color-text-muted); cursor:pointer; display:grid; place-items:center;" style-hover="background:var(--color-surface-raised); color:var(--color-text);"><i class="{{ collapseIcon }}" style="font-size:15px; line-height:1;"></i></button>
+    <button onClick="{{ onClose }}" title="{{ t.close }}" aria-label="{{ t.close }}" style="width:30px; height:30px; border-radius:7px; border:none; background:transparent; color:var(--color-text-muted); cursor:pointer; display:grid; place-items:center;" style-hover="background:var(--color-surface-raised); color:var(--color-text);"><i class="icon-x" style="font-size:15px; line-height:1;"></i></button>
+  </header>
+  <sc-if value="{{ expanded }}" hint-placeholder-val="{{ true }}">
+    <sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex; flex-direction:column; align-items:center; text-align:center; gap:14px; padding:28px 32px 36px;">
+        <dc-import name="Orb" size="{{ 56 }}" state="muted" animated="{{ false }}" hint-size="56px,56px"></dc-import>
+        <span style="font-size:14px; font-weight:600; color:var(--color-text);">{{ t.emptyTitle }}</span>
+        <span style="font-size:13px; line-height:1.5; color:var(--color-text-muted); text-wrap:pretty;">{{ t.emptyTry }} <em style="color:var(--color-text);">{{ t.emptyEx }}</em></span>
+      </div>
+    </sc-if>
+    <div aria-live="polite" style="display:flex; flex-direction:column; gap:{{ gap }}; padding:0 10px 10px; overflow-y:auto; overflow-x:hidden; min-height:0;">
+      <sc-for list="{{ list }}" as="s" hint-placeholder-count="3">
+        <dc-import name="SessionCard" session="{{ s }}" locale="{{ locale }}" now="{{ now }}" compact="{{ compact }}" animated="{{ animated }}" on-open="{{ onOpen }}" on-log="{{ onLog }}" on-reply="{{ onReply }}" on-stop="{{ onStop }}" on-dismiss="{{ onDismiss }}" on-review="{{ onReview }}" hint-size="100%,140px"></dc-import>
+      </sc-for>
+    </div>
+  </sc-if>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:420,&quot;height&quot;:600},&quot;sessions&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;SessionView[]&quot;},&quot;locale&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;en&quot;,&quot;it&quot;],&quot;default&quot;:&quot;en&quot;,&quot;tsType&quot;:&quot;Locale&quot;},&quot;compact&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;}}">
+const SP_T = {
+  en: { title: 'Sessions', clear: 'Clear finished', compact: 'Compact mode', collapse: 'Collapse', close: 'Close', running: 'running', emptyTitle: 'Nothing running.', emptyTry: 'Try:', emptyEx: '“Jarvis, summarise my unread emails”' },
+  it: { title: 'Sessioni', clear: 'Rimuovi concluse', compact: 'Modalità compatta', collapse: 'Comprimi', close: 'Chiudi', running: 'in corso', emptyTitle: 'Niente in corso.', emptyTry: 'Prova:', emptyEx: '“Jarvis, riassumi le email non lette”' }
+};
+class Component extends DCLogic {
+  state = { collapsed: false };
+  renderVals() {
+    const p = this.props;
+    const t = SP_T[p.locale] || SP_T.en;
+    const sessions = p.sessions || [];
+    const isActive = s => ['running', 'needs-input', 'approval'].includes(s.status);
+    const compact = !!p.compact;
+    let list = [...sessions].sort((a, b) => (isActive(b) - isActive(a)) || (b.startedAt - a.startedAt));
+    if (compact) list = list.filter(isActive);
+    const runningCount = sessions.filter(isActive).length;
+    return {
+      t, list, compact, locale: p.locale || 'en', now: p.now || Date.now(), animated: p.animated !== false,
+      maxH: p.maxHeight || '560px',
+      runningCount, countLabel: runningCount + ' ' + t.running,
+      hasFinished: sessions.some(s => !isActive(s)),
+      isEmpty: list.length === 0,
+      gap: compact ? '6px' : '8px',
+      compactBg: compact ? 'var(--color-accent-soft)' : 'transparent',
+      expanded: !this.state.collapsed,
+      collapseIcon: this.state.collapsed ? 'icon-chevron-down' : 'icon-chevron-up',
+      toggleCollapse: () => this.setState(s => ({ collapsed: !s.collapsed })),
+      toggleCompact: () => p.onToggleCompact && p.onToggleCompact(),
+      onClearFinished: () => p.onClearFinished && p.onClearFinished(),
+      onClose: () => p.onClose && p.onClose(),
+      onOpen: p.onOpen, onLog: p.onLog, onReply: p.onReply, onStop: p.onStop, onDismiss: p.onDismiss, onReview: p.onReview
+    };
+  }
+}
+</script>
+</body>
+</html>

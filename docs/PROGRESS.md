@@ -4,6 +4,7 @@
 |---|---|---|
 | 0 | Foundations: design brief, product spec, security model, ADRs | ✅ in review |
 | 1 | Scaffold: monorepo, Tauri 2 shell, sidecar, CI | ⏳ next |
+| 1b | **UI pixel-perfect** from the Claude Design handoff in `docs/design/handoff/` (replaces the provisional UI) | ⏳ after desktop shell lands |
 | 2 | Brain & core (Sign in with ChatGPT, Claude, Codex, API keys, Ollama, router, memory, policy) | — |
 | 3 | Agents (Claude Agent SDK, Codex SDK, Home agent, approvals, SQLite) | — |
 | 4 | Voice out (ElevenLabs, Fish, OpenAI, local, cues, streaming) | — |
@@ -25,3 +26,4 @@
   - `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `CHANGELOG.md`, issue/PR templates, `FUNDING.yml`, `dependabot.yml`
   - Workflows: `ci.yml`, `release.yml` (draft release, unsigned installers, `.mcpb`, checksums), `docs.yml` (Cloudflare Pages), all actions SHA-pinned
   - `docs-site/` docmd site (WOW landing, 28 pages, semantic search, raw-HTML guard)
+- 2026-10-03 — Claude Design handoff received and versioned in `docs/design/handoff/` (main: `Jarvis Desktop.dc.html` + component prototypes). To be implemented pixel-perfect in `apps/desktop/src` as phase 1b.
