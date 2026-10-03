@@ -49,6 +49,7 @@
 
   --ease-standard: var(--ease-standard);
   --ease-emphasized: var(--ease-emphasized);
+  --ease-spring: var(--ease-spring-like);
 }
 
 html,
@@ -68,11 +69,30 @@ body {
   user-select: none;
 }
 
-/* Opaque window backgrounds; floating surfaces (pill, sessions) paint their own card. */
-html[data-surface="home"] body,
-html[data-surface="settings"] body,
-html[data-surface="onboarding"] body {
-  background: var(--color-bg);
+/* Browser preview (mock mode): surfaces float on the design's wallpaper, like a desktop. */
+html[data-desk="true"] body {
+  background: var(--wallpaper);
+  background-attachment: fixed;
+}
+
+/* Window card: fills the Tauri window; in the browser preview it takes its design size. */
+.window-frame {
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+}
+html[data-desk="true"] #root {
+  height: auto;
+  min-height: 100%;
+  display: grid;
+  place-items: center;
+  padding: 40px 24px;
+  box-sizing: border-box;
+}
+html[data-desk="true"] .window-frame {
+  width: var(--win-w);
+  height: var(--win-h);
+  flex-shrink: 0;
 }
 
 input,
@@ -81,18 +101,37 @@ textarea,
   user-select: text;
 }
 
-:focus-visible {
+/* Element defaults live in the base layer so Tailwind utilities can override them. */
+@layer base {
+  a {
+    color: var(--color-accent);
+  }
+  a:hover {
+    color: var(--color-text);
+  }
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible,
+[role="radio"]:focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
 }
 
-/* Horizontal scrollers (category tabs): no native scrollbar, soft fade at the trailing edge. */
-.scroll-x {
-  overflow-x: auto;
-  scrollbar-width: none;
-  mask-image: linear-gradient(to right, black calc(100% - 32px), transparent);
+/* Glass material: the OS (vibrancy / Mica) and, in previews, the CSS backdrop blur sit behind. */
+.glass {
+  backdrop-filter: var(--backdrop);
+  -webkit-backdrop-filter: var(--backdrop);
 }
-.scroll-x::-webkit-scrollbar {
+
+/* Horizontal scrollers (category tabs): no native scrollbar. */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
   display: none;
 }
 
@@ -107,60 +146,183 @@ textarea,
   font-family: var(--font-mono);
 }
 
-@keyframes orb-breathe {
-  0%,
-  100% {
-    opacity: 0.55;
-    transform: scale(0.96);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.04);
-  }
+.tabular {
+  font-variant-numeric: tabular-nums;
 }
 
-@keyframes orb-sweep {
+.text-pretty {
+  text-wrap: pretty;
+}
+
+/* Keycap (KeyHint) */
+.kbd {
+  display: inline-grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 6px;
+  border: 1px solid var(--color-border-strong);
+  border-bottom-width: 2px;
+  background: var(--color-surface-sunken);
+  color: var(--color-text);
+  font: 600 11.5px var(--font-sans);
+  box-sizing: border-box;
+}
+.kbd-sm {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 5px;
+  font-size: 11px;
+}
+
+/* ── Motion (handoff keyframes; transform/opacity only except the thinking shimmer) ── */
+@keyframes jv-breathe {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(0.94);
+  }
+  50% {
+    opacity: 0.95;
+    transform: scale(1.05);
+  }
+}
+@keyframes jv-spin {
   to {
     transform: rotate(360deg);
   }
 }
-
-@keyframes orb-shake {
+@keyframes jv-shake {
   0%,
   100% {
     transform: translateX(0);
   }
-  25% {
+  20% {
+    transform: translateX(-3px);
+  }
+  40% {
+    transform: translateX(3px);
+  }
+  60% {
     transform: translateX(-2px);
   }
-  75% {
+  80% {
     transform: translateX(2px);
   }
 }
-
-@keyframes shimmer {
-  0% {
-    opacity: 0.6;
+@keyframes jv-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
   }
   50% {
+    opacity: 0.35;
+    transform: scale(0.7);
+  }
+}
+@keyframes jv-pop {
+  0% {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.15);
     opacity: 1;
   }
   100% {
-    opacity: 0.6;
+    transform: scale(1);
+  }
+}
+@keyframes jv-word {
+  from {
+    opacity: 0.45;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes jv-shimmer {
+  0% {
+    background-position: 150% 0;
+  }
+  100% {
+    background-position: -50% 0;
+  }
+}
+@keyframes jv-pill-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes jv-pill-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+}
+@keyframes jv-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes jv-step {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes jv-confetti {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--dx), var(--dy)) scale(0.6);
+    opacity: 0;
   }
 }
 
-/* Animations pause when the document is hidden (set by main.tsx on visibilitychange). */
-html[data-hidden="true"] * {
-  animation-play-state: paused;
+/* Animations pause when the document is hidden (set by main.tsx on visibilitychange): ~0 % CPU. */
+html[data-hidden="true"] *,
+html[data-hidden="true"] *::before,
+html[data-hidden="true"] *::after {
+  /* biome-ignore lint/complexity/noImportantStyles: must win over inline `animation` shorthands. */
+  animation-play-state: paused !important;
 }
 
+/* Reduced motion: no scale/breathing/confetti; opacity-only transitions ≤ 100 ms (brief §8). */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
-    animation-duration: 1ms;
-    animation-iteration-count: 1;
-    transition-duration: 100ms;
+    /* biome-ignore lint/complexity/noImportantStyles: must win over inline `animation` shorthands. */
+    animation-duration: 1ms !important;
+    /* biome-ignore lint/complexity/noImportantStyles: must win over inline `animation` shorthands. */
+    animation-iteration-count: 1 !important;
+    /* biome-ignore lint/complexity/noImportantStyles: must win over inline `transition` styles. */
+    transition-duration: 100ms !important;
+    /* biome-ignore lint/complexity/noImportantStyles: overrides smooth scrolling set in code. */
+    scroll-behavior: auto !important;
   }
 }

@@ -1,174 +1,340 @@
-/** ChatBubble + SystemCard (brief §6). */
+/** ChatBubble + SystemCard (brief §6, handoff `ChatMessage.dc.html`). */
 import {
-  AlarmClock,
-  CalendarDays,
-  Check,
+  Bell,
   CircleAlert,
+  CircleCheck,
+  CircleX,
   ExternalLink,
-  Mail,
+  type LucideIcon,
   Mic,
+  PanelRight,
   Play,
-  Rocket,
-  Sun,
+  RotateCcw,
+  ShieldAlert,
+  Sunrise,
   Timer,
+  Volume2,
 } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { type MessageKey, useLocale, useT } from '../../i18n';
-import { cn } from '../../lib/cn';
-import type { ChatMessage, SystemCardData } from '../../types/ui';
-import { AgentMark } from '../common/common';
+import { useNow } from '../../lib/motion';
+import type { ApprovalDecision, ChatMessage, SystemCardData } from '../../types/ui';
 import { Orb } from '../orb/Orb';
-import { Button } from '../ui/button';
 
-const time = (at: number, locale: string) =>
+export const formatTime = (at: number, locale: string) =>
   new Date(at).toLocaleTimeString(locale === 'it' ? 'it-IT' : 'en-GB', { hour: '2-digit', minute: '2-digit' });
 
 export interface ChatBubbleProps {
   message: ChatMessage;
   onReplay?(id: string): void;
   onOpenSession?(id: string): void;
-  onReviewApproval?(id: string): void;
+  onViewSession?(id: string): void;
+  onApproval?(id: string, decision: ApprovalDecision): void;
+  /** Decision already taken for an approval card (from the store). */
+  resolved?: ApprovalDecision;
+  /** False when the approval is no longer pending (expired/resolved elsewhere). */
+  pending?: boolean;
 }
 
-export function ChatBubble({ message, onReplay, onOpenSession, onReviewApproval }: ChatBubbleProps) {
+export function ChatBubble({
+  message: m,
+  onReplay,
+  onOpenSession,
+  onViewSession,
+  onApproval,
+  resolved,
+  pending,
+}: ChatBubbleProps) {
   const t = useT();
   const locale = useLocale();
-  if (message.role === 'system')
-    return <SystemCard card={message.card} onOpenSession={onOpenSession} onReviewApproval={onReviewApproval} />;
-  const user = message.role === 'user';
-  return (
-    <div className={cn('flex items-end gap-2', user ? 'justify-end' : 'justify-start')}>
-      {user ? null : <Orb size={24} state="idle" animated={false} />}
-      <div
-        data-selectable
-        className={cn(
-          'max-w-[80%] rounded-lg px-3 py-2 text-sm',
-          user ? 'rounded-br-xs bg-accent text-accent-contrast' : 'rounded-bl-xs border border-border bg-surface',
-        )}
-      >
-        <p className="whitespace-pre-wrap">{message.text}</p>
-        <div className={cn('mt-1 flex items-center gap-2 text-xs', user ? 'opacity-80' : 'text-subtle')}>
-          <time dateTime={new Date(message.at).toISOString()}>{time(message.at, locale)}</time>
-          {message.role === 'user' && message.viaVoice ? (
-            <span className="inline-flex items-center gap-0.5">
-              <Mic size={10} aria-hidden="true" />
-              {t('chat.viaVoice')}
-            </span>
-          ) : null}
-          {message.role === 'jarvis' && message.spoken ? (
+  if (m.role === 'system')
+    return (
+      <SystemCard
+        card={m.card}
+        onOpenSession={onOpenSession}
+        onViewSession={onViewSession}
+        onApproval={onApproval}
+        resolved={resolved}
+        pending={pending}
+      />
+    );
+  const time = <time dateTime={new Date(m.at).toISOString()}>{formatTime(m.at, locale)}</time>;
+  if (m.role === 'user')
+    return (
+      <div className="flex flex-col items-end gap-1 font-sans">
+        <div
+          data-selectable
+          className="text-pretty max-w-[78%] rounded-[16px_16px_4px_16px] border bg-accent-soft px-[14px] py-2.5 text-[14px] leading-[1.5] whitespace-pre-wrap text-text"
+          style={{ borderColor: 'color-mix(in oklab, var(--color-accent) 25%, transparent)' }}
+        >
+          {m.text}
+        </div>
+        <span className="flex items-center gap-[5px] text-[11.5px] text-subtle">
+          {m.viaVoice ? (
             <>
-              <span>{t('chat.spoken')}</span>
+              <Mic size={11} aria-hidden="true" />
+              {t('chat.said')} ·
+            </>
+          ) : null}
+          {time}
+        </span>
+      </div>
+    );
+  const error = 'error' in m && Boolean((m as { error?: boolean }).error);
+  return (
+    <div className="flex items-start gap-2.5 font-sans">
+      <Orb size={24} state={error ? 'error' : 'idle'} animated={false} />
+      <div className="flex min-w-0 flex-1 flex-col items-start gap-1">
+        <div
+          data-selectable
+          className="text-pretty max-w-[86%] rounded-[4px_16px_16px_16px] border bg-surface-raised px-[14px] py-2.5 text-[14px] leading-[1.55] whitespace-pre-wrap text-text"
+          style={{
+            borderColor: error ? 'color-mix(in oklab, var(--color-danger) 50%, transparent)' : 'var(--color-border)',
+          }}
+        >
+          {m.text}
+        </div>
+        <span className="flex items-center gap-1.5 text-[11.5px] text-subtle">
+          {m.spoken ? (
+            <>
+              <span className="inline-flex items-center gap-1">
+                <Volume2 size={12} aria-hidden="true" />
+                {t('chat.spoken')}
+              </span>
               {onReplay ? (
                 <button
                   type="button"
-                  className="inline-flex items-center gap-0.5 hover:text-text"
-                  onClick={() => onReplay(message.id)}
+                  onClick={() => onReplay(m.id)}
                   aria-label={t('chat.replay')}
+                  className="inline-flex h-[22px] cursor-pointer items-center gap-1 rounded-[6px] border-0 bg-transparent px-1.5 text-[11.5px] font-medium text-muted hover:bg-surface-raised hover:text-text"
                 >
-                  <Play size={10} aria-hidden="true" />
+                  <RotateCcw size={11} aria-hidden="true" />
+                  {t('chat.replay')}
                 </button>
               ) : null}
+              ·
             </>
           ) : null}
-        </div>
+          {error ? (
+            <>
+              <span className="inline-flex items-center gap-1 text-danger">
+                <CircleAlert size={12} aria-hidden="true" />
+                {t('chat.failed')}
+              </span>
+              ·
+            </>
+          ) : null}
+          {time}
+        </span>
       </div>
     </div>
   );
 }
 
+const CARD_META: Record<SystemCardData['type'], { icon: LucideIcon; color: string }> = {
+  'session-started': { icon: Play, color: 'var(--color-accent)' },
+  'approval-needed': { icon: ShieldAlert, color: 'var(--color-warning)' },
+  'result-ready': { icon: CircleCheck, color: 'var(--color-success)' },
+  'reminder-set': { icon: Bell, color: 'var(--color-ember)' },
+  timer: { icon: Timer, color: 'var(--color-accent)' },
+  briefing: { icon: Sunrise, color: 'var(--color-ember)' },
+};
+
+const smallPrimary =
+  'inline-flex h-[30px] shrink-0 cursor-pointer items-center gap-1.5 rounded-[8px] border-0 bg-accent px-3 text-[12.5px] font-semibold text-accent-contrast';
+
 export function SystemCard({
-  card,
+  card: c,
   onOpenSession,
-  onReviewApproval,
+  onViewSession,
+  onApproval,
+  resolved,
+  pending = true,
 }: {
   card: SystemCardData;
   onOpenSession?(id: string): void;
-  onReviewApproval?(id: string): void;
+  onViewSession?(id: string): void;
+  onApproval?(id: string, decision: ApprovalDecision): void;
+  resolved?: ApprovalDecision;
+  pending?: boolean;
 }) {
   const t = useT();
   const locale = useLocale();
-  const shell = (icon: ReactNode, title: string, body?: ReactNode, action?: ReactNode) => (
-    <div className="ms-8 flex items-start gap-3 rounded-lg border border-border bg-surface-raised p-3 shadow-sm">
-      <span className="mt-0.5 text-accent">{icon}</span>
-      <div className="min-w-0 flex-1">
-        <div className="text-sm font-medium">{title}</div>
-        {body ? <div className="mt-0.5 text-xs text-muted">{body}</div> : null}
-      </div>
-      {action}
-    </div>
-  );
-  switch (card.type) {
+  const now = useNow(c.type === 'timer');
+  const meta = CARD_META[c.type];
+  if (!meta) return <div className="pl-[34px] text-[12px] text-subtle">{t('card.unknown')}</div>;
+  const { icon: I, color } = meta;
+
+  let title = '';
+  let sub = '';
+  let body = '';
+  let big = '';
+  let button: ReactNode = null;
+  let extra: ReactNode = null;
+  let timerPct = 0;
+  const agentName = (id: string) => t(`agent.${id}` as MessageKey);
+
+  switch (c.type) {
     case 'session-started':
-      return shell(
-        <Rocket size={16} aria-hidden="true" />,
-        t('card.sessionStarted'),
-        <span className="inline-flex items-center gap-1">
-          <AgentMark id={card.session.agent} size={10} className="bg-transparent" />
-          {card.session.task} · {card.session.project}
-        </span>,
+      title = t('card.started', { agent: agentName(c.session.agent) });
+      sub = `${c.session.project} · ${c.session.task}`;
+      button = (
+        <button type="button" className={smallPrimary} onClick={() => onViewSession?.(c.session.id)}>
+          <PanelRight size={13} aria-hidden="true" />
+          {t('card.view')}
+        </button>
       );
-    case 'approval-needed':
-      return shell(
-        <CircleAlert size={16} aria-hidden="true" className="text-ember" />,
-        t('card.approvalNeeded'),
-        <span className="font-mono">{card.request.detail}</span>,
-        onReviewApproval ? (
-          <Button size="sm" onClick={() => onReviewApproval(card.request.id)}>
-            {t('card.review')}
-          </Button>
-        ) : null,
-      );
+      break;
     case 'result-ready':
-      return shell(
-        <Check size={16} aria-hidden="true" className="text-success" />,
-        t('card.resultReady'),
-        card.session.resultPreview ?? card.session.task,
-        onOpenSession ? (
-          <Button size="sm" onClick={() => onOpenSession(card.session.id)}>
-            <ExternalLink size={12} aria-hidden="true" />
-            {t('session.open')}
-          </Button>
-        ) : null,
-      );
-    case 'reminder-set':
-      return shell(
-        <AlarmClock size={16} aria-hidden="true" />,
-        t('card.reminderSet'),
-        `${card.text} · ${time(card.dueAt, locale)}`,
-      );
-    case 'timer':
-      return shell(
-        <Timer size={16} aria-hidden="true" />,
-        card.label,
-        t('card.timerEnds', { time: time(card.endsAt, locale) }),
-      );
-    case 'briefing':
-      return (
-        <div className="ms-8 rounded-lg border border-border bg-surface-raised p-3 text-sm shadow-sm">
-          <div className="mb-2 font-medium">{t('card.briefing')}</div>
-          {card.weather ? (
-            <p className="flex items-center gap-2 text-muted">
-              <Sun size={14} aria-hidden="true" />
-              {card.weather}
-            </p>
+      title = t('card.resultReady');
+      sub = `${c.session.project} · ${c.session.task}`;
+      body = c.session.resultPreview ?? '';
+      button = onOpenSession ? (
+        <button type="button" className={smallPrimary} onClick={() => onOpenSession(c.session.id)}>
+          <ExternalLink size={13} aria-hidden="true" />
+          {t('card.open')}
+        </button>
+      ) : null;
+      break;
+    case 'approval-needed': {
+      title = t('card.approvalNeeded');
+      sub = `${agentName(c.request.agent)} · ${c.request.title}`;
+      const open = !resolved && pending;
+      extra = (
+        <>
+          <code
+            data-selectable
+            className="rounded-[8px] bg-surface-sunken px-2.5 py-2 font-mono text-[12.5px] break-all text-text"
+          >
+            {c.request.detail}
+          </code>
+          {open && onApproval ? (
+            <div className="flex gap-1.5">
+              <button
+                type="button"
+                onClick={() => onApproval(c.request.id, 'allow-once')}
+                className={
+                  c.request.risk === 'high'
+                    ? 'h-[30px] cursor-pointer rounded-[8px] border-0 bg-danger px-3 text-[12.5px] font-semibold text-inverse'
+                    : 'h-[30px] cursor-pointer rounded-[8px] border-0 bg-accent px-3 text-[12.5px] font-semibold text-accent-contrast'
+                }
+              >
+                {t('approval.allowOnce')}
+              </button>
+              <button
+                type="button"
+                onClick={() => onApproval(c.request.id, 'deny')}
+                className="h-[30px] cursor-pointer rounded-[8px] border border-border-strong bg-surface-raised px-3 text-[12.5px] font-semibold text-text"
+              >
+                {t('approval.deny')}
+              </button>
+            </div>
           ) : null}
-          <ul className="mt-2 space-y-1">
-            {card.events.map((e) => (
-              <li key={`${e.time}-${e.title}`} className="flex items-center gap-2">
-                <CalendarDays size={12} aria-hidden="true" className="text-subtle" />
-                <span className="font-mono text-xs">{e.time}</span> {e.title}
-              </li>
+          {resolved || !pending ? (
+            <span className="flex items-center gap-[5px] text-[12px] text-muted">
+              {resolved === 'deny' ? (
+                <CircleX size={13} aria-hidden="true" />
+              ) : (
+                <CircleCheck size={13} aria-hidden="true" />
+              )}
+              {resolved === 'deny'
+                ? t('card.denied')
+                : resolved === 'always-allow-project'
+                  ? t('card.alwaysAllowed')
+                  : resolved
+                    ? t('card.allowed')
+                    : t('card.resolved')}
+            </span>
+          ) : null}
+        </>
+      );
+      break;
+    }
+    case 'reminder-set':
+      title = t('card.reminderSet');
+      sub = c.text;
+      big = formatTime(c.dueAt, locale);
+      break;
+    case 'timer': {
+      const total = 'total' in c && typeof c.total === 'number' ? c.total : 600_000;
+      const left = Math.max(0, c.endsAt - now);
+      title = c.label;
+      sub = left ? '' : t('card.timerDone');
+      big = `${Math.floor(left / 60000)}:${String(Math.floor(left / 1000) % 60).padStart(2, '0')}`;
+      timerPct = 100 * (1 - left / total);
+      break;
+    }
+    case 'briefing':
+      title = t('card.briefing');
+      sub = c.weather ?? '';
+      extra = (
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-4 pt-0.5">
+          <div className="flex flex-col gap-1.5">
+            <span className="text-[11px] font-semibold tracking-[.06em] text-subtle uppercase">
+              {t('card.calendar')}
+            </span>
+            {c.events.map((e) => (
+              <span key={`${e.time}-${e.title}`} className="flex gap-2.5 text-[13px] text-text">
+                <span className="tabular w-10 shrink-0 text-muted">{e.time}</span>
+                <span>{e.title}</span>
+              </span>
             ))}
-            {card.emails.map((m) => (
-              <li key={`${m.from}-${m.subject}`} className="flex items-center gap-2">
-                <Mail size={12} aria-hidden="true" className="text-subtle" />
-                <span className="text-xs text-muted">{m.from}</span> {m.subject}
-              </li>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <span className="text-[11px] font-semibold tracking-[.06em] text-subtle uppercase">{t('card.email')}</span>
+            {c.emails.map((e) => (
+              <span key={`${e.from}-${e.subject}`} className="flex flex-col text-[13px] leading-[1.35]">
+                <b className="font-semibold text-text">{e.from}</b>
+                <span className="truncate text-muted">{e.subject}</span>
+              </span>
             ))}
-          </ul>
+          </div>
         </div>
       );
-    default:
-      return <div className="text-xs text-subtle">{t(`card.unknown` as MessageKey)}</div>;
+      break;
   }
+
+  const awaiting = c.type === 'approval-needed' && !resolved && pending;
+  return (
+    <div className="pl-[34px] font-sans">
+      <div
+        className="flex max-w-[560px] flex-col gap-2.5 rounded-[14px] border bg-surface-raised p-[14px]"
+        style={{
+          borderColor: awaiting ? 'color-mix(in oklab, var(--color-warning) 55%, transparent)' : 'var(--color-border)',
+        }}
+      >
+        <div className="flex items-center gap-2.5">
+          <span
+            className="grid h-[30px] w-[30px] shrink-0 place-items-center rounded-[8px]"
+            style={{ color, background: `color-mix(in oklab, ${color} 15%, transparent)` }}
+          >
+            <I size={15} aria-hidden="true" />
+          </span>
+          <div className="flex min-w-0 flex-1 flex-col gap-px">
+            <span className="text-[13.5px] font-semibold text-text">{title}</span>
+            {sub ? <span className="truncate text-[12px] text-muted">{sub}</span> : null}
+          </div>
+          {big ? (
+            <span
+              className="tabular text-[22px] font-semibold tracking-[-0.02em] text-text"
+              role={c.type === 'timer' ? 'timer' : undefined}
+            >
+              {big}
+            </span>
+          ) : null}
+          {button}
+        </div>
+        {body ? <p className="text-pretty m-0 text-[13px] leading-[1.5] text-muted">{body}</p> : null}
+        {c.type === 'timer' ? (
+          <div className="h-1 overflow-hidden rounded-pill bg-surface-sunken">
+            <div
+              className="h-full origin-left rounded-pill bg-accent transition-transform duration-1000 ease-linear"
+              style={{ transform: `scaleX(${Math.max(0, Math.min(100, timerPct)) / 100})` }}
+            />
+          </div>
+        ) : null}
+        {extra}
+      </div>
+    </div>
+  );
 }

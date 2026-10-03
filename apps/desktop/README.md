@@ -15,6 +15,17 @@ Mock mode is on automatically outside Tauri, or with `?mock=1`. Routes: `#/home`
 `#/sessions`, `#/settings?tab=voice`, `#/onboarding`. In mock mode, typing a message containing
 "delete" raises a high-risk approval and "build" raises a medium-risk one.
 
+In the browser preview every window is drawn at its design size on the design wallpaper
+(`html[data-desk]`). Preview switches: `?theme=dark|light`, `?material=glass|solid`,
+`?locale=en|it`, `?platform=mac|win|linux` (window chrome), `?hue=200` (accent),
+`?private=1`, `?pill=idle-hint|listening|thinking|speaking|clarify|approval-low|approval-medium|approval-high|error|muted`,
+`?sessions=0`, `?onboarding=1` (first-run providers). Example:
+`http://localhost:1420/?mock=1&platform=mac&theme=light&pill=approval-high#/pill`.
+
+The UI follows the Claude Design handoff in `docs/design/handoff/` (`Jarvis Desktop.dc.html`
+plus the component prototypes). Tokens live in `src/styles/tokens.css`; Settings and Onboarding are
+code-split (`React.lazy`). Screenshots of every surface are in `resources/screenshots/`.
+
 Headless check of the native subsystems (keyring, audio devices, model paths):
 
 ```bash

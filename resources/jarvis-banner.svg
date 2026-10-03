@@ -1,78 +1,37 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640" role="img" aria-labelledby="title desc">
   <title id="title">Jarvis</title>
-  <desc id="desc">A luminous orb on a midnight gradient next to the Jarvis wordmark and the tagline: your voice, your AI subscriptions, your computer.</desc>
+  <desc id="desc">The Jarvis orb glowing on a midnight background next to the Jarvis wordmark and the tagline: calm by default, alive when spoken to.</desc>
+  <!-- README banner / social preview from the Claude Design handoff (Brand › Banner, 1280×640, dark). -->
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#070b16"/>
-      <stop offset="0.55" stop-color="#0b1426"/>
-      <stop offset="1" stop-color="#101a33"/>
-    </linearGradient>
-    <radialGradient id="haze" cx="0.3" cy="0.5" r="0.55">
-      <stop offset="0" stop-color="#22b8e6" stop-opacity="0.28"/>
-      <stop offset="0.6" stop-color="#22b8e6" stop-opacity="0.04"/>
-      <stop offset="1" stop-color="#22b8e6" stop-opacity="0"/>
+    <radialGradient id="haze" gradientUnits="userSpaceOnUse" cx="256" cy="192" r="640" gradientTransform="translate(256 192) scale(1 0.8) translate(-256 -192)">
+      <stop offset="0" stop-color="#00555b" stop-opacity="0.7"/>
+      <stop offset="0.7" stop-color="#00555b" stop-opacity="0"/>
     </radialGradient>
-    <radialGradient id="ember" cx="0.92" cy="0.12" r="0.45">
-      <stop offset="0" stop-color="#f5a524" stop-opacity="0.16"/>
-      <stop offset="1" stop-color="#f5a524" stop-opacity="0"/>
+    <radialGradient id="ember" gradientUnits="userSpaceOnUse" cx="1152" cy="576" r="560">
+      <stop offset="0" stop-color="#733119" stop-opacity="0.5"/>
+      <stop offset="0.7" stop-color="#733119" stop-opacity="0"/>
     </radialGradient>
-    <radialGradient id="orbCore" cx="0.38" cy="0.34" r="0.75">
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#00bfc9" stop-opacity="0.55"/>
+      <stop offset="0.65" stop-color="#00bfc9" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="core" cx="35%" cy="30%" r="70%">
       <stop offset="0" stop-color="#ffffff"/>
-      <stop offset="0.18" stop-color="#c8f1ff"/>
-      <stop offset="0.48" stop-color="#3cc6f0"/>
-      <stop offset="0.8" stop-color="#1468b8"/>
-      <stop offset="1" stop-color="#0b2a5c"/>
+      <stop offset="0.22" stop-color="#96e8ec"/>
+      <stop offset="0.6" stop-color="#00c8d1"/>
+      <stop offset="1" stop-color="#004047"/>
     </radialGradient>
-    <radialGradient id="orbGlow" cx="0.5" cy="0.5" r="0.5">
-      <stop offset="0.45" stop-color="#3cc6f0" stop-opacity="0.55"/>
-      <stop offset="0.75" stop-color="#22b8e6" stop-opacity="0.12"/>
-      <stop offset="1" stop-color="#22b8e6" stop-opacity="0"/>
+    <radialGradient id="hi" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.75"/>
+      <stop offset="0.7" stop-color="#ffffff" stop-opacity="0"/>
     </radialGradient>
-    <linearGradient id="sweep" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#ffffff" stop-opacity="0"/>
-      <stop offset="0.5" stop-color="#ffffff" stop-opacity="0.35"/>
-      <stop offset="1" stop-color="#f5a524" stop-opacity="0"/>
-    </linearGradient>
-    <linearGradient id="word" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0" stop-color="#ffffff"/>
-      <stop offset="1" stop-color="#bfeeff"/>
-    </linearGradient>
-    <pattern id="dots" width="32" height="32" patternUnits="userSpaceOnUse">
-      <circle cx="2" cy="2" r="1" fill="#ffffff" fill-opacity="0.05"/>
-    </pattern>
   </defs>
-
-  <rect width="1280" height="640" fill="url(#bg)"/>
-  <rect width="1280" height="640" fill="url(#dots)"/>
+  <rect width="1280" height="640" fill="#0b0e15"/>
   <rect width="1280" height="640" fill="url(#haze)"/>
   <rect width="1280" height="640" fill="url(#ember)"/>
-
-  <!-- the orb -->
-  <g transform="translate(360 320)">
-    <circle r="210" fill="url(#orbGlow)"/>
-    <circle r="168" fill="none" stroke="#3cc6f0" stroke-opacity="0.18" stroke-width="1.5"/>
-    <circle r="190" fill="none" stroke="#3cc6f0" stroke-opacity="0.1" stroke-width="1"/>
-    <!-- soft waveform ring -->
-    <path d="M -150 0 C -140 -18, -128 18, -118 0 S -98 -26, -88 0 S -68 30, -58 0 S -38 -22, -28 0 S -8 34, 2 0 S 22 -28, 32 0 S 52 24, 62 0 S 82 -20, 92 0 S 112 16, 122 0 S 142 -12, 150 0"
-          fill="none" stroke="#c8f1ff" stroke-opacity="0.22" stroke-width="2" transform="translate(0 150) scale(1 0.6)"/>
-    <circle r="112" fill="url(#orbCore)"/>
-    <circle r="112" fill="url(#sweep)" opacity="0.6"/>
-    <ellipse cx="-36" cy="-44" rx="40" ry="24" fill="#ffffff" fill-opacity="0.35" transform="rotate(-28 -36 -44)"/>
-    <circle r="112" fill="none" stroke="#e6f9ff" stroke-opacity="0.45" stroke-width="2"/>
-  </g>
-
-  <!-- wordmark & tagline -->
-  <g font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif">
-    <text x="620" y="300" font-size="132" font-weight="700" letter-spacing="-3" fill="url(#word)">Jarvis</text>
-    <text x="624" y="360" font-size="32" font-weight="500" fill="#d7e6f5">Your voice. Your AI subscriptions.</text>
-    <text x="624" y="402" font-size="32" font-weight="500" fill="#d7e6f5">Your computer.</text>
-    <g font-size="20" font-weight="600">
-      <rect x="624" y="446" width="228" height="40" rx="20" fill="#22b8e6" fill-opacity="0.14" stroke="#22b8e6" stroke-opacity="0.5"/>
-      <text x="738" y="472" text-anchor="middle" fill="#9fe3fb">macOS · Windows · Linux</text>
-      <rect x="866" y="446" width="166" height="40" rx="20" fill="#f5a524" fill-opacity="0.12" stroke="#f5a524" stroke-opacity="0.5"/>
-      <text x="949" y="472" text-anchor="middle" fill="#ffd28a">Open source</text>
-      <rect x="1046" y="446" width="150" height="40" rx="20" fill="#22c55e" fill-opacity="0.12" stroke="#22c55e" stroke-opacity="0.5"/>
-      <text x="1121" y="472" text-anchor="middle" fill="#a6f0c0">Local mode</text>
-    </g>
-  </g>
+  <circle cx="216" cy="320" r="204" fill="url(#glow)" opacity="0.75"/>
+  <circle cx="216" cy="320" r="120" fill="url(#core)"/>
+  <ellipse cx="180" cy="261" rx="41" ry="29" fill="url(#hi)" opacity="0.9"/>
+  <text x="408" y="330" fill="#eef1f6" font-family="Inter, 'Inter Variable', system-ui, sans-serif" font-size="104" font-weight="650" letter-spacing="-4">Jarvis</text>
+  <text x="410" y="392" fill="#eef1f6" fill-opacity="0.75" font-family="Inter, 'Inter Variable', system-ui, sans-serif" font-size="34">Calm by default. Alive when spoken to.</text>
 </svg>

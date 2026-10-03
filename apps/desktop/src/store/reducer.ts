@@ -5,6 +5,7 @@
 import { defaultSettings, type Reminder, type Settings } from '@jarvis/core';
 import type { ConnectionStatus } from '../ipc/client';
 import type {
+  ApprovalDecision,
   ApprovalRequest,
   ChatMessage,
   ModelStatus,
@@ -24,6 +25,8 @@ export interface UiState {
   settings: Settings;
   sessions: SessionView[];
   pending: ApprovalRequest[];
+  /** Decisions taken on approvals (from `ui.approval` resolved events), shown on chat cards. */
+  resolved: Record<string, ApprovalDecision>;
   providers: ProviderStatus[];
   reminders: Reminder[];
   chat: ChatMessage[];
@@ -46,6 +49,7 @@ export const initialState = (): UiState => ({
   settings: defaultSettings(),
   sessions: [],
   pending: [],
+  resolved: {},
   providers: [],
   reminders: [],
   chat: [],
@@ -120,7 +124,12 @@ export function applyUiEvent(state: UiState, method: string, params: unknown): U
       return isObj(params.message) ? { ...state, chat: upsertChat(state.chat, params.message as ChatMessage) } : state;
     case 'ui.approval': {
       const pending = arr<ApprovalRequest>(params.pending);
-      return pending ? { ...state, pending } : state;
+      if (!pending) return state;
+      const decided =
+        params.state === 'resolved' && typeof params.id === 'string' && typeof params.decision === 'string'
+          ? { ...state.resolved, [params.id]: params.decision as ApprovalDecision }
+          : state.resolved;
+      return { ...state, pending, resolved: decided };
     }
     case 'ui.providers': {
       const providers = arr<ProviderStatus>(params.providers);

@@ -18,6 +18,11 @@ A running log of non-obvious findings, newest first. Consolidate into docs and r
 - **`ws` client:** without an `unexpected-response` listener a 401 upgrade only surfaces as a generic error. With one, read `res.statusCode` and `terminate()` the socket yourself.
 - **Local relay e2e:** `wrangler dev --ip 127.0.0.1 --port <free> --persist-to <tmp>` works without a Cloudflare login. The OAuth consent cookie works over plain http on loopback. On Windows, kill the wrangler tree with `taskkill /T` (it spawns `workerd`).
 - **Streaming speech** from a structured router reply is only safe for actions the grounding check never rewrites (answer/clarify/status). Gate it on the complete `action` value, hold memory-claim sentences, and stop speech if the final parse fails.
+## 2026-10-03 — ui-pixel (phase 1b)
+- **Unlayered element CSS beats Tailwind v4 utilities.** A plain `button { font: inherit }` in `globals.css` silently overrode every `text-[12px]`/`font-semibold` on buttons, because utilities live in `@layer utilities`. Put element defaults in `@layer base`.
+- **The handoff's inline styles are `content-box`.** A `width:212px; padding:12px 10px` sidebar is 232 px wide, and a `960×680` window with a 1 px border is 962×682. Tailwind's preflight is `border-box`, so add the padding/border when porting.
+- **Inline `animation` shorthands reset `animation-play-state`.** Pausing on `visibilitychange` (and reduced motion) needs `!important` in the global rule; keep a targeted `biome-ignore` with the reason.
+- **Comparing with the design:** serve `docs/design/handoff/` with a static server (not `file://`) and drive both pages with Playwright at the same viewport; element screenshots of `[data-window]` make side-by-side checks easy.
 
 ## 2026-10-03 — providers
 - On Windows, spawning an npm `.cmd` shim needs a shell. Instead, parse the shim and run its JS entry point with node: no shell, no injection surface.
