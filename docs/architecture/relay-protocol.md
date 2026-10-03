@@ -47,3 +47,27 @@ Rules:
 - Max frame and argument size: 64 KB.
 - Rate limit: 60 calls per minute per pair.
 - Relay storage: the pair record (`pairId`, `secretHash`, `label`, `createdAt`), plus OAuth grants. **No tool arguments or results are persisted.**
+
+## 5. Clarifications and extensions (reference implementation)
+
+- **Hashing.** `secretHash` is `sha256` over the UTF-8 bytes of the base64url `secret` string, as lowercase hex. The pairing code is the first 8 characters of the RFC 4648 base32 encoding (uppercase, no padding) of those 32 digest bytes. The relay derives the code from `secretHash` and indexes it, so the authorize page needs only the code. Wrong codes are rate limited relay-wide (30 failures per 10 minutes).
+- **Unpairing.** `DELETE {relay}/pair/register?pairId=<pairId>` with `Authorization: Bearer <secret>` returns `204`. The relay revokes every OAuth grant of the pair, deletes the pair record and keeps a **tombstone**: that `pairId` can never be registered again (`409`). The desktop always generates a new `pairId` when it pairs again.
+- **Grant binding.** Each registration gets a random `generation` nonce. OAuth grants carry `{ pairId, generation }`, and the relay checks the generation on every `/mcp` request. A grant from an earlier registration gets `401 invalid_token`.
+- **Frames.** A desktop frame larger than 64 KB closes the socket with code `1009`. Binary frames close it with `1003`. A newer desktop connection closes the older one with `4000`, and unpairing closes it with `4001`.
+- **Registration abuse guard.** At most 60 registrations per hour per relay (`429` above that).
+
+## 6. Long-poll variant (Vercel)
+
+Serverless platforms that can't hold a WebSocket (`packages/relay/vercel`) carry the **same JSON messages** over two HTTP endpoints. Both authenticate the desktop like `/desktop/connect` does: `?pairId=<pairId>` and `Authorization: Bearer <secret>`.
+
+| Request | Body | Response |
+|---|---|---|
+| `GET {relay}/desktop/poll?pairId=…` | — | Waits up to **25 s**. `200` with one `call` message (`{ "type": "call", "id", "tool", "args", "client" }`), or `204` when nothing arrived. The desktop polls again right away. |
+| `POST {relay}/desktop/result?pairId=…` | one desktop → relay message: `hello`, `result` or `ping` | `204` for `hello` and `result`, `200 { "type": "pong", "t" }` for `ping`, `404` for a `result` whose `id` is not a pending call of this pair. |
+
+Rules:
+- The desktop sends `hello` once after it starts and again whenever its exposed tools change.
+- The desktop counts as **online** while it polled within the last 60 s. Otherwise `tools/call` returns "Jarvis is offline on your computer".
+- Calls are queued per pair. Results are kept only until the waiting `/mcp` request collects them, at most 130 s, and then expire. Arguments and results are never persisted beyond that.
+- The limits from §4 and the timeout from §2 still apply.
+- The relay checks for new calls and results at a fixed interval (default 2 s, `POLL_INTERVAL_MS`). This trades latency against the Redis command budget.
