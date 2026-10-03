@@ -44,7 +44,11 @@ export async function shellInfo(): Promise<ShellInfo | null> {
 }
 
 export async function showWindow(label: WindowLabel, tab?: string): Promise<void> {
-  if (!isTauri()) return;
+  if (!isTauri()) {
+    // Browser preview: every surface is a hash route of the same page.
+    if (typeof location !== 'undefined') location.hash = `#/${label}${tab ? `?tab=${tab}` : ''}`;
+    return;
+  }
   await invoke('show_window', { label, tab: tab ?? null });
 }
 

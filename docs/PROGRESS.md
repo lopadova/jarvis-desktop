@@ -4,7 +4,7 @@
 |---|---|---|
 | 0 | Foundations: design brief, product spec, security model, ADRs | ✅ in review |
 | 1 | Scaffold: monorepo, Tauri 2 shell, sidecar, CI | ⏳ next |
-| 1b | **UI pixel-perfect** from the Claude Design handoff in `docs/design/handoff/` (replaces the provisional UI) | ⏳ after desktop shell lands |
+| 1b | **UI pixel-perfect** from the Claude Design handoff in `docs/design/handoff/` (replaces the provisional UI) | ✅ branch `feat/ui-pixel` |
 | 2 | Brain & core (Sign in with ChatGPT, Claude, Codex, API keys, Ollama, router, memory, policy) | — |
 | 3 | Agents (Claude Agent SDK, Codex SDK, Home agent, approvals, SQLite) | — |
 | 4 | Voice out (ElevenLabs, Fish, OpenAI, local, cues, streaming) | — |
@@ -48,3 +48,11 @@
   - Router `answer`/`clarify`/`status` replies are spoken while they stream. An incremental JSON scan reads the brain deltas. Memory claims and invalid replies are never spoken early.
   - Windows: agent trees run in Job Objects through `bun:ffi`, verified under `bun run` and as a compiled binary. The connection file is restricted to the current user's SID with `icacls`.
   - Test counts: agent-host 159 vitest tests, relay 35, mcp 27. `pnpm e2e` passes 6/6.
+- 2026-10-03 — Phase 1b (branch `feat/ui-pixel`): UI rebuilt from the Claude Design handoff.
+  - `tokens.css` from the handoff's `tokens()` (dark/light × glass/solid, hue-driven accent, `--backdrop`, `--wallpaper`).
+  - Orb, Listening Pill (all states, hide animation), Approval Card (countdown ring, R2 rules kept), Session Card/Panel,
+    chat bubbles + system cards (inline approve/deny, timer countdown, briefing), Home (rail views: memory with undo,
+    history, projects), composer (brain menu, click/hold mic, waveform), footer (usage meter, R11 mic indicator),
+    Onboarding (5 steps, confetti), Settings (9 tabs, Full-auto confirm with checkbox), in-window toasts.
+  - Settings/Onboarding code-split: main chunk 681 kB → 308 kB. Browser preview draws windows on the wallpaper.
+  - New app icon and README banner from the handoff's Brand page; screenshots in `resources/screenshots/`.

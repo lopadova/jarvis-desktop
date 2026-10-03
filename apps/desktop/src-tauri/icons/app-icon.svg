@@ -1,18 +1,30 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
   <title>Jarvis</title>
-  <!-- Provisional app icon: the Orb on a midnight rounded square. Replaced by the design template. -->
+  <!-- App icon from the Claude Design handoff (Brand › App icon): the Orb on a midnight rounded square.
+       Colours are the accent hue 200 ("Arc") oklch values converted to sRGB. -->
   <defs>
-    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
-      <stop offset="0" stop-color="#5cc8ff" stop-opacity="0.65"/>
-      <stop offset="1" stop-color="#5cc8ff" stop-opacity="0"/>
+    <radialGradient id="tile" cx="30%" cy="20%" r="80%" gradientUnits="objectBoundingBox">
+      <stop offset="0" stop-color="#00494e"/>
+      <stop offset="0.75" stop-color="#0b0e15"/>
     </radialGradient>
-    <radialGradient id="core" cx="38%" cy="32%" r="70%">
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0.55" stop-color="#00bfc9" stop-opacity="0.6"/>
+      <stop offset="1" stop-color="#00bfc9" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="core" cx="35%" cy="30%" r="70%">
       <stop offset="0" stop-color="#ffffff"/>
-      <stop offset="0.45" stop-color="#9fe0ff"/>
-      <stop offset="1" stop-color="#1d6fa3"/>
+      <stop offset="0.22" stop-color="#96e8ec"/>
+      <stop offset="0.6" stop-color="#00c8d1"/>
+      <stop offset="1" stop-color="#004047"/>
+    </radialGradient>
+    <radialGradient id="hi" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.75"/>
+      <stop offset="0.7" stop-color="#ffffff" stop-opacity="0"/>
     </radialGradient>
   </defs>
-  <rect x="64" y="64" width="896" height="896" rx="200" fill="#151a24"/>
-  <circle cx="512" cy="512" r="360" fill="url(#glow)"/>
-  <circle cx="512" cy="512" r="230" fill="url(#core)"/>
+  <rect x="0" y="0" width="1024" height="1024" rx="229" fill="url(#tile)"/>
+  <rect x="0.5" y="0.5" width="1023" height="1023" rx="229" fill="none" stroke="#ffffff" stroke-opacity="0.08"/>
+  <circle cx="512" cy="512" r="390" fill="url(#glow)"/>
+  <circle cx="512" cy="512" r="287" fill="url(#core)"/>
+  <ellipse cx="400" cy="380" rx="98" ry="69" fill="url(#hi)" opacity="0.9"/>
 </svg>
