@@ -191,6 +191,7 @@ export class App {
         host: deps.host,
         speak: (t) => this.orchestrator.jarvisSays(t),
         ask: (q, o, ms) => this.orchestrator.ask(q, o, ms),
+        setNeedsInput: (id, waiting) => this.sessions.setNeedsInput(id, waiting),
         startTask: (req, origin) => this.startTaskFromMcp(req, origin),
         sessions: () => this.sessions.list(),
         remember: (t) => this.memory.add(t),
