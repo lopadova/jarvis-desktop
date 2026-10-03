@@ -18,3 +18,10 @@
   - `docs/product-spec.md`
   - `docs/security-model.md`
   - ADRs 0001–0005
+- 2026-10-03 — Docs & community (branch `feat/docs`):
+  - `README.md` (WOW: banner, badges, everyday features first, moats, comparison, quickstarts a–h, examples, architecture, security, FAQ), `resources/jarvis-banner.svg`
+  - `INSTALL_WITH_AI.md` (guide for AI assistants helping non-technical users) and `llms.txt`
+  - `docs/guides/*` (13 guides), `docs/reference/{settings,mcp-tools,voice-commands}.md`, `docs/architecture/overview.md`, `docs/contributing/dev-setup.md`
+  - `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `CHANGELOG.md`, issue/PR templates, `FUNDING.yml`, `dependabot.yml`
+  - Workflows: `ci.yml`, `release.yml` (draft release, unsigned installers, `.mcpb`, checksums), `docs.yml` (Cloudflare Pages), all actions SHA-pinned
+  - `docs-site/` docmd site (WOW landing, 28 pages, semantic search, raw-HTML guard)

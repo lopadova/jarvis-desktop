@@ -1,0 +1,28 @@
+{
+  "name": "jarvis-desktop-docs",
+  "version": "0.1.0",
+  "description": "Static docmd documentation site for Jarvis Desktop, the open-source voice assistant for macOS, Windows and Linux.",
+  "private": true,
+  "scripts": {
+    "dev": "docmd dev",
+    "build": "docmd build",
+    "check": "node scripts/check-no-raw-html.mjs"
+  },
+  "keywords": [
+    "jarvis",
+    "voice-assistant",
+    "documentation"
+  ],
+  "author": "Lorenzo Padovani",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@docmd/core": "^0.9.7",
+    "@huggingface/transformers": "^4.3.0",
+    "docmd-search": "^0.1.6",
+    "onnxruntime-node": "1.30.0"
+  }
+}
