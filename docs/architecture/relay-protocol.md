@@ -55,6 +55,13 @@ Rules:
 - **Grant binding.** Each registration gets a random `generation` nonce. OAuth grants carry `{ pairId, generation }`, and the relay checks the generation on every `/mcp` request. A grant from an earlier registration gets `401 invalid_token`.
 - **Frames.** A desktop frame larger than 64 KB closes the socket with code `1009`. Binary frames close it with `1003`. A newer desktop connection closes the older one with `4000`, and unpairing closes it with `4001`.
 - **Registration abuse guard.** At most 60 registrations per hour per relay (`429` above that).
+- **Desktop behaviour** (`packages/agent-host/src/relay.ts`, end-to-end test `pnpm e2e:relay`):
+  - `4000` → the desktop stays offline (`reason: "replaced"`) and does not reconnect, so two computers never kick each other out in a loop. It reconnects at the next start or pairing.
+  - `4001` → the desktop forgets the pairing (`status: "unpaired"`, `reason: "revoked"`).
+  - `1009` / `1003` → logged as a protocol error and reconnected with backoff. The desktop never sends a frame over 64 KB: results are truncated by UTF-8 bytes, not characters.
+  - HTTP `401` on the upgrade → `reason: "auth-failed"`, retried only at the slowest backoff (60 s).
+  - A ping without a pong before the next ping (30 s) → the socket is dropped and reconnected.
+  - Unpairing in the app always calls `DELETE /pair/register` first and drops the local pairing even when the relay is unreachable. Pairing again revokes the previous pairing first.
 
 ## 6. Long-poll variant (Vercel)
 

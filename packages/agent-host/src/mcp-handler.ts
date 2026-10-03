@@ -41,6 +41,8 @@ export interface McpHandlerDeps {
   speak: (text: string) => Promise<void>;
   /** Shows a clarify pill, speaks the question; resolves with the answer or null on timeout. */
   ask: (question: string, options: string[], timeoutMs: number) => Promise<string | null>;
+  /** Marks a verified calling session as waiting on the user (`needs-input`) while `jarvis_ask_user` waits. */
+  setNeedsInput?: (sessionId: string, waiting: boolean) => void;
   startTask: (
     req: { task: string; project?: string; agent?: AgentId },
     origin: { via: McpOrigin; client?: string; callerSessionId?: string },
@@ -123,12 +125,18 @@ export class McpHandler {
         await this.deps.speak(String(a.text));
         return text('Spoken.');
       case 'jarvis_ask_user': {
-        const answer = await this.deps.ask(
-          String(a.question),
-          (a.options as string[] | undefined) ?? [],
-          Number(a.timeoutSeconds) * 1000,
-        );
-        return answer === null ? text(x.noAnswer) : text(answer);
+        const caller = input.callerSessionId;
+        if (caller) this.deps.setNeedsInput?.(caller, true);
+        try {
+          const answer = await this.deps.ask(
+            String(a.question),
+            (a.options as string[] | undefined) ?? [],
+            Number(a.timeoutSeconds) * 1000,
+          );
+          return answer === null ? text(x.noAnswer) : text(answer);
+        } finally {
+          if (caller) this.deps.setNeedsInput?.(caller, false);
+        }
       }
       case 'jarvis_notify':
         if (!this.deps.host.connected) return text('The desktop shell is not connected.', true);

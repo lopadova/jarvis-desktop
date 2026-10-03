@@ -18,7 +18,8 @@
     "lint": "biome check .",
     "format": "biome format --write .",
     "sidecar:build": "pnpm --filter @jarvis/agent-host build:binary",
-    "e2e": "pnpm --filter @jarvis/mcp build && node scripts/e2e-smoke.mjs"
+    "e2e": "pnpm --filter @jarvis/mcp build && node scripts/e2e-smoke.mjs",
+    "e2e:relay": "node scripts/e2e-relay.mjs"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.15",
