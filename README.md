@@ -1,4 +1,4 @@
-![Jarvis: your voice, your AI subscriptions, your computer](resources/jarvis-banner.svg)
+![Jarvis — calm by default, alive when spoken to](resources/jarvis-banner.svg)
 
 # Jarvis
 
@@ -41,6 +41,20 @@ Click a suggestion on the Home screen or just say it. Every chip in the app has 
 | 🛠️ | **Developers:** drive Claude Code and Codex hands-free across projects | "Jarvis, in project shop add a footer" |
 
 Italian works too: *"Jarvis, ricordami tra 20 minuti di chiamare Marco"*. The full phrasebook is in [Everyday features](docs/guides/everyday.md) and [Voice commands](docs/reference/voice-commands.md).
+
+### See it
+
+| Home: suggestions you can click or say | Asking before anything risky |
+|---|---|
+| ![Jarvis Home with suggestion chips, chat and composer](resources/screenshots/home-dark.png) | ![High-risk approval card: click to confirm, Deny focused](resources/screenshots/pill-approval-high-dark.png) |
+| **Background work, live** | **Pick the brain you already pay for** |
+| ![Sessions panel with running agents](resources/screenshots/sessions-dark.png) | ![Onboarding: Sign in with ChatGPT, Claude Code, API key or local](resources/screenshots/onboarding-brain-dark.png) |
+
+| Listening | Thinking | Speaking |
+|---|---|---|
+| ![Pill listening](resources/screenshots/pill-listening-dark.png) | ![Pill thinking](resources/screenshots/pill-thinking-dark.png) | ![Pill speaking](resources/screenshots/pill-speaking-dark.png) |
+
+Light theme, Italian UI and per-project permission levels: [Home (light)](resources/screenshots/home-light.png) · [Home in Italian](resources/screenshots/home-it-dark.png) · [Settings › Agents & projects](resources/screenshots/settings-agents-dark.png).
 
 ---
 
