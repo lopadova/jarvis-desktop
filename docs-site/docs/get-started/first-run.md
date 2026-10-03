@@ -21,8 +21,10 @@ The welcome wizard has five short steps. You can go back at any time and change 
    (shows whether it is found and signed in), **Use an API key** (Anthropic or OpenAI), **Run locally**
    (Ollama). Connect one or more; one is marked **primary**. [Details →](/guides/brains)
 
+   ![Onboarding: choose your brain](/assets/screenshots/onboarding-brain-dark.png)
+
 4. **Voice**
-   Pick ElevenLabs, Fish Audio, OpenAI, Local (Kokoro/Piper) or System, press ▶ to preview, and choose
+   Pick ElevenLabs, Fish Audio, OpenAI, Local (Piper) or System, press ▶ to preview, and choose
    **English** or **Italiano**. [Details →](/guides/voices)
 
 5. **Try it**

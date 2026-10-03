@@ -47,7 +47,7 @@ The Tauri bundler signs the app and the sidecar, then submits the build for nota
 
 ## Updater key (both platforms)
 
-Auto-updates need their own **minisign** key, independent from code signing. Generate it with `pnpm --filter @jarvis/desktop tauri signer generate`. Then:
+Auto-updates are **not enabled in v0.1** (`bundle.createUpdaterArtifacts` is `false`; the `plugins.updater.pubkey` in `tauri.conf.json` is a placeholder until a key exists, and the release workflow does not pass the updater secrets yet). When you turn them on, they need their own **minisign** key, independent from code signing. Generate it with `pnpm --filter @jarvis/desktop tauri signer generate`. Then:
 - put the public key in `plugins.updater.pubkey` (`apps/desktop/src-tauri/tauri.conf.json`);
 - add the private key as the secrets `TAURI_SIGNING_PRIVATE_KEY` and `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`;
 - set `bundle.createUpdaterArtifacts` to `true`.
@@ -55,5 +55,5 @@ Auto-updates need their own **minisign** key, independent from code signing. Gen
 ## Testing unsigned builds locally
 
 If your own machine blocks fresh unsigned binaries (Smart App Control), use the scripts in `scripts/`:
-- `node scripts/windows-xbuild/build-windows.mjs` builds `dist-windows/` from Docker, using `cargo-xwin`. That tool downloads Microsoft's CRT/SDK, which means accepting Microsoft's licence terms.
-- `powershell -File scripts/sandbox/start-sandbox.ps1` runs that build inside **Windows Sandbox** and collects the self-test output, logs and screenshots in `dist-sandbox/`.
+- `node scripts/windows-xbuild/build-windows.mjs [release|debug]` builds `dist-windows/` (`jarvis-desktop.exe` + `agent-host.exe`) from Docker, using `cargo-xwin`. It needs Docker Desktop. That tool downloads Microsoft's CRT/SDK, which means accepting Microsoft's licence terms.
+- `powershell -File scripts/sandbox/start-sandbox.ps1` runs that build inside **Windows Sandbox** (a Windows 11 Pro/Enterprise optional feature) and collects the self-test output, logs and screenshots in `dist-sandbox/`.

@@ -19,7 +19,7 @@ Safeguards:
 - **Deploy:** a "Deploy to Cloudflare" button, plus `wrangler deploy` instructions.
 
 Alternatives documented for advanced users:
-- **Vercel (free tier):** Functions cannot hold WebSockets, so the desktop long-polls a queue on Upstash Redis (free tier). Latency is higher.
+- **Vercel (free tier):** Functions cannot hold WebSockets, so the desktop long-polls a queue on Upstash Redis (free tier). Latency is higher. Status in v0.1: the relay side is implemented (`packages/relay/vercel`), the desktop long-poll client is not.
 - **Cloudflare Tunnel (`cloudflared`):** no code needed; it exposes the local MCP HTTP endpoint directly. Auth must still be turned on.
 
 ## Consequences

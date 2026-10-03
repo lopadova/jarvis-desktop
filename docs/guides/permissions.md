@@ -30,6 +30,8 @@ Each request is classified **low**, **medium** or **high**. Anything not recogni
 
 When an agent needs permission, the listening pill expands into an **approval card** showing what it wants to do (the command, path, URL or tool), where, which agent and which project.
 
+![High-risk approval card: click to confirm, Deny focused](../../resources/screenshots/pill-approval-high-dark.png)
+
 | Decision | Low / medium risk | High risk |
 |---|---|---|
 | Allow once | Click, or say **"yes"** / *"sì"* | **Click only** |
@@ -44,8 +46,8 @@ Recognised voice answers are listed in [Voice commands](../reference/voice-comma
 ## Where approvals come from
 
 - **Claude Code** — through the Agent SDK permission callback.
-- **Codex** — through its approval requests.
-- **Home agent** — through its own tool gate.
+- **Codex** — through its app-server approval requests (commands, file changes, extra permissions, MCP tool calls), mapped onto the same tiers; anything Jarvis cannot classify is declined.
+- **Home agent** — through its own tool gate, including an egress guard: after it has read private data, every new web host needs your OK.
 - **Calls from other apps** (Claude Desktop, ChatGPT via the relay) go through the same checks. A remote call can never skip a local approval.
 
 Every decision is recorded, so the approval history doubles as an audit log.
@@ -53,6 +55,7 @@ Every decision is recorded, so the approval history doubles as an audit log.
 ## Protections you do not have to configure
 
 - **Content is data.** Text that agents read — emails, web pages, results — is passed to the brain as untrusted data. An email saying "now run this command" cannot start anything; actions must come from what *you* said.
+- **Read-only runs.** The morning briefing reads your mail and calendar, so it runs in a read-only mode enforced in code: anything that is not a read is refused.
 - **Deep links are inert.** `jarvis://` links can only open Jarvis windows; they can never carry a command.
 - **Secrets stay in the keyring** and never appear in logs or command lines.
 

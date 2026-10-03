@@ -29,7 +29,7 @@ code-split (`React.lazy`). Screenshots of every surface are in `resources/screen
 Headless check of the native subsystems (keyring, audio devices, model paths):
 
 ```bash
-target/debug/jarvis-desktop --self-test
+cd src-tauri && cargo run -- --self-test    # or: jarvis-desktop --self-test on an installed build
 ```
 
 ## Layout

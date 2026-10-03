@@ -11,6 +11,9 @@ ChatGPT ──HTTPS + OAuth──▶ /mcp ──LPUSH call──▶ Upstash Redi
 
 Messages have the same JSON shapes as the WebSocket protocol. See §5 of [`docs/architecture/relay-protocol.md`](../../../docs/architecture/relay-protocol.md).
 
+> [!WARNING]
+> **Status in v0.1: relay side only.** This Vercel relay is implemented and tested, but the Jarvis desktop app connects only over WebSocket and does not speak the long-poll endpoints yet, so it cannot pair with this variant today. Use the Cloudflare relay or a Cloudflare Tunnel. The long-poll desktop client is planned.
+
 **Prefer the Cloudflare relay if you can.** It has lower latency, no polling, and a much smaller free-tier footprint.
 
 ## Deploy
@@ -19,7 +22,7 @@ Messages have the same JSON shapes as the WebSocket protocol. See §5 of [`docs/
 
 1. Create a free Redis database at <https://console.upstash.com>, or add the **Upstash** integration from the Vercel Marketplace, which sets the variables for you.
 2. Click the button. Vercel copies this folder into a new repository and asks for the variables below.
-3. Copy the deployment URL, for example `https://jarvis-relay.vercel.app`, and pair it in **Jarvis → Settings → ChatGPT relay → Vercel (long-poll)**.
+3. Copy the deployment URL, for example `https://jarvis-relay.vercel.app`, and pair it in **Jarvis › Settings › Integrations › ChatGPT relay** (once the desktop long-poll client ships, see the status note above).
 4. In ChatGPT (Developer mode), add a connector with the URL `https://jarvis-relay.vercel.app/mcp` and OAuth. Then type the pairing code.
 
 Manual deploy: `cd packages/relay/vercel && npx vercel deploy --prod`.

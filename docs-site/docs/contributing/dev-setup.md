@@ -61,10 +61,11 @@ apps/desktop/            Tauri 2 shell (src-tauri, Rust) + React 19 UI (src)
 packages/core/           pure TypeScript: schemas, IPC contract, router, policy, suggestions
 packages/agent-host/     TypeScript sidecar: router, agents, memory, MCP server
 packages/providers/      brains, TTS, cloud STT
-packages/mcp/            jarvis-mcp stdio bridge, .mcpb manifest, Cowork / Claude Code plugin
+packages/mcp/            jarvis-mcp.mjs stdio bridge, .mcpb manifest, Cowork / Claude Code plugin
 packages/relay/          Cloudflare Worker relay for ChatGPT (+ Vercel variant)
 docs/                    product spec, security model, ADRs, guides
 docs-site/               this documentation site (docmd)
+scripts/                 e2e smoke tests, Windows cross-build and Sandbox runner, signing helpers
 ```
 
 ## Everyday commands
@@ -78,7 +79,17 @@ docs-site/               this documentation site (docmd)
 | `pnpm format` | Biome format, write |
 | `pnpm build` | Build all packages |
 | `pnpm sidecar:build` | Compile the sidecar binary |
+| `pnpm e2e` | Build the MCP bridge, then run the sidecar + MCP bridge smoke test (needs Bun) |
+| `pnpm e2e:relay` | Real sidecar against a local `wrangler dev` relay: pairing, OAuth, tools, unpair |
+| `pnpm --filter @jarvis/relay test` | Relay unit tests (they run in workerd, so they are not part of `pnpm test`) |
 | `cargo fmt --check`, `cargo clippy`, `cargo test` | Rust checks (in `apps/desktop/src-tauri`) |
+
+## Data directory and self-test
+
+Set `JARVIS_DATA_DIR` to use a throwaway data directory. By default it is `~/Library/Application Support/Jarvis`
+(macOS), `%APPDATA%\Jarvis` (Windows) or `~/.local/share/jarvis` (Linux, honouring `XDG_DATA_HOME`).
+`jarvis-desktop --self-test` initialises the native subsystems without opening a window and exits 0 when
+the essentials work.
 
 ## Tests that matter
 

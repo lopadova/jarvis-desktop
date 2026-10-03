@@ -18,7 +18,7 @@ flowchart LR
       AG["Agent drivers"]
       MCPS["MCP server"]
     end
-    BR["jarvis-mcp<br/>(stdio bridge)"]
+    BR["jarvis-mcp.mjs<br/>(stdio bridge)"]
     DB[("SQLite<br/>jarvis.db")]
   end
 
@@ -29,7 +29,7 @@ flowchart LR
   R --> P["Brains<br/>ChatGPT plan · Claude Code · Codex<br/>API keys · Ollama"]
   R --> T["Voices<br/>ElevenLabs · Fish · OpenAI<br/>Kokoro · Piper · system"]
   AG --> C1["Claude Agent SDK"]
-  AG --> C2["Codex SDK / app-server"]
+  AG --> C2["Codex app-server<br/>(SDK fallback)"]
   AG --> C3["Home agent<br/>+ your MCP servers"]
 
   CD["Claude Desktop · Cowork<br/>Claude Code · Codex"] -- stdio --> BR
@@ -42,10 +42,10 @@ flowchart LR
 
 | Process | Language | Owns |
 |---|---|---|
-| **Shell** (`apps/desktop/src-tauri`) | Rust | Windows (frameless, glass/solid), tray, global shortcuts with press/release, keyring, audio capture/playback, wake word + VAD (sherpa-onnx), Whisper (whisper.cpp), echo cancellation, clap detection, single instance, autostart, updater, deep links, sidecar supervision |
+| **Shell** (`apps/desktop/src-tauri`) | Rust | Windows (frameless, glass/solid), tray, global shortcuts with press/release, keyring, audio capture/playback, wake word + VAD (sherpa-onnx), Whisper (whisper.cpp), echo cancellation, clap detection, single instance, autostart, deep links (the updater plugin is present but auto-update is off in v0.1), sidecar supervision |
 | **UI** (`apps/desktop/src`) | React 19 + TS | Presentational surfaces: listening pill, sessions panel, home, onboarding, settings |
 | **Sidecar** (`packages/agent-host`) | TypeScript (Bun binary) | Router, fast path, providers, agent drivers, approvals, memory, history, reminders, MCP server, relay link |
-| **MCP bridge** (`jarvis-mcp`) | TypeScript | Stdio MCP server launched by Claude/Codex; forwards to the sidecar |
+| **MCP bridge** (`jarvis-mcp.mjs`) | TypeScript | Stdio MCP server launched by Claude/Codex; forwards to the sidecar |
 | **Relay** (`packages/relay`) | TypeScript (Worker) | Remote HTTPS MCP endpoint for ChatGPT; forwards through the desktop's outbound socket |
 
 ### IPC (ADR 0002)
@@ -95,7 +95,7 @@ The router's output contract (`RouterAction`: `answer`, `spawn`, `followup`, `ca
 | `packages/core` | Shared pure TypeScript: settings, IPC contract, `McpTools`, router schema and prompt, fast path, risk policy, suggestions, phrases, voice cues, paths. Reusable by a future mobile companion. |
 | `packages/agent-host` | The sidecar: router, memory, policy, agent drivers, MCP server |
 | `packages/providers` | Brains, TTS and cloud STT implementations |
-| `packages/mcp` | `jarvis-mcp` stdio/HTTP server, `.mcpb` manifest, Cowork / Claude Code plugin |
+| `packages/mcp` | `jarvis-mcp.mjs` stdio/HTTP server, `.mcpb` manifest, Cowork / Claude Code plugin |
 | `packages/relay` | Remote MCP relay for ChatGPT (Cloudflare Worker + Durable Object; Vercel variant) |
 | `docs/`, `docs-site/` | Markdown docs and the docmd documentation site |
 

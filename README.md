@@ -18,7 +18,7 @@
 Jarvis is a small assistant that lives next to your clock, on Mac, Windows and Linux. You talk to it like you would to a helpful colleague: it answers quick questions out loud, sets timers and reminders, tidies up what you copied, and hands bigger jobs to a background helper that keeps you posted. It works with ChatGPT, Claude or a model running on your own computer, and it always asks before doing anything that could cause trouble.
 
 > [!NOTE]
-> **Status: v0.1 in active development.** The features below describe the v0.1 design ([product spec](docs/product-spec.md)). Progress is tracked in [`docs/PROGRESS.md`](docs/PROGRESS.md). Early installers are **unsigned** — see [Install](#install) for the one-time "open anyway" step.
+> **Status: v0.1.0 is released.** Installers are **unsigned** for now — see [Install](#install) for the one-time "open anyway" step. The design lives in the [product spec](docs/product-spec.md); what's next is in the [Roadmap](ROADMAP.md).
 
 ---
 
@@ -197,11 +197,11 @@ Then in *Settings › Brain & accounts* pick **Codex**. Say *"Jarvis, do the sam
   ollama pull llama3.2
   ```
 
-  Choose **Run locally** (default endpoint `http://127.0.0.1:11434/v1`), pick **Kokoro** or **Piper** as the voice and keep **local Whisper** for speech. Say *"Jarvis, switch to local mode"* — the orb gets a green ring and nothing leaves your computer.
+  Choose **Run locally** (default endpoint `http://127.0.0.1:11434/v1`), pick **Piper** as the voice (downloaded on demand; Kokoro is an optional, English-only alternative) and keep **local Whisper** for speech. Say *"Jarvis, switch to local mode"* — the orb gets a green ring and nothing leaves your computer.
 
 ### f. Use Jarvis from Claude Desktop or Cowork
 
-- **Claude Desktop:** download `jarvis.mcpb` from [Releases](https://github.com/lopadova/jarvis-desktop/releases/latest) (or *Settings › Integrations › Install extension*) and open it with Claude Desktop.
+- **Claude Desktop:** download `jarvis.mcpb` from [Releases](https://github.com/lopadova/jarvis-desktop/releases/latest) (the in-app **Install extension** button is coming soon) and open it with Claude Desktop.
 - **Cowork / Claude Code plugin** (skill + MCP server):
 
   ```text
@@ -221,7 +221,7 @@ ChatGPT can only reach **remote HTTPS** MCP servers, and Jarvis never opens inbo
 2. In Jarvis: *Settings › Integrations › ChatGPT* → paste your relay URL → you get a **pairing code** and QR code.
 3. In ChatGPT, add a custom connector pointing to `https://<your-worker>.<your-account>.workers.dev/mcp` and enter the pairing code when asked.
 
-Only read-only tools are exposed by default; every relayed call shows up on your desktop and risky ones still need a local click. Alternatives: **Vercel** (free tier, long-polling) or **Cloudflare Tunnel** (no code). Custom connector availability depends on your ChatGPT plan — check the current OpenAI documentation. Guide: [ChatGPT](docs/guides/chatgpt.md).
+Only read-only tools are exposed by default; every relayed call shows up on your desktop and risky ones still need a local click. Alternative: **Cloudflare Tunnel** (no code). A Vercel long-poll relay is included too, but the desktop client for it is not ready in v0.1. Custom connector availability depends on your ChatGPT plan — check the current OpenAI documentation. Guide: [ChatGPT](docs/guides/chatgpt.md).
 
 ### h. Developers: build from source
 
@@ -354,7 +354,7 @@ More: [FAQ](docs/guides/faq.md) · [Troubleshooting](docs/guides/troubleshooting
 
 ## Roadmap
 
-v0.1 "Hello, Jarvis" is in progress. Next up: a **📱 mobile companion app** (push-to-talk, live sessions, remote approvals, notifications through an end-to-end encrypted Jarvis Link), signed installers, speaker verification and scheduled routines. See [ROADMAP.md](ROADMAP.md).
+v0.1.0 "Hello, Jarvis" is out. Next up: a **📱 mobile companion app** (push-to-talk, live sessions, remote approvals, notifications through an end-to-end encrypted Jarvis Link), signed installers, speaker verification and scheduled routines. See [ROADMAP.md](ROADMAP.md).
 
 ---
 

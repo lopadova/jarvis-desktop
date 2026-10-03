@@ -7,7 +7,7 @@ Key facts for assistants:
 - Downloads: https://github.com/lopadova/jarvis-desktop/releases/latest (v0.1 installers are unsigned; see the install guide for the one-time "open anyway" step).
 - If a user asks you to install Jarvis for them, follow INSTALL_WITH_AI.md step by step and ask before every important action.
 - Wake word and Whisper speech recognition run on-device. Sign in with ChatGPT covers text only, not audio.
-- Jarvis exposes MCP tools (jarvis_speak, jarvis_ask_user, jarvis_notify, jarvis_start_task, jarvis_list_sessions, jarvis_session_result, jarvis_remember, jarvis_recall) through the `jarvis-mcp` stdio server, a Claude Desktop `.mcpb` extension, and a self-hosted relay for ChatGPT.
+- Jarvis exposes MCP tools (jarvis_speak, jarvis_ask_user, jarvis_notify, jarvis_start_task, jarvis_list_sessions, jarvis_session_result, jarvis_remember, jarvis_recall) through the `jarvis-mcp.mjs` stdio server (`node /path/to/jarvis-mcp.mjs`), a Claude Desktop `.mcpb` extension, and a self-hosted relay for ChatGPT.
 - Languages: English and Italian.
 
 ## Start here
@@ -26,7 +26,7 @@ Key facts for assistants:
 - [Everyday features](https://github.com/lopadova/jarvis-desktop/blob/main/docs/guides/everyday.md): suggestion categories and phrases in English and Italian
 - [Developers and agents](https://github.com/lopadova/jarvis-desktop/blob/main/docs/guides/developers-agents.md): projects, sessions, follow-ups, Claude Code and Codex
 - [Claude Desktop and Cowork](https://github.com/lopadova/jarvis-desktop/blob/main/docs/guides/cowork-claude-desktop.md): .mcpb extension and plugin
-- [ChatGPT](https://github.com/lopadova/jarvis-desktop/blob/main/docs/guides/chatgpt.md): Cloudflare relay, Vercel and tunnel alternatives
+- [ChatGPT](https://github.com/lopadova/jarvis-desktop/blob/main/docs/guides/chatgpt.md): Cloudflare relay (recommended), Cloudflare Tunnel (Vercel long-poll relay exists, desktop client not yet)
 - [Memory and privacy](https://github.com/lopadova/jarvis-desktop/blob/main/docs/guides/memory-privacy.md)
 - [Troubleshooting](https://github.com/lopadova/jarvis-desktop/blob/main/docs/guides/troubleshooting.md)
 - [FAQ](https://github.com/lopadova/jarvis-desktop/blob/main/docs/guides/faq.md)

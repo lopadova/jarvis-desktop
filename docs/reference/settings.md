@@ -2,7 +2,9 @@
 
 Every user setting, as defined by `SettingsSchema` in [`packages/core/src/settings.ts`](../../packages/core/src/settings.ts). Settings are validated with zod: unknown keys are dropped and missing keys take their defaults, so settings files stay forward- and backward-compatible.
 
-Most settings are editable in the Settings window; the tab is shown in brackets. **Secrets (API keys, tokens) are never settings** — they live in the OS keyring.
+Most settings are editable in the Settings window; the tab is shown in brackets.
+
+![Settings › Agents & projects](../../resources/screenshots/settings-agents-dark.png) **Secrets (API keys, tokens) are never settings** — they live in the OS keyring.
 
 ## General and appearance
 
@@ -44,7 +46,7 @@ Most settings are editable in the Settings window; the tab is shown in brackets.
 | `speakReplies` | boolean | `true` | Speak replies out loud. [Voice] |
 | `speakProgress` | boolean | `true` | Spoken progress updates for background sessions. [Voice] |
 | `speakSummaries` | boolean | `true` | Short spoken summary when a session finishes. [Voice] |
-| `muteDuringFocus` | boolean | `true` | Stay quiet during OS Focus / Do Not Disturb. [Voice] |
+| `muteDuringFocus` | boolean | `true` | Stay quiet during OS Focus / Do Not Disturb. [Voice, Microphone & wake word] |
 
 ## Voice in (microphone and transcription)
 
@@ -57,7 +59,7 @@ Most settings are editable in the Settings window; the tab is shown in brackets.
 | `conversationMode` | boolean | `true` | Keep listening briefly after a reply, without the wake word. [Microphone & wake word] |
 | `conversationWindowMs` | integer 2000–20000 | `6000` | How long conversation mode listens, in ms. [Microphone & wake word] |
 | `echoCancellation` | boolean | `true` | Prevent Jarvis from hearing its own voice. [Microphone & wake word] |
-| `pushToTalk` | hotkey string | `'Alt+Space'` | Hold to talk (`⌥ Space` on macOS). On Windows we suggest `Ctrl+Alt+Space`. [Shortcuts] |
+| `pushToTalk` | hotkey string | `'Alt+Space'` | Hold to talk (`⌥ Space` on macOS). On Windows we suggest `Ctrl+Alt+Space`. [Microphone & wake word, Shortcuts] |
 | `toggleSessions` | hotkey string | `'CommandOrControl+Shift+J'` | Show/hide the Sessions panel. [Shortcuts] |
 
 Hotkeys use Tauri accelerator syntax (`CommandOrControl`, `Alt`, `Shift`, `Space`, letters…), max 64 characters.
@@ -68,7 +70,7 @@ Hotkeys use Tauri accelerator syntax (`CommandOrControl`, `Alt`, `Shift`, `Space
 |---|---|---|---|
 | `privateMode` | boolean | `false` | Everything stays on this computer: local brain, STT and voice. [Privacy] |
 | `screenAccess` | boolean | `false` | Opt-in for "what's on my screen?" / "explain this error": one screenshot per request (≤ 2 MB, never stored) is shown to a vision-capable brain. Off = Jarvis explains how to enable it and captures nothing. [Privacy] |
-| `openResults` | boolean | `true` | Automatically open viewable results (HTML file, localhost URL) when a session finishes. [Agents & projects] |
+| `openResults` | boolean | `true` | Automatically open viewable results (HTML file, localhost URL) when a session finishes. [Privacy] |
 | `historyRetentionDays` | integer 0–3650 | `30` | Days of conversation history to keep; `0` = don't keep. [Privacy] |
 | `relayUrl` | string | `''` | URL of your ChatGPT relay; empty = not configured. [Integrations] |
 | `relayExposeWriteTools` | boolean | `false` | Expose write tools (speak, ask, notify, start task, remember) to ChatGPT through the relay. Read-only tools only by default. [Integrations] |

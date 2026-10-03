@@ -942,8 +942,8 @@ function MicrophoneTab(p: SettingsProps) {
 }
 
 const MCP_COMMANDS = {
-  claude: 'claude mcp add jarvis -- jarvis-mcp',
-  codex: 'codex mcp add jarvis -- jarvis-mcp',
+  claude: 'claude mcp add jarvis -- node /path/to/jarvis-mcp.mjs',
+  codex: 'codex mcp add jarvis -- node /path/to/jarvis-mcp.mjs',
 };
 
 const card = 'flex flex-col gap-2.5 rounded-[14px] border border-border bg-surface-raised p-4';

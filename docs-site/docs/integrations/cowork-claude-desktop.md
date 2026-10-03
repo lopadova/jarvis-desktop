@@ -13,7 +13,7 @@ you a question and wait for your spoken answer, and hand long tasks to Jarvis's 
 ::: steps
 1. **Download** `jarvis.mcpb` from the
    [latest release](https://github.com/lopadova/jarvis-desktop/releases/latest)
-   (or click **Install extension** in **Jarvis › Settings › Integrations**).
+   (the **Install extension** button in Settings › Integrations is "coming soon" in v0.1).
 2. **Open it** — double-click the file, or in Claude Desktop go to **Settings › Extensions** and drag it
    in. Review the permissions and click **Install**.
 3. **Keep Jarvis running.** The extension talks to the Jarvis app on your computer.

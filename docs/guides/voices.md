@@ -12,8 +12,8 @@ Jarvis speaks its replies with streaming text-to-speech (TTS), so you hear the f
 | **ElevenLabs** | `elevenlabs` | ElevenLabs API key | yes with `eleven_v3` | Most natural and expressive; many voices and languages. |
 | **Fish Audio** | `fish` | Fish Audio API key | yes | Expressive, good multilingual voices. Model `s2-pro` by default (`fishModel`). |
 | **OpenAI** | `openai` | OpenAI **API key** | no | Clear and fast. Not covered by the ChatGPT plan. |
-| **Kokoro** | `kokoro` | local download | no | High-quality local voice. Free, private. |
-| **Piper** | `piper` | local download | no | Very light local voices, including Italian voices. Free, private. |
+| **Kokoro** | `kokoro` | optional package | no | Natural local voice, English only. Needs the optional `kokoro-js` package next to the sidecar; ~90 MB model fetched on first use. Free, private. |
+| **Piper** | `piper` | local download | no | Very light local voices: Lessac (US English) and Paola (Italian). The binary and voice are downloaded on first use and checked against pinned SHA-256 hashes. Free, private. |
 
 API keys are stored in the OS keyring only.
 
@@ -57,9 +57,9 @@ Other providers (OpenAI, Kokoro, Piper, system) receive clean text. Markdown, co
 ## Local voices and Italian
 
 - **Piper** has several Italian voices and runs on almost any computer.
-- **Kokoro** sounds more natural but needs a bit more CPU.
+- **Kokoro** sounds more natural but needs a bit more CPU, speaks English only and is an optional install (`kokoro-js`).
 - The voice is chosen per language (`ttsVoice` maps a locale to a voice id), so English and Italian can each have their own voice.
-- Local voices are downloaded the first time you select them, into the `models/` folder of the data directory.
+- Piper's binary and voices are downloaded the first time you use them, into `models/piper/` in the data directory. Kokoro's model is fetched by `kokoro-js` on first use.
 
 ## What Jarvis says out loud
 

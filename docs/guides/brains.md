@@ -52,6 +52,9 @@ Uses the Codex CLI with your ChatGPT/Codex plan.
 
 Like Claude Code, Codex is also available as an agent. Plan rate limits apply.
 
+> [!NOTE]
+> **Codex as a brain is slow.** Every brain call boots a full Codex agent, which measured 40–80 seconds per request with a ChatGPT login, so Jarvis gives it a 120 s budget. It works, but Claude Code, the ChatGPT plan or an API key feel much snappier as the *primary* brain. Codex shines as an **agent** for coding tasks.
+
 ## API keys (Anthropic, OpenAI)
 
 Pay-per-use, with no subscription needed.

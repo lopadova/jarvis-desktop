@@ -10,7 +10,7 @@ Startup and authentication:
 - Messages are **JSON-RPC 2.0**, with schemas defined in `zod` in `packages/core/src/ipc`.
 
 Audio in v0.1:
-- Raw microphone PCM does not cross the boundary. Rust runs KWS, VAD and STT, and sends only transcripts.
+- Raw microphone PCM does not cross the boundary. Rust runs KWS, VAD and STT, and sends only transcripts (plus the captured command audio, only if the user enabled a cloud STT provider).
 - TTS audio flows sidecar → Rust as binary frames, for low-latency playback.
 
 ## Consequences

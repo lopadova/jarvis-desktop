@@ -62,7 +62,16 @@ Run these before opening a pull request — CI runs the same on Ubuntu, macOS an
 ```bash
 pnpm lint        # Biome
 pnpm typecheck   # TypeScript, all packages
-pnpm test        # Vitest (incl. security tests in packages/core/test)
+pnpm test        # Vitest (incl. security tests in packages/core/test; the relay has its own, see below)
+```
+
+More checks:
+
+```bash
+pnpm e2e                           # builds the MCP bridge, then runs the sidecar + MCP bridge smoke test (needs Bun)
+pnpm e2e:relay                     # real sidecar against a local `wrangler dev` relay: pairing, OAuth, tools, unpair
+pnpm --filter @jarvis/relay test   # relay unit tests (run in workerd, so not part of `pnpm test`)
+pnpm build                         # builds the packages (the desktop app is built by `pnpm dev` / Tauri)
 ```
 
 Rust (from `apps/desktop/src-tauri`):
@@ -96,7 +105,8 @@ packages/
   relay/                remote MCP relay for ChatGPT (Cloudflare Worker)
 docs/                   product spec, security model, ADRs, guides, reference
 docs-site/              docmd documentation site
-resources/              banner and artwork
+scripts/                e2e smoke tests, Windows cross-build (windows-xbuild), Windows Sandbox runner, signing helpers
+resources/              banner, artwork and screenshots
 ```
 
 See the [architecture overview](../architecture/overview.md) for how the pieces talk to each other.
@@ -105,7 +115,9 @@ See the [architecture overview](../architecture/overview.md) for how the pieces 
 
 | Variable | Use |
 |---|---|
-| `JARVIS_DATA_DIR` | Use a throwaway data directory while developing (keeps your real memory/history clean). |
+| `JARVIS_DATA_DIR` | Use a throwaway data directory while developing (keeps your real memory/history clean). Default: `~/Library/Application Support/Jarvis` (macOS), `%APPDATA%\Jarvis` (Windows), `$XDG_DATA_HOME/jarvis` or `~/.local/share/jarvis` (Linux). |
+
+Headless check of the native shell: `jarvis-desktop --self-test` initialises audio, keyring and model checks without opening a window and exits 0 when the essentials work.
 
 ## Conventions
 

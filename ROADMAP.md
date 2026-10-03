@@ -1,7 +1,7 @@
 # Roadmap
 
-## v0.1 — "Hello, Jarvis" (in progress)
-See [`docs/PROGRESS.md`](docs/PROGRESS.md) for phase-by-phase status.
+## v0.1 — "Hello, Jarvis" (released, unsigned installers)
+What shipped is listed below; phase-by-phase history is in [`docs/PROGRESS.md`](docs/PROGRESS.md).
 
 - Cross-platform tray app (macOS, Windows, Linux) on Tauri 2
 - Brains: Sign in with ChatGPT (Plus/Pro plan), Claude Code, Codex, API keys, local (Ollama)
@@ -28,7 +28,7 @@ Two technical options, to be decided later:
 Either way, the shared logic lives in `packages/core` (pure TypeScript) and is reused as-is.
 
 ### 🔏 Signed & notarised installers
-Signing needs an Apple Developer ID (notarisation) and a Windows code-signing certificate, both paid. Until then, releases ship unsigned with clear "how to open" instructions.
+Signing needs an Apple Developer ID (notarisation) and a Windows code-signing certificate, both paid. Until then, releases ship unsigned with clear "how to open" instructions. The release workflow already supports signing: it turns on when the secrets exist (see [Code signing](docs/guides/signing.md)).
 
 ### Later ideas
 - Speaker verification (only your voice can trigger risky actions)

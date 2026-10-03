@@ -41,7 +41,7 @@ After the deploy finishes, Cloudflare shows your Worker URL, for example `https:
 
 ### 4. Pair Jarvis
 
-In Jarvis open **Settings → ChatGPT relay**, paste the URL and click **Pair**. Jarvis registers with the relay, opens its outbound connection, and shows an 8-character **pairing code**.
+In Jarvis open **Settings › Integrations › ChatGPT relay**, paste the URL and click **Pair**. Jarvis registers with the relay, opens its outbound connection, and shows an 8-character **pairing code**.
 
 ### 5. Add the connector in ChatGPT
 
@@ -106,5 +106,5 @@ pnpm --filter @jarvis/relay smoke       # in another terminal: pairs a fake desk
 
 ## Alternatives
 
-- **Vercel + Upstash Redis** (free tiers): [`vercel/README.md`](vercel/README.md). Uses long-polling instead of a WebSocket.
+- **Vercel + Upstash Redis** (free tiers): [`vercel/README.md`](vercel/README.md). Uses long-polling instead of a WebSocket. Relay side only in v0.1: the desktop app does not speak long-polling yet.
 - **Cloudflare Tunnel**: no relay code at all. [`docs/guides/chatgpt-tunnel.md`](../../docs/guides/chatgpt-tunnel.md).

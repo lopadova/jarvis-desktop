@@ -72,7 +72,7 @@ Streamable HTTP; the Worker authenticates with OAuth and forwards calls over the
 or short code (hash stored only); tool exposure filtered on the desktop and read-only by default; every
 call visible; "Deploy to Cloudflare" button plus `wrangler deploy`.
 
-**Alternatives documented.** Vercel (long-polling via Upstash Redis, higher latency); Cloudflare Tunnel
+**Alternatives documented.** Vercel (long-polling via Upstash Redis, higher latency; relay side only in v0.1, the desktop long-poll client is planned); Cloudflare Tunnel
 (no code, exposes the local MCP HTTP endpoint; auth must be enabled).
 
 **Consequences.** No inbound ports, free hosting, works behind NAT; one more deployable; ChatGPT plan

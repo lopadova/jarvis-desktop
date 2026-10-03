@@ -6,7 +6,7 @@ Jarvis can drive coding agents hands-free across all your projects: start work b
 
 | Concept | What it is |
 |---|---|
-| **Agent** | The worker that does the job: **Claude Code** (via the Claude Agent SDK), **Codex** (via the Codex SDK / app-server), or the built-in **Home agent** (a tool loop with curated tools plus your MCP servers). |
+| **Agent** | The worker that does the job: **Claude Code** (via the Claude Agent SDK), **Codex** (via the Codex app-server), or the built-in **Home agent** (a tool loop with curated tools plus your MCP servers). |
 | **Project** | A folder with a name, optional aliases, a default agent and a permission level. |
 | **General workspace** | Where non-project work runs (research, files, briefings). Configure its folder with `generalWorkspace`. |
 | **Session** | One agent run, with live status, activity, result and log. Sessions can be continued with follow-ups. |
@@ -55,8 +55,8 @@ On completion you get a short spoken summary (≤ 25 words), a desktop notificat
 Agents ask Jarvis, and Jarvis asks you, through an approval card in the pill:
 
 - Claude Code — Agent SDK `canUseTool` callback.
-- Codex — app-server approval requests.
-- Home agent — its own tool gate.
+- Codex — app-server approval requests, mapped onto the same risk tiers.
+- Home agent — its own tool gate, plus an egress guard for the web.
 
 Low and medium risk: say "yes" or "no". High risk (`git push`, `rm -rf`, publishing, credentials…): click. "Always allow in this project" is available for low/medium risk. No answer → denied. Full rules in [Permissions](permissions.md).
 
@@ -90,4 +90,4 @@ args = ["/path/to/jarvis-mcp.mjs"]
 tool_timeout_sec = 620
 ```
 
-Settings › Integrations › **Copy command** gives the full path of `jarvis-mcp.mjs` for your OS (Node.js 20+ required). Tools are listed in the [MCP tools reference](../reference/mcp-tools.md).
+Get `jarvis-mcp.mjs` from the `jarvis-mcp-bundle.zip` release asset (`dist/jarvis-mcp.mjs`) or build it with `pnpm --filter @jarvis/mcp build`, and use its absolute path (Node.js 20+ required; there is no `jarvis-mcp` on your `PATH`). Tools are listed in the [MCP tools reference](../reference/mcp-tools.md).

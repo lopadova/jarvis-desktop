@@ -24,11 +24,11 @@ flowchart LR
       MEM[Memory + SQLite]
       MCP[MCP server]
     end
-    BR[jarvis-mcp stdio bridge]
+    BR[jarvis-mcp.mjs stdio bridge]
   end
   subgraph Providers["Providers"]
     BRAIN[Brains: ChatGPT plan, Claude Code, Codex, APIs, Ollama]
-    AG[Agents: Claude Agent SDK, Codex SDK, Home agent]
+    AG[Agents: Claude Agent SDK, Codex app-server, Home agent]
     TTS[Voices: ElevenLabs, Fish, OpenAI, Kokoro, Piper]
   end
   RELAY[Relay - Cloudflare Worker + Durable Object]
@@ -51,12 +51,12 @@ flowchart LR
 
 | Layer | Owns |
 |---|---|
-| **Rust shell** (`apps/desktop/src-tauri`) | Windows, tray, global shortcuts with press/release, keyring, audio in/out, wake word and VAD (sherpa-onnx), local Whisper, echo cancellation, sidecar supervision, single instance, autostart, updater, deep links |
+| **Rust shell** (`apps/desktop/src-tauri`) | Windows, tray, global shortcuts with press/release, keyring, audio in/out, wake word and VAD (sherpa-onnx), local Whisper, echo cancellation, sidecar supervision, single instance, autostart, deep links (auto-update is off in v0.1) |
 | **UI** (`apps/desktop/src`) | Presentational React 19 + Tailwind v4 surfaces: listening pill, sessions panel, home, onboarding, settings |
 | **Agent host** (`packages/agent-host`) | Router, fast path, policy and approvals, memory, SQLite, providers registry, agent drivers, MCP server |
 | **Core** (`packages/core`) | Pure TypeScript: settings schema, IPC contract, router schema, fast-path intents, risk classification, suggestions, phrases, voice cues |
 | **Providers** (`packages/providers`) | Brains, TTS and cloud STT implementations |
-| **MCP** (`packages/mcp`) | stdio bridge `jarvis-mcp`, `.mcpb` manifest, Cowork / Claude Code plugin |
+| **MCP** (`packages/mcp`) | stdio bridge `jarvis-mcp.mjs`, `.mcpb` manifest, Cowork / Claude Code plugin |
 | **Relay** (`packages/relay`) | Remote MCP for ChatGPT on Cloudflare Workers (plus a Vercel variant) |
 
 ## A turn, end to end

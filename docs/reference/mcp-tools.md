@@ -1,6 +1,6 @@
 # MCP tools reference
 
-Jarvis exposes these tools to other AI apps through MCP: Claude Desktop / Cowork (`.mcpb` extension or plugin), Claude Code, Codex (stdio server `jarvis-mcp`) and ChatGPT (through your relay). The source of truth is `McpTools` in [`packages/core/src/ipc.ts`](../../packages/core/src/ipc.ts).
+Jarvis exposes these tools to other AI apps through MCP: Claude Desktop / Cowork (`.mcpb` extension or plugin), Claude Code, Codex (stdio server `node jarvis-mcp.mjs`) and ChatGPT (through your relay). The source of truth is `McpTools` in [`packages/core/src/ipc.ts`](../../packages/core/src/ipc.ts).
 
 Every call is validated against its schema, checked by the permission policy and shown in the Jarvis UI. Jarvis must be running.
 
@@ -132,9 +132,9 @@ List what Jarvis remembers about the user. No parameters.
 |---|---|
 | Claude Desktop / Cowork | `jarvis.mcpb` extension or plugin — see [guide](../guides/cowork-claude-desktop.md) |
 | Claude Code | `claude mcp add jarvis -- node /path/to/jarvis-mcp.mjs` |
-| Codex | `~/.codex/config.toml` → `[mcp_servers.jarvis]` with `command = "node"
-args = ["/path/to/jarvis-mcp.mjs"]
-tool_timeout_sec = 620` |
+| Codex | `~/.codex/config.toml` → `[mcp_servers.jarvis]` (copy [`config.toml.example`](../../packages/mcp/integrations/codex/config.toml.example): `command = "node"`, `args = ["/path/to/jarvis-mcp.mjs"]`, `tool_timeout_sec = 620`) |
 | ChatGPT | Relay — see [guide](../guides/chatgpt.md) |
+
+`jarvis_start_task` and `jarvis_remember` always show a confirmation on screen, whoever calls them. `jarvis_speak` and `jarvis_notify` are limited to 6 calls per minute per caller. Timeouts at the bridge: 600 s for `jarvis_ask_user`, 30 s for the others.
 
 The local bridge connects to the running app using `run/agent-host.json` in the data directory; its token only authorises MCP tool calls.
