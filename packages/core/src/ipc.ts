@@ -110,6 +110,11 @@ export const AppMethods = {
   'relay.unpair': z.object({}),
   'reminders.list': z.object({}),
   'reminders.cancel': z.object({ id }),
+  'shopping.list': z.object({}),
+  'shopping.remove': z.object({ id }),
+  'shopping.clear': z.object({}),
+  /** Copy a result Jarvis produced back to the system clipboard (user click only). */
+  'clipboard.write': z.object({ text: z.string().min(1).max(20_000) }),
 } as const;
 export type AppMethod = keyof typeof AppMethods;
 export type AppParams<M extends AppMethod> = z.input<(typeof AppMethods)[M]>;
@@ -223,6 +228,8 @@ export interface HostMethods {
   'host.openTerminal': { params: { cwd: string; program?: string; args?: string[] }; result: { ok: true } };
   'host.notify': { params: { title: string; body: string }; result: { ok: true } };
   'host.clipboard.read': { params: Record<string, never>; result: { text: string | null } };
+  'host.clipboard.write': { params: { text: string }; result: { ok: true } };
+  /** Primary monitor as PNG, downscaled by the shell to at most ~2 MB. Never written to disk. */
   'host.screenshot': { params: Record<string, never>; result: { pngBase64: string } };
   'host.typeText': { params: { text: string }; result: { ok: true } };
   'host.setListening': {
@@ -248,6 +255,12 @@ export const UI_EVENTS = [
   'ui.settings',
   'ui.toast',
   'ui.relay',
+  /** Shopping list changed: { items: ShoppingItem[] }. */
+  'ui.shopping',
+  /** Ask the Home window to show a rail view: { view: 'home' | 'history' | 'memory' | 'projects' }. */
+  'ui.navigate',
+  /** History was cleared: { since } (epoch ms; 0 = everything). */
+  'ui.history',
 ] as const;
 export type UiEvent = (typeof UI_EVENTS)[number];
 

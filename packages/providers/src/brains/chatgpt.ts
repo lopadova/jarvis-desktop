@@ -33,6 +33,7 @@ export interface ChatGptBrainOptions {
 export class ChatGptBrain implements BrainProvider {
   readonly id = ID;
   readonly label = 'ChatGPT (your plan)';
+  readonly vision = true;
   private readonly apiBase: string;
   private readonly now: () => number;
   private models: ChatGptModel[] | undefined;

@@ -41,6 +41,34 @@ const P = {
     forgotten: 'Done, forgotten.',
     sessionDone: (p: string) => `${p} is done.`,
     sessionFailed: (p: string) => `${p} didn't work out, have a look at the log.`,
+    dictationOn: "Dictation on. Go ahead, I'll type what you say.",
+    dictationCancelled: 'Dictation cancelled.',
+    dictationIdle: "I'm not taking dictation right now.",
+    dictationNoShell: "I can't type into other apps right now.",
+    clipboardEmpty: 'Your clipboard is empty. Copy some text first.',
+    clipboardUnavailable: "I can't read the clipboard right now.",
+    nothingToCopy: "There's nothing to copy yet.",
+    copied: 'Copied to the clipboard.',
+    screenOff: 'Screen access is off. Turn on Screen access in Settings, under Privacy, and ask me again.',
+    screenNoVision: (b: string) =>
+      `${b} can't look at images. Connect ChatGPT or a local vision model, or pick an API brain, in settings.`,
+    screenFailed: "I couldn't capture the screen.",
+    shoppingAdded: (items: string) => `Added ${items} to the shopping list.`,
+    shoppingAlready: (items: string) => `${items} ${/ and /.test(items) ? 'are' : 'is'} already on the list.`,
+    shoppingRemoved: (items: string) => `Removed ${items} from the shopping list.`,
+    shoppingNotFound: (items: string) => `I couldn't find ${items} on the shopping list.`,
+    shoppingEmpty: 'The shopping list is empty.',
+    shoppingList: (n: number, items: string) =>
+      n === 1 ? `One thing on the shopping list: ${items}.` : `${n} things on the shopping list: ${items}.`,
+    shoppingCleared: 'Shopping list cleared.',
+    todayForgotten: "Done. I deleted today's history.",
+    memoryNone: "I don't know anything about you yet. Tell me, for example: remember that I prefer short answers.",
+    memorySummary: (n: number, items: string, more: number) =>
+      `${n === 1 ? 'I remember one thing about you' : `I remember ${n} things about you`}: ${items}.${
+        more ? ` And ${more} more.` : ''
+      } You can review them in the Memory view.`,
+    briefingStarted: '[happy] Good morning! Let me put your briefing together.',
+    and: 'and',
   },
   it: {
     nothingRunning: 'Al momento non c’è niente in corso.',
@@ -81,11 +109,46 @@ const P = {
     forgotten: 'Fatto, dimenticato.',
     sessionDone: (p: string) => `${p} è pronto.`,
     sessionFailed: (p: string) => `${p} non è andato a buon fine, guarda il log.`,
+    dictationOn: 'Dettatura attiva. Parla pure, scrivo io.',
+    dictationCancelled: 'Dettatura annullata.',
+    dictationIdle: 'Al momento non sto prendendo dettatura.',
+    dictationNoShell: 'Al momento non riesco a scrivere nelle altre app.',
+    clipboardEmpty: 'Gli appunti sono vuoti. Copia prima un testo.',
+    clipboardUnavailable: 'Al momento non riesco a leggere gli appunti.',
+    nothingToCopy: 'Non c’è ancora niente da copiare.',
+    copied: 'Copiato negli appunti.',
+    screenOff:
+      'L’accesso allo schermo è disattivato. Attivalo nelle Impostazioni, sezione Privacy, e chiedimelo di nuovo.',
+    screenNoVision: (b: string) =>
+      `${b} non può guardare le immagini. Collega ChatGPT o un modello locale con visione, oppure scegli un cervello API, nelle impostazioni.`,
+    screenFailed: 'Non sono riuscito a catturare lo schermo.',
+    shoppingAdded: (items: string) => `Ho aggiunto ${items} alla lista della spesa.`,
+    shoppingAlready: (items: string) => `${items} ${/ e /.test(items) ? 'ci sono' : 'c’è'} già nella lista.`,
+    shoppingRemoved: (items: string) => `Ho tolto ${items} dalla lista della spesa.`,
+    shoppingNotFound: (items: string) => `Non trovo ${items} nella lista della spesa.`,
+    shoppingEmpty: 'La lista della spesa è vuota.',
+    shoppingList: (n: number, items: string) =>
+      n === 1 ? `Nella lista della spesa c’è una cosa: ${items}.` : `Nella lista della spesa ci sono ${n} cose: ${items}.`,
+    shoppingCleared: 'Lista della spesa svuotata.',
+    todayForgotten: 'Fatto. Ho cancellato la cronologia di oggi.',
+    memoryNone: 'Non so ancora niente di te. Dimmi per esempio: ricordati che preferisco risposte brevi.',
+    memorySummary: (n: number, items: string, more: number) =>
+      `${n === 1 ? 'Di te ricordo una cosa' : `Di te ricordo ${n} cose`}: ${items}.${
+        more ? ` E altre ${more}.` : ''
+      } Le trovi nella vista Memoria.`,
+    briefingStarted: '[happy] Buongiorno! Preparo il tuo briefing.',
+    and: 'e',
   },
 } as const;
 
 export type Phrases = (typeof P)['en'];
 export const phrases = (locale: Locale): Phrases => P[locale] as unknown as Phrases;
+
+/** "milk", "milk and eggs", "milk, eggs and bread" / Italian "latte, uova e pane". */
+export function spokenList(items: string[], locale: Locale): string {
+  if (items.length <= 1) return items[0] ?? '';
+  return `${items.slice(0, -1).join(', ')} ${phrases(locale).and} ${items.at(-1)}`;
+}
 
 /** Spoken duration: "40 seconds", "3 minutes", "1 hour and 5 minutes" / Italian equivalents. */
 export function spokenDuration(seconds: number, locale: Locale): string {

@@ -27,14 +27,30 @@ export function anthropicBody(model: string, req: BrainRequest): Record<string, 
     .filter((m) => m.role === 'system')
     .map((m) => m.content)
     .join('\n\n');
-  const messages: Array<{ role: 'user' | 'assistant'; content: string }> = [];
+  const merged: Array<{ role: 'user' | 'assistant'; content: string }> = [];
   for (const m of req.messages as BrainMessage[]) {
     if (m.role === 'system') continue;
-    const last = messages[messages.length - 1];
+    const last = merged[merged.length - 1];
     if (last && last.role === m.role) last.content += `\n\n${m.content}`;
-    else messages.push({ role: m.role, content: m.content });
+    else merged.push({ role: m.role, content: m.content });
   }
-  if (messages[0]?.role !== 'user') messages.unshift({ role: 'user', content: '(continue)' });
+  if (merged[0]?.role !== 'user') merged.unshift({ role: 'user', content: '(continue)' });
+  // Vision: images go before the text of the last user turn as base64 `image` blocks.
+  const lastUser = req.images?.length ? merged.map((m) => m.role).lastIndexOf('user') : -1;
+  const messages = merged.map((m, i) =>
+    i === lastUser
+      ? {
+          role: m.role,
+          content: [
+            ...(req.images ?? []).map((img) => ({
+              type: 'image',
+              source: { type: 'base64', media_type: img.mime, data: img.base64 },
+            })),
+            { type: 'text', text: m.content },
+          ],
+        }
+      : m,
+  );
   const body: Record<string, unknown> = {
     model,
     max_tokens: req.tier === 'smart' ? 4096 : 1024,
@@ -58,6 +74,7 @@ export function anthropicBody(model: string, req: BrainRequest): Record<string, 
 export class AnthropicApiBrain implements BrainProvider {
   readonly id = ID;
   readonly label = 'Anthropic API';
+  readonly vision = true;
 
   constructor(
     private readonly deps: ProviderDeps,
