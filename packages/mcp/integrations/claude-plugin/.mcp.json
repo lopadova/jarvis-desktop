@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "jarvis": {
+      "command": "npx",
+      "args": ["-y", "@jarvis/mcp"]
+    }
+  }
+}

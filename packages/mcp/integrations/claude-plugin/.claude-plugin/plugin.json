@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "jarvis",
+  "displayName": "Jarvis",
+  "version": "0.1.0",
+  "description": "Talk to the user out loud through Jarvis Desktop: spoken updates, spoken questions with answers, notifications and background tasks.",
+  "author": {
+    "name": "Jarvis Desktop contributors",
+    "url": "https://github.com/lopadova/jarvis-desktop"
+  },
+  "homepage": "https://github.com/lopadova/jarvis-desktop",
+  "repository": "https://github.com/lopadova/jarvis-desktop",
+  "license": "MIT",
+  "keywords": ["voice", "speech", "notifications", "assistant", "mcp"]
+}
