@@ -174,19 +174,23 @@ A fair comparison against general categories of tools, not specific products.
 
 ## Install
 
-Download the latest installer from **[GitHub Releases](https://github.com/lopadova/jarvis-desktop/releases/latest)**:
+Download from **[GitHub Releases](https://github.com/lopadova/jarvis-desktop/releases/latest)**. v0.1.0 is a **pre-release** and currently ships:
 
-| OS | File |
-|---|---|
-| macOS (Apple Silicon) | `Jarvis_<version>_aarch64.dmg` |
-| macOS (Intel) | `Jarvis_<version>_x64.dmg` |
-| Windows 10/11 | `Jarvis_<version>_x64-setup.exe` (or the `.msi`) |
-| Linux | `Jarvis_<version>_amd64.AppImage`, `.deb` or `.rpm` |
+| What | File | Status |
+|---|---|---|
+| Windows 10/11 (portable, unsigned) | `Jarvis_0.1.0_windows-x64-unsigned_portable.zip` | Tested on real Windows 11 |
+| Claude Desktop / Cowork extension | `jarvis.mcpb` | Double-click to install |
+| Any MCP client (Codex, Claude Code, ChatGPT relay) | `jarvis-mcp-bundle.zip` | Self-contained bridge |
+| macOS (Apple Silicon / Intel) | `.dmg` | Built by CI, attached once the release workflow completes |
+| Linux | `.AppImage` / `.deb` | Built by CI, attached once the release workflow completes |
+
+Until the macOS and Linux installers are attached, you can run Jarvis from source on any OS: see [docs/guides/install.md](docs/guides/install.md).
 
 > [!IMPORTANT]
-> **v0.1 installers are not code-signed** (signing certificates cost money; see the [Roadmap](ROADMAP.md)). The first time you open Jarvis:
+> **v0.1 builds are not code-signed** (signing certificates cost money; see the [Roadmap](ROADMAP.md)). The first time you open Jarvis:
 > - **macOS:** right-click Jarvis in Applications › **Open** › **Open**. Or *System Settings › Privacy & Security › Open Anyway*.
 > - **Windows:** on the SmartScreen dialog click **More info** › **Run anyway**.
+> - **Windows with Smart App Control on:** Windows may refuse unsigned programs outright ("an application control policy blocked this file"). Either wait for the signed build, run from source, or turn Smart App Control off (this cannot be undone without reinstalling Windows).
 > - **Linux:** `chmod +x Jarvis_*.AppImage` and run it, or `sudo apt install ./Jarvis_<version>_amd64.deb`.
 
 Full per-OS instructions: [docs/guides/install.md](docs/guides/install.md).
