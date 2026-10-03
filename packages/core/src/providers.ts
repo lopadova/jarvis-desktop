@@ -88,6 +88,12 @@ export interface AgentRunOptions {
   /** Extra system guidance (standing preferences, voice-friendly output rules). */
   guidance: string;
   permission: 'safe' | 'trusted' | 'full-auto';
+  /**
+   * Read-only run (e.g. the morning briefing, which reads untrusted mail): only reads are allowed —
+   * low-risk read commands, GET requests and MCP tools annotated read-only. Everything else is refused
+   * without asking, so injected instructions can never send, write, delete or execute.
+   */
+  readOnly?: boolean;
   allowlist: string[];
   signal: AbortSignal;
   /** Called for every permission request; must resolve with the user's decision. */

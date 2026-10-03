@@ -891,6 +891,9 @@ export class Orchestrator {
       coding: false,
       origin: 'voice',
       purpose: 'briefing',
+      // The briefing reads untrusted mail/calendar content: enforce read-only in code, not just in the prompt.
+      permissionCap: 'safe',
+      readOnly: true,
     });
     if (!r.ok) {
       await this.reply(
