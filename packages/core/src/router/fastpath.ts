@@ -21,7 +21,10 @@ const norm = (s: string): string =>
     .toLowerCase()
     .normalize('NFKD')
     .replace(/[̀-ͯ]/g, '')
-    .replace(/[^\p{L}\p{N}:\s']/gu, ' ')
+    // Keep "." and "," only between digits ("7.45 pm", "1,5 ore"); everything else that isn't a word char goes.
+    .replace(/(\d)[.,](\d)/g, '$1\u0000$2')
+    .replace(/[^\p{L}\p{N}:\s'\u0000]/gu, ' ')
+    .replace(/\u0000/g, '.')
     .replace(/\s+/g, ' ')
     .trim()
     .replace(/^(hey |ok |ehi )?(jarvis|giarvis|jervis)\s*/, '');

@@ -64,6 +64,10 @@ describe('fast path', () => {
     });
     expect(matchFastIntent('sveglia alle 7:30')).toEqual({ kind: 'alarm', at: { hour: 7, minute: 30 } });
     expect(matchFastIntent('wake me up at 6 pm')).toEqual({ kind: 'alarm', at: { hour: 18, minute: 0 } });
+    expect(matchFastIntent('alarm at 7.45 pm')).toEqual({ kind: 'alarm', at: { hour: 19, minute: 45 } });
+    expect(matchFastIntent('sveglia alle 7.30')).toEqual({ kind: 'alarm', at: { hour: 7, minute: 30 } });
+    expect(matchFastIntent('timer for 1.5 hours')).toMatchObject({ kind: 'timer', seconds: 5400 });
+    expect(matchFastIntent('timer di 2,5 minuti')).toMatchObject({ kind: 'timer', seconds: 150 });
   });
   it('leaves real requests to the brain', () => {
     expect(matchFastIntent('nel progetto shop aggiungi il footer')).toBeNull();
