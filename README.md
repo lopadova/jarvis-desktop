@@ -174,17 +174,20 @@ A fair comparison against general categories of tools, not specific products.
 
 ## Install
 
-Download from **[GitHub Releases](https://github.com/lopadova/jarvis-desktop/releases/latest)**. v0.1.0 is a **pre-release** and currently ships:
+Download from **[GitHub Releases](https://github.com/lopadova/jarvis-desktop/releases/latest)**. v0.1.1 is a **pre-release**:
 
-| What | File | Status |
+| Your computer | File | Tested |
 |---|---|---|
-| Windows 10/11 (portable, unsigned) | `Jarvis_0.1.0_windows-x64-unsigned_portable.zip` | Tested on real Windows 11 |
-| Claude Desktop / Cowork extension | `jarvis.mcpb` | Double-click to install |
-| Any MCP client (Codex, Claude Code, ChatGPT relay) | `jarvis-mcp-bundle.zip` | Self-contained bridge |
-| macOS (Apple Silicon / Intel) | `.dmg` | Built by CI, attached once the release workflow completes |
-| Linux | `.AppImage` / `.deb` | Built by CI, attached once the release workflow completes |
+| Windows 10/11 | `Jarvis_0.1.1_x64-setup.exe` (or the `.msi`) | Real Windows 11 |
+| Mac with Apple chip | `Jarvis_0.1.1_aarch64.dmg` | Built by CI only |
+| Mac with Intel chip | `Jarvis_0.1.1_x64.dmg` | Built by CI only |
+| Linux (any) | `Jarvis_0.1.1_amd64.AppImage` | Built by CI only |
+| Debian / Ubuntu | `Jarvis_0.1.1_amd64.deb` | Built by CI only |
+| Fedora / openSUSE | `Jarvis-0.1.1-1.x86_64.rpm` | Built by CI only |
+| Claude Desktop / Cowork | `jarvis.mcpb` (double-click) | Real Claude |
+| Any MCP client | `jarvis-mcp-bundle.zip` | Real Claude Code |
 
-Until the macOS and Linux installers are attached, you can run Jarvis from source on any OS: see [docs/guides/install.md](docs/guides/install.md).
+Compare your download with `SHA256SUMS.txt`. Prefer to run from source? See [docs/guides/install.md](docs/guides/install.md).
 
 > [!IMPORTANT]
 > **v0.1 builds are not code-signed** (signing certificates cost money; see the [Roadmap](ROADMAP.md)). The first time you open Jarvis:
