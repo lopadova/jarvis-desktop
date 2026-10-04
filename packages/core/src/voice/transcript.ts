@@ -1,8 +1,13 @@
+/** Phrases Whisper invents when it is fed silence or noise (training-data artefacts, not speech). */
+const WHISPER_HALLUCINATION =
+  /^[[(]?\s*(?:speaking in (?:a )?foreign language|sottotitoli.*|subtitles? by.*|thanks for watching.*|grazie per la visione.*|amara\.org.*|www\..*)\s*[\])]?[.!\s]*$/i;
+
 /**
  * Whisper prints bracketed tags for silence and noise ("[BLANK_AUDIO]", "(silence)", "[Music]", "*sighs*", "♪").
  * A transcript made only of those is not speech and must never become a turn for the brain.
  */
 export function isNonSpeech(text: string): boolean {
+  if (WHISPER_HALLUCINATION.test(text.trim())) return true;
   const stripped = text
     .replace(/\[[^\]]*\]|\([^)]*\)|\*[^*]*\*|[♪♫]+/g, ' ')
     .replace(/[\s.,!?…\-–—]+/g, ' ')

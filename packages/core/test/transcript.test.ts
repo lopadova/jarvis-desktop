@@ -106,3 +106,19 @@ describe('local time question (Whisper spells it both ways)', () => {
     expect(matchFastIntent('che ora sono i miei')).toBeNull();
   });
 });
+
+describe('Whisper hallucinations on silence', () => {
+  it('are not speech', () => {
+    for (const t of [
+      '(speaking in foreign language)',
+      '[Sottotitoli e ris',
+      '[Sottotitoli e revisione a cura di QTSS]',
+      'Thanks for watching!',
+      'Subtitles by the Amara.org community',
+      'Grazie per la visione.',
+    ]) {
+      expect(isNonSpeech(t), t).toBe(true);
+    }
+    expect(isNonSpeech('thanks, that is all for today')).toBe(false);
+  });
+});
