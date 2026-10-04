@@ -45,7 +45,8 @@ export function isSelfEcho(heard: string, recentlySpoken: readonly string[]): bo
  * Words Whisper writes for "Jarvis" as heard in English and Italian speech ("Giarvis", "Iarvis", "Jervis" …).
  * Matched on whole words only, and only at the very start of the utterance.
  */
-const WAKE_WORD = /^(?:(?:hey|ehi|ei|ok|okay|ciao|salve)\s+)?(?:j|gi|i|y|g|ch)?(?:a|e)rv(?:i|e)s?\b[\s,.:;!?-]*/i;
+const WAKE_WORD =
+  /^(?:(?:hey|ehi|ei|ok|okay|ciao|salve)\s+)?(?:(?:j|gi|g|i|y|ch|chi)[aeio]r?v[ie]s?|[ae]rv[ie]s?)\b[\s,.:;!?-]*/i;
 
 export interface WakeMatch {
   matched: boolean;
@@ -72,4 +73,33 @@ export function matchWakeUtterance(text: string): WakeMatch {
       .replace(/^[\s,.:;!?"'”»)\]*-]+/u, '')
       .trim(),
   };
+}
+
+const distance = (a: string, b: string): number => {
+  const row = Array.from({ length: b.length + 1 }, (_, i) => i);
+  for (let i = 1; i <= a.length; i++) {
+    let prev = row[0] ?? 0;
+    row[0] = i;
+    for (let j = 1; j <= b.length; j++) {
+      const cur = row[j] ?? 0;
+      row[j] = Math.min(cur + 1, (row[j - 1] ?? 0) + 1, prev + (a[i - 1] === b[j - 1] ? 0 : 1));
+      prev = cur;
+    }
+  }
+  return row[b.length] ?? 0;
+};
+
+/**
+ * The first word of an utterance when it merely LOOKS like the wake word ("Garvis", "Javis", "Jarbis" …) but did not
+ * match. Used to log near-misses for diagnosing wake-word problems without logging ordinary speech.
+ */
+export function nearWakeWord(text: string): string | null {
+  const first = text
+    .normalize('NFKD')
+    .replace(/[̀-ͯ]/gu, '')
+    .toLowerCase()
+    .replace(/^[^\p{L}]+/u, '')
+    .split(/[^\p{L}]/u)[0];
+  if (!first || first.length < 4 || first.length > 9) return null;
+  return distance(first, 'jarvis') <= 3 ? first : null;
 }

@@ -16,6 +16,7 @@ import {
   McpCallSchema,
   matchWakeUtterance,
   mergeSettings,
+  nearWakeWord,
   type Project,
   type ProviderStatus,
   parseBriefing,
@@ -680,7 +681,14 @@ export class App {
         const s = this.settings();
         if (!s.wakeWord || !s.wakeByRecognition) return ok;
         const wake = matchWakeUtterance(p.text);
-        if (!wake.matched || isSelfEcho(p.text, this.voice.recentSpoken(20_000))) return ok;
+        if (!wake.matched) {
+          // Log only a first word that looks like the wake word (never ordinary speech) to diagnose misses.
+          const near = nearWakeWord(p.text);
+          if (near) this.deps.logger.info('wake probe: not matched', { heard: near });
+          return ok;
+        }
+        if (isSelfEcho(p.text, this.voice.recentSpoken(20_000))) return ok;
+        this.deps.logger.info('wake word heard by speech recognition', { commandChars: wake.rest.length });
         if (wake.rest && !isNonSpeech(wake.rest)) {
           void this.orchestrator.submit(wake.rest, 'voice');
           return ok;

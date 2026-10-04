@@ -52,6 +52,8 @@ describe('matchWakeUtterance', () => {
     for (const t of [
       'Jarvis',
       'Giarvis',
+      'Giorvis',
+      'Javis',
       'jarvis.',
       'Iarvis,',
       'Jervis',
@@ -80,6 +82,10 @@ describe('matchWakeUtterance', () => {
       'servizio',
       'I think so',
       'Harvey',
+      'corvi',
+      'nervi',
+      'cervello',
+      'girasole',
       'marvelous',
       '',
       '[Musica]',
@@ -120,5 +126,20 @@ describe('Whisper hallucinations on silence', () => {
       expect(isNonSpeech(t), t).toBe(true);
     }
     expect(isNonSpeech('thanks, that is all for today')).toBe(false);
+  });
+});
+
+import { nearWakeWord } from '../src/voice/transcript.js';
+
+describe('nearWakeWord', () => {
+  it('reports first words that look like the wake word', () => {
+    expect(nearWakeWord('Garvis che ore sono')).toBe('garvis');
+    expect(nearWakeWord('Javis')).toBe('javis');
+  });
+
+  it('ignores everything else', () => {
+    for (const t of ['che ore sono', 'buongiorno a tutti', 'sì', 'terminale', '']) {
+      expect(nearWakeWord(t), t).toBeNull();
+    }
   });
 });
