@@ -8,10 +8,12 @@ const X = {
     privateNoBrain:
       'Private mode is on and no local brain is set up. Add a local model in settings, or turn private mode off.',
     cloudSttPrivate: 'Private mode is on, so cloud transcription is disabled.',
-    ttsFallback: (label: string, why: 'not-configured' | 'failed') =>
+    ttsFallback: (label: string, why: 'not-configured' | 'no-credit' | 'failed') =>
       why === 'not-configured'
         ? `${label} isn't set up yet (add its API key or download its voice in Settings › Voice), so I used the system voice.`
-        : `${label} didn't respond, so I used the system voice.`,
+        : why === 'no-credit'
+          ? `${label} has no credit left on your account (check its balance on its website), so I used the system voice.`
+          : `${label} didn't respond, so I used the system voice.`,
     speechModelMissing: 'No speech model is installed yet. Open Settings › Microphone & wake word and download one.',
     sttFailed: "[sigh] I couldn't transcribe that. Try again?",
     interrupted: 'Interrupted when Jarvis restarted.',
@@ -31,10 +33,12 @@ const X = {
     privateNoBrain:
       'La modalità privata è attiva e non c’è un cervello locale configurato. Aggiungi un modello locale nelle impostazioni o disattiva la modalità privata.',
     cloudSttPrivate: 'La modalità privata è attiva, quindi la trascrizione nel cloud è disattivata.',
-    ttsFallback: (label: string, why: 'not-configured' | 'failed') =>
+    ttsFallback: (label: string, why: 'not-configured' | 'no-credit' | 'failed') =>
       why === 'not-configured'
         ? `${label} non è configurato (aggiungi la chiave API o scarica la voce in Impostazioni › Voce): ho usato la voce di sistema.`
-        : `${label} non ha risposto: ho usato la voce di sistema.`,
+        : why === 'no-credit'
+          ? `${label} ha finito il credito sul tuo account (controlla il saldo sul suo sito): ho usato la voce di sistema.`
+          : `${label} non ha risposto: ho usato la voce di sistema.`,
     speechModelMissing:
       'Nessun modello di riconoscimento vocale è installato. Apri Impostazioni › Microfono e wake word e scaricane uno.',
     sttFailed: '[sigh] Non sono riuscito a trascrivere. Riprovi?',

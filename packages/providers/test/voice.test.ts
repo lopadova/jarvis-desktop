@@ -258,3 +258,11 @@ describe('cloud STT', () => {
     ).toEqual(['openai', 'elevenlabs']);
   });
 });
+
+describe('Payment Required', () => {
+  it('maps HTTP 402 (out of credit) to cap-reached so the UI can say so', async () => {
+    const { httpError } = await import('../src/util/http.js');
+    const err = httpError('fish', { status: 402, message: 'Insufficient API credit', code: '' } as never);
+    expect(err.code).toBe('cap-reached');
+  });
+});

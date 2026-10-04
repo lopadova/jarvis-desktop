@@ -102,11 +102,13 @@ export function httpError(
     overrides?.[body.status] ??
     (body.status === 401 || body.status === 403
       ? 'not-configured'
-      : body.status === 429 || body.status === 529
-        ? 'rate-limited'
-        : body.status >= 500
-          ? 'network'
-          : 'bad-response');
+      : body.status === 402
+        ? 'cap-reached' // Payment Required: the account is out of credit
+        : body.status === 429 || body.status === 529
+          ? 'rate-limited'
+          : body.status >= 500
+            ? 'network'
+            : 'bad-response');
   return new ProviderError(`${provider}: ${body.message}`, code, provider, body.retryAfterMs);
 }
 
