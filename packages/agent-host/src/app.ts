@@ -14,6 +14,7 @@ import {
   isSelfEcho,
   type Logger,
   McpCallSchema,
+  matchWakeUtterance,
   mergeSettings,
   type Project,
   type ProviderStatus,
@@ -62,7 +63,7 @@ import { errorMessage, expandHome, newId } from './util.js';
 import { safeOpenable } from './viewable.js';
 import { VoiceOutput } from './voice/output.js';
 
-export const VERSION = '0.1.1';
+export const VERSION = '0.1.2';
 
 export interface AppDeps {
   store: Store;
@@ -673,6 +674,22 @@ export class App {
       return ok;
     });
     vreg('voice.transcript', (p) => {
+      if (p.trigger === 'probe') {
+        // A short phrase heard while idle, transcribed on this computer. Only "Jarvis …" matters; everything else
+        // is ordinary conversation near the microphone and is dropped without a trace.
+        const s = this.settings();
+        if (!s.wakeWord || !s.wakeByRecognition) return ok;
+        const wake = matchWakeUtterance(p.text);
+        if (!wake.matched || isSelfEcho(p.text, this.voice.recentSpoken(20_000))) return ok;
+        if (wake.rest && !isNonSpeech(wake.rest)) {
+          void this.orchestrator.submit(wake.rest, 'voice');
+          return ok;
+        }
+        // Just the wake word: show that Jarvis is listening and keep the microphone open for the command.
+        this.pill.set({ kind: 'listening', level: 0, partial: '', committed: '', ...this.dictationFlag() });
+        this.voice.setListening('conversation');
+        return ok;
+      }
       this.userTalking = false;
       if (this.bargeIn) {
         this.bargeIn = false;

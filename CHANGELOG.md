@@ -6,6 +6,32 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.1.2] — 2026-10-04
+
+### Added
+- **Wake word by speech recognition** (`wakeByRecognition`, on by default): short phrases heard while idle are transcribed on-device and matched against "Jarvis", "Giarvis", "Hey Jarvis" …; works with Italian accents the keyword spotter misses. "Jarvis, che ore sono?" runs the command at once.
+- **Settings › Voice:** provider status (*Ready* / *Needs setup*), voice list, ElevenLabs model, stability, similarity, style and speaker boost.
+- **Memory:** add facts from the app. **Projects:** add and remove projects. **History** points to Settings › Privacy › Danger zone.
+- End-to-end test harness that drives the real app (`scripts/e2e-app`), diagnostics for wake-word tuning (opt-in).
+
+### Fixed
+- Microphone did nothing when the selected Whisper size was not installed; the model list now refreshes and falls back to an installed model, or says none is installed.
+- Cloud voices that cannot speak (no key, no credit, errors) now tell you and use the system voice; HTTP 402 is reported as "no credit left".
+- Whisper silence tags (`[BLANK_AUDIO]`) and transcripts that repeat Jarvis' own voice no longer become requests.
+- About links and **Install extension** now open the browser (allow-listed project pages only).
+
+### Known limitations
+- Acoustic echo cancellation is not available yet (headphones recommended on speakers).
+- The wake word by speech recognition was not yet verified on the real app (see ROADMAP.md › Open items).
+
+## [0.1.1] — 2026-10-04
+
+### Fixed
+- Settings and Sessions windows were blank on Windows (window creation thread); the QR code library no longer blanks Settings.
+- **Sign in with ChatGPT** could not save its token in Windows Credential Manager (2560-unit limit): secrets are now stored in chunks.
+- `JARVIS_SIDECAR_REPO` runs the assistant process from source when Smart App Control blocks the bundled binary.
+- Installers for macOS, Windows and Linux are attached to the release.
+
 ## [0.1.0] — 2026-10-03 — "Hello, Jarvis"
 
 First public release. Installers are **unsigned** (see `docs/guides/signing.md`).

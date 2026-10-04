@@ -442,5 +442,8 @@
   "voice.style": "Style exaggeration",
   "voice.style.hint": "Amplifies the voice’s style. Keep it low for the most stable result.",
   "voice.speakerBoost": "Speaker boost",
-  "voice.speakerBoost.hint": "Boosts similarity to the original speaker; slightly slower to generate."
+  "voice.speakerBoost.hint": "Boosts similarity to the original speaker; slightly slower to generate.",
+  "settings.wakeByRecognition": "Also hear “Jarvis” with speech recognition",
+  "settings.wakeByRecognition.desc": "Better for Italian accents and other pronunciations. Short phrases are transcribed on this computer, and anything that does not start with “Jarvis” is discarded. Uses more CPU.",
+  "settings.echoCancellation.desc": "Not available yet. Meanwhile Jarvis ignores what sounds like its own voice; headphones work best."
 }

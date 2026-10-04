@@ -82,7 +82,7 @@ Notes:
 - The first launch opens the [welcome wizard](/get-started/first-run).
 - Local speech models (wake word, voice detection, Whisper) are downloaded from **Settings › Microphone &
   wake word › Download models** into the `models` folder of your data directory — see [Microphone](/guides/microphone).
-- Updates: v0.1.0 has no automatic updates yet. Download the newer installer from the releases page and
+- Updates: v0.1.x has no automatic updates yet. Download the newer installer from the releases page and
   install over the existing app; settings, memory and history are kept.
 
 ## Uninstall

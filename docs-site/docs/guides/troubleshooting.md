@@ -16,11 +16,23 @@ That's SmartScreen warning about an unsigned app. Click **More info › Run anyw
 came from `github.com/lopadova/jarvis-desktop/releases`.
 :::
 
+::: collapsible "Windows blocks Jarvis: “an application control policy has blocked this file”"
+That is **Smart App Control**. It only lets signed apps (and unsigned ones it happens to know) run, and its verdict on an unsigned file can change over time. Use a signed release when one exists, run Jarvis from source, or turn Smart App Control off (a one-way switch on most Windows 11 builds, so check first). Developers can run the assistant process from source with `JARVIS_SIDECAR_REPO=PATH_TO_CHECKOUT`.
+:::
+
 ::: collapsible "Jarvis doesn't hear me"
 1. Check the tray menu: is the microphone muted?
 2. Check OS permission (macOS Privacy & Security › Microphone; Windows Privacy › Microphone).
 3. In **Settings › Microphone & wake word**, pick the right input device and watch the level meter.
 4. Try push-to-talk: if that works, the issue is the wake word (see below).
+:::
+
+::: collapsible "The wake word does not work with my accent"
+Keep **Also hear “Jarvis” with speech recognition** on (`wakeByRecognition`). The keyword spotter alone is trained on English and misses many Italian pronunciations. Also check that a Whisper model is downloaded (Settings › Microphone & wake word) and that you speak in the interface language. Push-to-talk always works.
+:::
+
+::: collapsible "I press the microphone, speak, and nothing happens"
+The speech model you picked may not be downloaded. Jarvis now falls back to an installed Whisper size and shows a notice when none is installed. Download one in Settings › Microphone & wake word.
 :::
 
 ::: collapsible "The wake word triggers too often or not at all"
@@ -56,6 +68,10 @@ Run `claude` or `codex login` once in a terminal. If installed in a custom place
 ::: collapsible "Ollama doesn't respond"
 Make sure Ollama is running (`ollama serve`) and the model is pulled (`ollama pull llama3.2`). Check
 `localBrain.baseUrl` (default `http://127.0.0.1:11434/v1`).
+:::
+
+::: collapsible "I picked ElevenLabs / Fish / OpenAI but still hear the system voice"
+Settings › Voice shows **Ready** or **Needs setup** for the provider. When it cannot speak (no key, voice not downloaded, no credit left, request failed) Jarvis says so and uses the system voice. Fish Audio bills API credit separately from its subscription.
 :::
 
 ::: collapsible "No voice / robotic voice"

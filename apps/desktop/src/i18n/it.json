@@ -442,5 +442,8 @@
   "voice.style": "Enfasi dello stile",
   "voice.style.hint": "Amplifica lo stile della voce. Tienila bassa per il risultato più stabile.",
   "voice.speakerBoost": "Speaker boost",
-  "voice.speakerBoost.hint": "Aumenta la somiglianza con il parlante originale; genera un po’ più lentamente."
+  "voice.speakerBoost.hint": "Aumenta la somiglianza con il parlante originale; genera un po’ più lentamente.",
+  "settings.wakeByRecognition": "Ascolta “Jarvis” anche con il riconoscimento vocale",
+  "settings.wakeByRecognition.desc": "Funziona meglio con l’accento italiano e altre pronunce. Le frasi brevi vengono trascritte su questo computer e tutto ciò che non inizia con «Jarvis» viene scartato. Usa più CPU.",
+  "settings.echoCancellation.desc": "Non ancora disponibile. Nel frattempo Jarvis ignora ciò che somiglia alla sua stessa voce; con le cuffie funziona meglio."
 }

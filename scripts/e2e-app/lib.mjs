@@ -39,6 +39,8 @@ export async function ensureApp() {
     env: {
       ...process.env,
       JARVIS_DATA_DIR: DATA,
+      // Diagnostics: keep every finished voice capture in <data>/captures so a real voice can be replayed offline.
+      JARVIS_DUMP_CAPTURES: join(DATA, 'captures'),
       // Run the assistant process from this checkout with Bun (signed) instead of the bundled binary, which
       // Windows Smart App Control blocks when unsigned. Set JARVIS_E2E_SIDECAR=binary to test the binary.
       ...(process.env.JARVIS_E2E_SIDECAR === 'binary' ? {} : { JARVIS_SIDECAR_REPO: resolve('.') }),
