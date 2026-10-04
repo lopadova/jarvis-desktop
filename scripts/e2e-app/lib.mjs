@@ -6,7 +6,7 @@
  * real settings, memory and secrets are never touched.
  */
 import { spawn } from 'node:child_process';
-import { mkdirSync } from 'node:fs';
+import { mkdirSync, readFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { chromium } from 'playwright-core';
@@ -136,4 +136,26 @@ export async function sidecar(home) {
       }),
     close: () => ws.close(),
   };
+}
+
+/** Reads `NAME=value` from a key file by name (values are never printed). */
+export function readKey(file, name) {
+  const line = readFileSync(file, 'utf8')
+    .split(/\r?\n/)
+    .find((l) => l.trim().startsWith(`${name}=`));
+  if (!line) throw new Error(`${name}=… not found in the key file`);
+  return line
+    .slice(line.indexOf('=') + 1)
+    .trim()
+    .replace(/^["']|["']$/g, '');
+}
+
+/** Text appended to the assistant log since `fromSize` (used to see whether a TTS provider failed). */
+export function logSince(fromSize) {
+  const file = join(DATA, 'logs', 'app.log');
+  const buf = readFileSync(file);
+  return { size: buf.length, text: buf.subarray(fromSize).toString('utf8') };
+}
+export function logSize() {
+  return logSince(0).size;
 }

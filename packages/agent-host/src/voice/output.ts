@@ -9,6 +9,7 @@ import {
   dialectFor,
   type HostMethods,
   type Logger,
+  ProviderError,
   renderCues,
   SentenceChunker,
   type Settings,
@@ -32,7 +33,7 @@ export interface VoiceOutputDeps {
   /** Notified when a provider is skipped (e.g. private mode) so the UI can show why. */
   onNotice?: (message: string) => void;
   /** The selected provider could not be used and the system voice was used instead. */
-  onFallback?: (provider: TtsId, label: string, why: 'not-configured' | 'failed') => void;
+  onFallback?: (provider: TtsId, label: string, why: 'not-configured' | 'no-credit' | 'failed') => void;
 }
 
 /** Per-utterance provider override (voice previews in settings). */
@@ -262,7 +263,11 @@ export class VoiceOutput {
         error: errorMessage(e),
       });
       if (!begun) {
-        this.deps.onFallback?.(id, provider.label, 'failed');
+        this.deps.onFallback?.(
+          id,
+          provider.label,
+          e instanceof ProviderError && e.code === 'cap-reached' ? 'no-credit' : 'failed',
+        );
         return this.systemSpeak(text, gen);
       }
     } finally {

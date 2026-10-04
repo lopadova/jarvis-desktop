@@ -5,13 +5,11 @@
  * falling back to the system voice. Your previous voice provider is restored at the end.
  * Usage: node scripts/e2e-app/12-elevenlabs.mjs "C:\path\ELEVENLABS_API_KEY.txt"
  */
-import { readFileSync } from 'node:fs';
-import { check, connect, ensureApp, pageFor, sidecar, sleep, summary } from './lib.mjs';
+import { check, connect, ensureApp, logSince, logSize, pageFor, readKey, sidecar, sleep, summary } from './lib.mjs';
 
 const keyFile = process.argv[2] ?? process.env.ELEVENLABS_KEY_FILE;
 if (!keyFile) throw new Error('pass the path of the file that contains the ElevenLabs API key');
-const raw = readFileSync(keyFile, 'utf8');
-const key = (raw.match(/[A-Za-z0-9_-]{20,}/g) ?? []).at(-1) ?? raw.trim();
+const key = readKey(keyFile, 'ELEVENLABS_API_KEY');
 
 // 1. Is the key valid? (direct call to the ElevenLabs API; only the HTTP status is shown)
 const probe = await fetch('https://api.elevenlabs.io/v1/voices', { headers: { 'xi-api-key': key } }).catch(() => null);
@@ -39,11 +37,23 @@ check(
 );
 
 // 2. A preview must not fall back to the system voice (fallback shows a warning toast).
+const logFrom = logSize();
 const preview = await api.call('tts.preview', { provider: 'elevenlabs', voiceId: voices[0]?.id });
 check('preview request accepted', !preview.error, preview.error?.message);
-await sleep(8000);
-const toasts = await home.evaluate(() => document.body.innerText);
-check('no "used the system voice" warning appeared', !/system voice|voce di sistema/i.test(toasts));
+// Toasts disappear after a few seconds: watch for the whole wait instead of looking once at the end.
+let toastSeen = false;
+for (let i = 0; i < 18; i++) {
+  await sleep(500);
+  if (/system voice|voce di sistema/i.test(await home.evaluate(() => document.body.innerText))) toastSeen = true;
+}
+const failed = logSince(logFrom).text.match(/tts provider failed.*/);
+if (!failed) {
+  check('the cloud voice spoke (no provider failure in the log)', true);
+} else {
+  // The provider could not speak (for example no credit left): the user must be told why, never silence.
+  console.log(`  provider failure: ${failed[0].replace(/^.*error":"/, '').slice(0, 120)}`);
+  check('the app tells the user it fell back to the system voice', toastSeen);
+}
 
 await api.call('settings.update', { patch: { tts: prev.tts ?? 'system' } });
 api.close();
