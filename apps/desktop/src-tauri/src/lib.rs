@@ -159,7 +159,7 @@ pub fn run() {
                 next_id: AtomicU64::new(1),
                 audio,
                 voice,
-                secrets: secrets::Secrets::new(secrets::KeyringStore),
+                secrets: secrets::Secrets::new(secrets::Chunked::new(secrets::KeyringStore, 1000)),
                 settings: Mutex::new(serde_json::Value::Null),
                 speak_child: Mutex::new(None),
                 busy: AtomicBool::new(false),

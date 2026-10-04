@@ -1,7 +1,7 @@
 //! Shared shell state (one per process, managed by Tauri).
 
 use crate::audio::AudioHandle;
-use crate::secrets::{KeyringStore, Secrets};
+use crate::secrets::{Chunked, KeyringStore, Secrets};
 use crate::sidecar::Endpoint;
 use crate::voice::VoiceHandle;
 use serde_json::{Value, json};
@@ -21,7 +21,7 @@ pub struct Shell {
     pub next_id: AtomicU64,
     pub audio: AudioHandle,
     pub voice: VoiceHandle,
-    pub secrets: Secrets<KeyringStore>,
+    pub secrets: Secrets<Chunked<KeyringStore>>,
     pub settings: Mutex<Value>,
     pub speak_child: Mutex<Option<std::process::Child>>,
     pub busy: AtomicBool,
