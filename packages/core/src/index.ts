@@ -15,3 +15,4 @@ export * from './settings.js';
 export * from './suggestions.js';
 export * from './ui.js';
 export * from './voice/cues.js';
+export * from './voice/transcript.js';

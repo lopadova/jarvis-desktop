@@ -66,6 +66,28 @@ pub fn show_window(app: AppHandle, label: String, tab: Option<String>) -> Result
     Ok(())
 }
 
+/// Pages the UI may open in the system browser (About links, the extension download). Anything else is refused,
+/// so a compromised page cannot use this command to open arbitrary URLs.
+const OPENABLE_PREFIXES: &[&str] = &["https://github.com/lopadova/jarvis-desktop"];
+
+pub fn is_openable_url(url: &str) -> bool {
+    OPENABLE_PREFIXES.iter().any(|p| {
+        url.strip_prefix(p)
+            .is_some_and(|rest| rest.is_empty() || rest.starts_with('/') || rest.starts_with('#'))
+    })
+}
+
+#[tauri::command]
+pub fn open_external(app: AppHandle, url: String) -> Result<(), String> {
+    if !is_openable_url(&url) {
+        return Err("this link is not allowed".into());
+    }
+    use tauri_plugin_opener::OpenerExt;
+    app.opener()
+        .open_url(url, None::<&str>)
+        .map_err(|e| e.to_string())
+}
+
 #[tauri::command]
 pub fn push_to_talk(app: AppHandle, shell: State<'_, ShellRef>, pressed: bool) {
     shell.voice.send(VoiceCmd::PushToTalk(pressed));
@@ -77,7 +99,7 @@ pub fn mic_monitor(shell: State<'_, ShellRef>, enabled: bool) {
     shell.voice.send(VoiceCmd::Monitor(enabled));
 }
 
-fn needed_models(shell: &ShellRef) -> Vec<&'static models::ModelSpec> {
+pub(crate) fn needed_models(shell: &ShellRef) -> Vec<&'static models::ModelSpec> {
     let settings: Value = shell.settings.lock().expect("poisoned").clone();
     let whisper = settings
         .get("whisperModel")
@@ -86,6 +108,15 @@ fn needed_models(shell: &ShellRef) -> Vec<&'static models::ModelSpec> {
         .to_string();
     let v: crate::voice::VoiceSettings = serde_json::from_value(settings).unwrap_or_default();
     models::needed(&whisper, v.local_stt())
+}
+
+/// Pushes the current on-device model status to the webviews (after the selected models change).
+pub(crate) fn emit_model_status(shell: &ShellRef) {
+    let statuses: Vec<ModelStatus> = needed_models(shell)
+        .into_iter()
+        .map(|m| ModelStatus::of(&shell.models_root, m))
+        .collect();
+    let _ = shell.app.emit("voice://models", statuses);
 }
 
 #[tauri::command]
@@ -137,4 +168,30 @@ pub async fn download_models(app: AppHandle, shell: State<'_, ShellRef>) -> Resu
 #[tauri::command]
 pub fn set_shortcuts(app: AppHandle, push_to_talk: String, toggle_sessions: String) -> Vec<String> {
     crate::shortcuts::register(&app, &push_to_talk, &toggle_sessions)
+}
+
+#[cfg(test)]
+mod open_tests {
+    use super::is_openable_url;
+
+    #[test]
+    fn only_project_pages_are_openable() {
+        assert!(is_openable_url(
+            "https://github.com/lopadova/jarvis-desktop"
+        ));
+        assert!(is_openable_url(
+            "https://github.com/lopadova/jarvis-desktop/releases/latest/download/jarvis.mcpb"
+        ));
+        assert!(!is_openable_url(
+            "https://github.com/lopadova/jarvis-desktop.evil.com/x"
+        ));
+        assert!(!is_openable_url(
+            "https://github.com/lopadova/jarvis-desktop-evil"
+        ));
+        assert!(!is_openable_url(
+            "http://github.com/lopadova/jarvis-desktop"
+        ));
+        assert!(!is_openable_url("file:///C:/Windows/System32/calc.exe"));
+        assert!(!is_openable_url("javascript:alert(1)"));
+    }
 }

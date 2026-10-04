@@ -116,6 +116,7 @@ pub fn run() {
             commands::sidecar_endpoint,
             commands::shell_info,
             commands::show_window,
+            commands::open_external,
             commands::push_to_talk,
             commands::mic_monitor,
             commands::model_status,

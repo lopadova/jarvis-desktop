@@ -10,6 +10,8 @@ import {
   type AgentId,
   AppMethods,
   isLive,
+  isNonSpeech,
+  isSelfEcho,
   type Logger,
   McpCallSchema,
   mergeSettings,
@@ -107,6 +109,7 @@ export class App {
   /** Per-session MCP tokens; the RPC server resolves them to verified caller identities. */
   readonly tokens = new McpSessionTokens();
   private userTalking = false;
+  private readonly ttsFallbackAt = new Map<string, number>();
   private bargeIn = false;
   private agentCache: { at: number; list: AgentId[] } | null = null;
   private readonly now: () => number;
@@ -122,6 +125,16 @@ export class App {
       logger: deps.logger,
       pill: this.pill,
       onNotice: (m) => deps.logger.info('voice notice', { message: m }),
+      onFallback: (provider, label, why) => {
+        // Tell the user once in a while why the voice they picked did not play (otherwise nothing seems to change).
+        const last = this.ttsFallbackAt.get(provider) ?? 0;
+        if (this.now() - last < 30_000) return;
+        this.ttsFallbackAt.set(provider, this.now());
+        deps.ui.emit('ui.toast', {
+          level: 'warning',
+          title: extraPhrases(this.settings().locale).ttsFallback(label, why),
+        });
+      },
     });
     const speakLine = (text: string) => {
       void this.orchestrator.jarvisSays(text);
@@ -533,6 +546,11 @@ export class App {
       return ok;
     });
     reg('memory.list', ui, () => ({ memories: this.memory.list() }));
+    reg('memory.add', ui, (p) => {
+      // Typed by the user in the Memory view: stored like "remember that …" said out loud.
+      const memory = this.memory.add(p.text);
+      return { ok: !!memory, memory };
+    });
     reg('memory.remove', ui, (p) => ({ ok: !!this.memory.forget(p.id) }));
     reg('memory.clear', ui, () => {
       this.memory.clear();
@@ -570,9 +588,12 @@ export class App {
       return ok;
     });
     reg('tts.voices', ui, async (p) => {
-      if (p.provider === 'system') return { voices: [] };
+      // System voices belong to the host (OS speech APIs): nothing to list, always usable.
+      if (p.provider === 'system') return { voices: [], configured: true };
       const prov = this.deps.tts.get(p.provider);
-      return { voices: (await prov?.voices?.(p.query, this.settings().locale)) ?? [] };
+      const configured = await prov?.configured().catch(() => false);
+      const voices = await prov?.voices?.(p.query, this.settings().locale).catch(() => []);
+      return { voices: voices ?? [], configured: configured ?? false };
     });
     reg('tts.preview', ui, (p) => {
       const sample =
@@ -657,14 +678,28 @@ export class App {
         this.bargeIn = false;
         this.voice.stop();
       }
-      if (!p.text.trim()) {
+      // Silence/noise tags from Whisper ("[BLANK_AUDIO]") are not something the user said.
+      if (isNonSpeech(p.text)) {
+        this.pill.set({ kind: 'hidden' });
+        return ok;
+      }
+      // No acoustic echo cancellation yet: drop what is mostly Jarvis' own words from the last seconds.
+      if (isSelfEcho(p.text, this.voice.recentSpoken(20_000))) {
+        this.deps.logger.info('voice: dropped transcript that matches what Jarvis just said');
         this.pill.set({ kind: 'hidden' });
         return ok;
       }
       void this.orchestrator.submit(p.text, 'voice');
       return ok;
     });
-    vreg('voice.nothingHeard', () => {
+    vreg('voice.nothingHeard', (p) => {
+      if (p.reason === 'no-model') {
+        // The capture was discarded because no Whisper model is installed: say so instead of failing silently.
+        this.deps.ui.emit('ui.toast', {
+          level: 'warning',
+          title: extraPhrases(this.settings().locale).speechModelMissing,
+        });
+      }
       this.userTalking = false;
       if (this.bargeIn) {
         this.bargeIn = false;

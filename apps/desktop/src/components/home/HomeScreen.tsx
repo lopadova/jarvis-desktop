@@ -2,7 +2,7 @@
  * S3 — Home (handoff "Prototype" window): title bar · rail · greeting + orb · suggestion chips ·
  * conversation · composer · footer (usage meter, R11 microphone indicator, connection).
  */
-import type { Memory, Project, ShoppingItem, Turn } from '@jarvis/core';
+import type { AgentId, Memory, Project, ShoppingItem, Turn } from '@jarvis/core';
 import {
   Brain,
   FolderKanban,
@@ -18,7 +18,7 @@ import {
   Trash2,
   Undo2,
 } from 'lucide-react';
-import { type ReactNode, useEffect, useRef } from 'react';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { type MessageKey, useLocale, useT } from '../../i18n';
 import { cn } from '../../lib/cn';
 import type {
@@ -89,6 +89,12 @@ export interface HomeScreenProps {
   onReplay?(id: string): void;
   onForget(id: string): void;
   onUndoForget(id: string): void;
+  /** Saves a fact typed in the Memory view (same effect as saying "remember that …"). */
+  onAddMemory?(text: string): void;
+  /** Registers a folder as a project agents may work in (permission starts at `safe`). */
+  onSaveProject?(project: { name: string; path: string; defaultAgent: AgentId }): void;
+  /** Unregisters a project (the folder and its files are left untouched). */
+  onRemoveProject?(id: string): void;
   onCopy?(text: string): void;
   onShoppingRemove?(id: string): void;
   onAttachClipboard?(): Promise<string | null>;
@@ -287,8 +293,17 @@ export function HomeScreen(p: HomeScreenProps) {
                 </>
               ) : null}
               {p.rail === 'memory' ? <MemoryView {...p} /> : null}
-              {p.rail === 'history' ? <HistoryView turns={p.history} locale={locale} /> : null}
-              {p.rail === 'projects' ? <ProjectsView projects={p.projects} onSettings={p.onSettings} /> : null}
+              {p.rail === 'history' ? (
+                <HistoryView turns={p.history} locale={locale} onSettings={p.onSettings} />
+              ) : null}
+              {p.rail === 'projects' ? (
+                <ProjectsView
+                  projects={p.projects}
+                  onSettings={p.onSettings}
+                  onSave={p.onSaveProject}
+                  onRemove={p.onRemoveProject}
+                />
+              ) : null}
             </div>
           </div>
           <div className="relative px-7 pb-2">
@@ -353,6 +368,7 @@ function MemoryView(p: HomeScreenProps) {
     <div className="flex flex-col gap-1">
       <h1 className="m-0 mb-1.5 text-[22px] font-[650] tracking-[-0.02em]">{t('memory.title')}</h1>
       <p className="m-0 mb-3.5 text-[13.5px] text-muted">{t('memory.sub')}</p>
+      {p.onAddMemory ? <AddMemory onAdd={p.onAddMemory} /> : null}
       {p.memories && p.memories.length === 0 ? <p className="text-[13px] text-subtle">{t('memory.empty')}</p> : null}
       {(p.memories ?? []).map((m) => {
         const gone = p.pendingForget.includes(m.id);
@@ -387,7 +403,15 @@ function MemoryView(p: HomeScreenProps) {
   );
 }
 
-function HistoryView({ turns, locale }: { turns: Turn[] | null; locale: string }) {
+function HistoryView({
+  turns,
+  locale,
+  onSettings,
+}: {
+  turns: Turn[] | null;
+  locale: string;
+  onSettings(tab?: string): void;
+}) {
   const t = useT();
   if (!turns || turns.length === 0)
     return (
@@ -398,6 +422,18 @@ function HistoryView({ turns, locale }: { turns: Turn[] | null; locale: string }
   return (
     <div className="flex flex-col gap-1">
       <h1 className="m-0 mb-3.5 text-[22px] font-[650] tracking-[-0.02em]">{t('rail.history')}</h1>
+      <div className="mb-2 flex flex-wrap items-center gap-3 rounded-[12px] border border-border bg-surface-sunken px-[14px] py-2.5">
+        <span className="text-pretty min-w-[220px] flex-1 text-[12.5px] leading-[1.45] text-muted">
+          {t('history.deleteHint')}
+        </span>
+        <button
+          type="button"
+          onClick={() => onSettings('privacy')}
+          className="inline-flex h-[30px] cursor-pointer items-center rounded-[8px] border border-border-strong bg-surface-raised px-2.5 text-[12px] font-semibold text-text"
+        >
+          {t('history.deleteLink')}
+        </button>
+      </div>
       {turns.map((x) => (
         <div
           key={`${x.at}-${x.heard}`}
@@ -413,18 +449,27 @@ function HistoryView({ turns, locale }: { turns: Turn[] | null; locale: string }
   );
 }
 
-function ProjectsView({ projects, onSettings }: { projects: Project[] | null; onSettings(tab?: string): void }) {
+function ProjectsView({
+  projects,
+  onSettings,
+  onSave,
+  onRemove,
+}: {
+  projects: Project[] | null;
+  onSettings(tab?: string): void;
+  onSave?: HomeScreenProps['onSaveProject'];
+  onRemove?: HomeScreenProps['onRemoveProject'];
+}) {
   const t = useT();
-  if (!projects || projects.length === 0)
-    return (
-      <div className="flex flex-col items-center px-6 py-24">
-        <EmptyBlock title={t('projects.empty.title')} body={t('projects.empty.body')} />
-      </div>
-    );
+  const [confirming, setConfirming] = useState<string | null>(null);
+  const empty = !projects || projects.length === 0;
   return (
     <div className="flex flex-col gap-1">
-      <h1 className="m-0 mb-3.5 text-[22px] font-[650] tracking-[-0.02em]">{t('rail.projects')}</h1>
-      {projects.map((pr) => (
+      <h1 className="m-0 mb-1.5 text-[22px] font-[650] tracking-[-0.02em]">{t('rail.projects')}</h1>
+      <p className="text-pretty m-0 mb-3.5 text-[13.5px] text-muted">{t('projects.sub')}</p>
+      {onSave ? <AddProject onSave={onSave} /> : null}
+      {empty ? <p className="text-pretty m-0 mt-2 text-[13px] text-subtle">{t('projects.empty.body')}</p> : null}
+      {(projects ?? []).map((pr) => (
         <div
           key={pr.id}
           className="flex items-center gap-3 rounded-[12px] border border-border bg-surface-raised px-[14px] py-3"
@@ -441,8 +486,111 @@ function ProjectsView({ projects, onSettings }: { projects: Project[] | null; on
           >
             {t('projects.manage')}
           </button>
+          {onRemove ? (
+            <button
+              type="button"
+              onClick={() => {
+                if (confirming === pr.id) {
+                  onRemove(pr.id);
+                  setConfirming(null);
+                } else setConfirming(pr.id);
+              }}
+              onBlur={() => setConfirming((c) => (c === pr.id ? null : c))}
+              title={t('projects.remove.hint')}
+              className="inline-flex h-[30px] cursor-pointer items-center gap-1.5 rounded-[8px] border-0 bg-transparent px-2.5 text-[12px] font-semibold text-muted hover:bg-surface-sunken hover:text-text"
+            >
+              <Trash2 size={14} aria-hidden="true" />
+              {confirming === pr.id ? t('projects.remove.confirm') : t('projects.remove')}
+            </button>
+          ) : null}
         </div>
       ))}
+    </div>
+  );
+}
+
+const inputClass =
+  'h-9 min-w-0 rounded-[10px] border border-border-strong bg-surface-sunken px-3 text-[13px] text-text placeholder:text-subtle';
+const addBtn =
+  'inline-flex h-9 cursor-pointer items-center rounded-[10px] border-0 bg-accent px-[14px] text-[13px] font-semibold text-accent-contrast disabled:cursor-not-allowed disabled:opacity-50';
+
+function AddMemory({ onAdd }: { onAdd(text: string): void }) {
+  const t = useT();
+  const [text, setText] = useState('');
+  const submit = () => {
+    const v = text.trim();
+    if (!v) return;
+    onAdd(v);
+    setText('');
+  };
+  return (
+    <div className="mb-3 flex flex-col gap-1.5">
+      <div className="flex gap-2">
+        <input
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && submit()}
+          maxLength={500}
+          placeholder={t('memory.add.placeholder')}
+          aria-label={t('memory.add.placeholder')}
+          className={cn(inputClass, 'flex-1')}
+        />
+        <button type="button" onClick={submit} disabled={!text.trim()} className={addBtn}>
+          {t('memory.add.button')}
+        </button>
+      </div>
+      <span className="text-pretty text-[12px] text-subtle">{t('memory.howto')}</span>
+    </div>
+  );
+}
+
+function AddProject({ onSave }: { onSave: NonNullable<HomeScreenProps['onSaveProject']> }) {
+  const t = useT();
+  const [name, setName] = useState('');
+  const [path, setPath] = useState('');
+  const [agent, setAgent] = useState<AgentId>('claude');
+  const ok = name.trim().length > 0 && path.trim().length > 0;
+  const submit = () => {
+    if (!ok) return;
+    onSave({ name: name.trim(), path: path.trim(), defaultAgent: agent });
+    setName('');
+    setPath('');
+  };
+  return (
+    <div className="mb-3 flex flex-col gap-2 rounded-[12px] border border-border bg-surface-raised p-[14px]">
+      <span className="text-[13px] font-semibold">{t('projects.add')}</span>
+      <div className="flex flex-wrap gap-2">
+        <input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder={t('projects.name')}
+          aria-label={t('projects.name')}
+          maxLength={80}
+          className={cn(inputClass, 'w-[160px]')}
+        />
+        <input
+          value={path}
+          onChange={(e) => setPath(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && submit()}
+          placeholder={t('projects.path')}
+          aria-label={t('projects.path')}
+          className={cn(inputClass, 'min-w-[220px] flex-1 font-mono text-[12.5px]')}
+        />
+        <select
+          value={agent}
+          onChange={(e) => setAgent(e.target.value as AgentId)}
+          aria-label={t('projects.agent')}
+          className={cn(inputClass, 'cursor-pointer')}
+        >
+          <option value="claude">Claude Code</option>
+          <option value="codex">Codex</option>
+          <option value="home">Jarvis</option>
+        </select>
+        <button type="button" onClick={submit} disabled={!ok} className={addBtn}>
+          {t('projects.add.button')}
+        </button>
+      </div>
+      <span className="text-pretty text-[12px] text-subtle">{t('projects.add.hint')}</span>
     </div>
   );
 }

@@ -110,3 +110,30 @@ export async function waitConversation(home, predicate, timeoutMs = 90000) {
   }
   return null;
 }
+
+/** A UI-role connection to the running app's assistant process (endpoint obtained from the shell like the UI does). */
+export async function sidecar(home) {
+  const ep = await home.evaluate(() => window.__TAURI_INTERNALS__.invoke('sidecar_endpoint'));
+  const { createRequire } = await import('node:module');
+  const WebSocket = createRequire(join(process.cwd(), 'packages/mcp/package.json'))('ws');
+  const ws = new WebSocket(`ws://127.0.0.1:${ep.port}/?role=ui`, [`jarvis.${ep.token}`]);
+  await new Promise((r) => ws.once('open', r));
+  const waiting = new Map();
+  let id = 0;
+  ws.on('message', (raw) => {
+    const m = JSON.parse(String(raw));
+    if (m.id && waiting.has(m.id)) {
+      waiting.get(m.id)(m);
+      waiting.delete(m.id);
+    }
+  });
+  return {
+    call: (method, params) =>
+      new Promise((res) => {
+        const i = ++id;
+        waiting.set(i, res);
+        ws.send(JSON.stringify({ jsonrpc: '2.0', id: i, method, params }));
+      }),
+    close: () => ws.close(),
+  };
+}

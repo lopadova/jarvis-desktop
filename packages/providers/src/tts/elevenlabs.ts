@@ -49,7 +49,13 @@ export class ElevenLabsTts implements TtsProvider {
     const body: Record<string, unknown> = {
       text: renderCues(req.text, dialectFor('elevenlabs', model)),
       model_id: model,
-      voice_settings: { speed: clamp(req.speed ?? s.speakingRate, 0.7, 1.2) },
+      voice_settings: {
+        stability: s.elevenlabsVoice.stability,
+        similarity_boost: s.elevenlabsVoice.similarityBoost,
+        style: s.elevenlabsVoice.style,
+        use_speaker_boost: s.elevenlabsVoice.speakerBoost,
+        speed: clamp(req.speed ?? s.speakingRate, 0.7, 1.2),
+      },
     };
     if (LANGUAGE_CODE_MODELS.has(model)) body.language_code = lang(req.locale);
     const url = `${this.apiBase}/v1/text-to-speech/${encodeURIComponent(voice)}/stream?output_format=mp3_44100_128`;

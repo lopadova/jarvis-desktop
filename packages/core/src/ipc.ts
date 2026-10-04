@@ -79,6 +79,7 @@ export const AppMethods = {
   }),
   'projects.remove': z.object({ id }),
   'memory.list': z.object({}),
+  'memory.add': z.object({ text: z.string().min(1).max(500) }),
   'memory.remove': z.object({ id }),
   'memory.clear': z.object({}),
   'history.list': z.object({ query: z.string().optional(), limit: z.number().int().min(1).max(500).default(100) }),
@@ -201,7 +202,7 @@ export const VoiceNotifications = {
   'voice.wake': z.object({ trigger: z.enum(['wake-word', 'push-to-talk', 'clap', 'barge-in', 'conversation']) }),
   'voice.partial': z.object({ partial: z.string(), committed: z.string(), level: z.number().min(0).max(1) }),
   'voice.transcript': z.object({ text: z.string(), trigger: z.string(), durationMs: z.number().optional() }),
-  'voice.nothingHeard': z.object({ trigger: z.string() }),
+  'voice.nothingHeard': z.object({ trigger: z.string(), reason: z.enum(['no-model']).optional() }),
   /** Raw 16 kHz PCM16 (base64) for cloud STT, only sent when the user enabled a cloud STT provider. */
   'voice.audio': z.object({ pcmBase64: z.string(), trigger: z.string() }),
   'voice.playbackLevel': z.object({ level: z.number().min(0).max(1) }),
