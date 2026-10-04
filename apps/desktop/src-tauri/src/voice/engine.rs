@@ -32,6 +32,8 @@ const PROBE_PREROLL_FRAMES: usize = 8; // ~256 ms kept before the speech starts
 const PROBE_END_SILENCE_FRAMES: u32 = 20; // ~640 ms of silence ends the phrase
 const PROBE_MIN_SAMPLES: usize = (TARGET_RATE as usize) * 4 / 10; // 400 ms
 const PROBE_MAX_SAMPLES: usize = (TARGET_RATE as usize) * 4; // longer speech is conversation, not a wake phrase
+/// Silence added before and after a probe: Whisper transcribes a lone, very short "Jarvis" more reliably with it.
+const PROBE_PAD_SAMPLES: usize = TARGET_RATE as usize;
 
 /// Speech-recognition jobs queued or running; probes are skipped while the recogniser is busy so they never delay a
 /// real capture.
@@ -613,10 +615,13 @@ impl Worker {
             self.probe.extend_from_slice(frame);
             self.probe_silence += 1;
             if self.probe_silence >= PROBE_END_SILENCE_FRAMES {
-                let samples = std::mem::take(&mut self.probe);
+                let phrase = std::mem::take(&mut self.probe);
+                let mut samples = vec![0.0f32; PROBE_PAD_SAMPLES];
+                samples.extend_from_slice(&phrase);
+                samples.resize(samples.len() + PROBE_PAD_SAMPLES, 0.0);
                 self.probe_active = false;
                 self.probe_silence = 0;
-                if samples.len() >= PROBE_MIN_SAMPLES
+                if phrase.len() >= PROBE_MIN_SAMPLES
                     && ASR_PENDING.load(std::sync::atomic::Ordering::SeqCst) == 0
                 {
                     ASR_PENDING.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
@@ -736,8 +741,17 @@ mod tests {
         let rec = build_recognizer(&root, models::whisper_spec(&size), &lang)
             .expect("Whisper model loads");
         let w = sherpa_onnx::Wave::read(&wav).expect("wav");
+        // JARVIS_TEST_PAD_MS=<ms> adds that much silence before and after, to see if very short words transcribe better.
+        let pad_ms: usize = std::env::var("JARVIS_TEST_PAD_MS")
+            .ok()
+            .and_then(|v| v.parse().ok())
+            .unwrap_or(0);
+        let pad = vec![0.0f32; w.sample_rate() as usize * pad_ms / 1000];
+        let mut samples = pad.clone();
+        samples.extend_from_slice(w.samples());
+        samples.extend_from_slice(&pad);
         let stream = rec.create_stream();
-        stream.accept_waveform(w.sample_rate(), w.samples());
+        stream.accept_waveform(w.sample_rate(), &samples);
         rec.decode(&stream);
         let text = stream.get_result().map(|r| r.text).unwrap_or_default();
         println!("WHISPER[{size}/{lang}]: {text}");
