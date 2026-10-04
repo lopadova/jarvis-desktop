@@ -31,6 +31,8 @@ export interface VoiceOutputDeps {
   pill: Pill;
   /** Notified when a provider is skipped (e.g. private mode) so the UI can show why. */
   onNotice?: (message: string) => void;
+  /** The selected provider could not be used and the system voice was used instead. */
+  onFallback?: (provider: TtsId, label: string, why: 'not-configured' | 'failed') => void;
 }
 
 /** Per-utterance provider override (voice previews in settings). */
@@ -203,7 +205,17 @@ export class VoiceOutput {
     }
   }
 
+  private spokenLog: { at: number; text: string }[] = [];
+
+  /** What Jarvis said in the last `windowMs` (used to drop its own voice picked up by the microphone). */
+  recentSpoken(windowMs: number): string[] {
+    const since = Date.now() - windowMs;
+    return this.spokenLog.filter((x) => x.at >= since).map((x) => x.text);
+  }
+
   private async speakOne(text: string, gen: number, voice?: VoiceOverride): Promise<void> {
+    this.spokenLog.push({ at: Date.now(), text: stripCues(text) });
+    if (this.spokenLog.length > 20) this.spokenLog.shift();
     const s = this.deps.settings();
     const id = voice?.tts ?? s.tts;
     const provider = id === 'system' ? undefined : this.deps.tts.get(id);
@@ -218,7 +230,10 @@ export class VoiceOutput {
     } catch {
       configured = false;
     }
-    if (!configured) return this.systemSpeak(text, gen);
+    if (!configured) {
+      this.deps.onFallback?.(id, provider.label, 'not-configured');
+      return this.systemSpeak(text, gen);
+    }
 
     const utteranceId = newUtteranceId();
     const abort = new AbortController();
@@ -246,7 +261,10 @@ export class VoiceOutput {
         provider: id,
         error: errorMessage(e),
       });
-      if (!begun) return this.systemSpeak(text, gen);
+      if (!begun) {
+        this.deps.onFallback?.(id, provider.label, 'failed');
+        return this.systemSpeak(text, gen);
+      }
     } finally {
       if (this.abort === abort) this.abort = null;
     }

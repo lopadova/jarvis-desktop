@@ -31,7 +31,7 @@ import {
   Wallet,
   WifiOff,
 } from 'lucide-react';
-import { type ReactNode, useState } from 'react';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { type MessageKey, useT } from '../../i18n';
 import { cn } from '../../lib/cn';
 import type {
@@ -71,6 +71,13 @@ import {
 
 export type { SecretKey };
 
+export interface VoiceInfo {
+  id: string;
+  name: string;
+  locale?: string;
+  tags?: string[];
+}
+
 type TtsId = SettingsData['tts'];
 
 export interface SettingsProps {
@@ -94,7 +101,11 @@ export interface SettingsProps {
   onSecret(key: SecretKey, value: string): void;
   onDeleteSecret(key: SecretKey): void;
   onProjectPermission(project: Project, level: PermissionLevel): void;
-  onTtsPreview(provider: TtsId): void;
+  onTtsPreview(provider: TtsId, voiceId?: string): void;
+  /** Voices a provider offers and whether it is ready to speak (key entered / voice downloaded). */
+  onLoadVoices(provider: TtsId): Promise<{ voices: VoiceInfo[]; configured: boolean }>;
+  /** Opens a project page in the system browser. */
+  onOpenUrl(url: string): void;
   onDownloadModels(): void;
   onMicMonitor(enabled: boolean): void;
   onPair(relayUrl: string): void;
@@ -170,6 +181,10 @@ export function Settings(p: SettingsProps) {
               </button>
             );
           })}
+          <p className="m-0 mt-auto flex items-start gap-1.5 px-2.5 pt-3 text-[11.5px] leading-[1.4] text-muted">
+            <Check size={13} aria-hidden="true" className="mt-px shrink-0" />
+            {t('settings.autosave')}
+          </p>
         </div>
         <main role="tabpanel" className="scroll-y flex min-w-0 flex-1 flex-col gap-7 px-7 pt-6 pb-8">
           <h1 className="m-0 text-[20px] font-[650] tracking-[-0.02em]">{t(`settings.tab.${p.tab}` as MessageKey)}</h1>
@@ -657,28 +672,7 @@ function TabBody(p: SettingsProps) {
       return (
         <>
           <Section>
-            <Row label={t('settings.tts')}>
-              <div className="flex items-center gap-2">
-                <Select
-                  label={t('settings.tts')}
-                  value={s.tts}
-                  onChange={(tts) => p.onPatch({ tts })}
-                  options={(['elevenlabs', 'fish', 'openai', 'kokoro', 'piper', 'system'] as const).map((v) => ({
-                    value: v,
-                    label: t(`tts.${v}` as MessageKey),
-                  }))}
-                />
-                <button
-                  type="button"
-                  aria-label={t('voice.preview')}
-                  title={t('voice.preview')}
-                  onClick={() => p.onTtsPreview(s.tts)}
-                  className="grid h-8 w-8 cursor-pointer place-items-center rounded-pill border border-border-strong bg-surface-raised text-text"
-                >
-                  <Play size={13} aria-hidden="true" />
-                </button>
-              </div>
-            </Row>
+            <VoiceProviderRows {...p} />
             <Row label={t('settings.rate')}>
               <div className="flex items-center gap-2.5">
                 <input
@@ -827,22 +821,20 @@ function TabBody(p: SettingsProps) {
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
-            <a
-              href="https://github.com/lopadova/jarvis-desktop/releases"
-              target="_blank"
-              rel="noreferrer noopener"
-              className="inline-flex h-9 items-center rounded-[10px] border-0 bg-accent px-[14px] text-[13px] font-semibold text-accent-contrast no-underline hover:text-accent-contrast"
+            <button
+              type="button"
+              onClick={() => p.onOpenUrl('https://github.com/lopadova/jarvis-desktop/releases')}
+              className="inline-flex h-9 cursor-pointer items-center rounded-[10px] border-0 bg-accent px-[14px] text-[13px] font-semibold text-accent-contrast"
             >
               {t('about.notes')}
-            </a>
-            <a
-              href="https://github.com/lopadova/jarvis-desktop"
-              target="_blank"
-              rel="noreferrer noopener"
-              className="inline-flex h-9 items-center rounded-[10px] border border-border-strong bg-surface-raised px-[14px] text-[13px] font-semibold text-text no-underline"
+            </button>
+            <button
+              type="button"
+              onClick={() => p.onOpenUrl('https://github.com/lopadova/jarvis-desktop')}
+              className="inline-flex h-9 cursor-pointer items-center rounded-[10px] border border-border-strong bg-surface-raised px-[14px] text-[13px] font-semibold text-text"
             >
               {t('about.source')}
-            </a>
+            </button>
             <span className="inline-flex h-9 items-center px-[14px] text-[13px] font-medium text-muted">
               {t('about.license')} · MIT
             </span>
@@ -853,6 +845,169 @@ function TabBody(p: SettingsProps) {
     default:
       return null;
   }
+}
+
+const ELEVENLABS_MODELS = [
+  { value: 'eleven_v3', label: 'Eleven v3 (expressive)' },
+  { value: 'eleven_flash_v2_5', label: 'Flash v2.5 (fastest)' },
+  { value: 'eleven_multilingual_v2', label: 'Multilingual v2' },
+];
+
+function VoiceProviderRows(p: SettingsProps) {
+  const t = useT();
+  const s = p.settings;
+  const [info, setInfo] = useState<{ voices: VoiceInfo[]; configured: boolean } | null>(null);
+  const load = useRef(p.onLoadVoices);
+  load.current = p.onLoadVoices;
+  useEffect(() => {
+    let alive = true;
+    setInfo(null);
+    load
+      .current(s.tts)
+      .then((r) => alive && setInfo(r))
+      .catch(() => alive && setInfo({ voices: [], configured: false }));
+    return () => {
+      alive = false;
+    };
+  }, [s.tts]);
+
+  const voiceId = s.ttsVoice[s.tts] ?? '';
+  const ready = info?.configured !== false;
+  const setVoice = (v: string) => {
+    const next = { ...s.ttsVoice };
+    if (v) next[s.tts] = v;
+    else delete next[s.tts];
+    p.onPatch({ ttsVoice: next });
+  };
+  return (
+    <>
+      <Row label={t('settings.tts')}>
+        <div className="flex items-center gap-2">
+          <Select
+            label={t('settings.tts')}
+            value={s.tts}
+            onChange={(tts) => p.onPatch({ tts })}
+            options={(['elevenlabs', 'fish', 'openai', 'kokoro', 'piper', 'system'] as const).map((v) => ({
+              value: v,
+              label: t(`tts.${v}` as MessageKey),
+            }))}
+          />
+          <button
+            type="button"
+            aria-label={t('voice.preview')}
+            title={t('voice.preview')}
+            onClick={() => p.onTtsPreview(s.tts, voiceId || undefined)}
+            className="grid h-8 w-8 cursor-pointer place-items-center rounded-pill border border-border-strong bg-surface-raised text-text"
+          >
+            <Play size={13} aria-hidden="true" />
+          </button>
+        </div>
+      </Row>
+      {info ? (
+        <Row label={t('voice.status')} desc={t(`voice.hint.${s.tts}` as MessageKey)}>
+          <StatusChip
+            color={ready ? 'var(--color-success)' : 'var(--color-warning)'}
+            icon={ready ? CircleCheck : OctagonAlert}
+          >
+            {t(ready ? 'voice.ready' : 'voice.needsSetup')}
+          </StatusChip>
+        </Row>
+      ) : null}
+      {info && info.voices.length > 0 ? (
+        <Row label={t('voice.voice')}>
+          <Select
+            label={t('voice.voice')}
+            value={voiceId}
+            onChange={setVoice}
+            options={[
+              { value: '', label: t('voice.default') },
+              ...info.voices.map((v) => ({ value: v.id, label: v.locale ? `${v.name} · ${v.locale}` : v.name })),
+            ]}
+          />
+        </Row>
+      ) : null}
+      {s.tts === 'elevenlabs' ? (
+        <Row label={t('voice.model')}>
+          <Select
+            label={t('voice.model')}
+            value={s.elevenlabsModel}
+            onChange={(elevenlabsModel) => p.onPatch({ elevenlabsModel })}
+            options={ELEVENLABS_MODELS as { value: SettingsData['elevenlabsModel']; label: string }[]}
+          />
+        </Row>
+      ) : null}
+      {s.tts === 'elevenlabs' ? (
+        <>
+          <VoiceSlider
+            label={t('voice.stability')}
+            desc={t('voice.stability.hint')}
+            value={s.elevenlabsVoice.stability}
+            onChange={(stability) => p.onPatch({ elevenlabsVoice: { ...s.elevenlabsVoice, stability } })}
+          />
+          <VoiceSlider
+            label={t('voice.similarity')}
+            desc={t('voice.similarity.hint')}
+            value={s.elevenlabsVoice.similarityBoost}
+            onChange={(similarityBoost) => p.onPatch({ elevenlabsVoice: { ...s.elevenlabsVoice, similarityBoost } })}
+          />
+          <VoiceSlider
+            label={t('voice.style')}
+            desc={t('voice.style.hint')}
+            value={s.elevenlabsVoice.style}
+            onChange={(style) => p.onPatch({ elevenlabsVoice: { ...s.elevenlabsVoice, style } })}
+          />
+          <Row label={t('voice.speakerBoost')} desc={t('voice.speakerBoost.hint')}>
+            <Switch
+              checked={s.elevenlabsVoice.speakerBoost}
+              onCheckedChange={(speakerBoost) => p.onPatch({ elevenlabsVoice: { ...s.elevenlabsVoice, speakerBoost } })}
+              label={t('voice.speakerBoost')}
+            />
+          </Row>
+        </>
+      ) : null}
+      {s.tts === 'fish' ? (
+        <Row label={t('voice.model')}>
+          <input
+            aria-label={t('voice.model')}
+            defaultValue={s.fishModel}
+            onBlur={(e) => e.target.value.trim() && p.onPatch({ fishModel: e.target.value.trim() })}
+            className={cn(fieldClass, 'w-[180px] font-mono text-[12.5px]')}
+          />
+        </Row>
+      ) : null}
+    </>
+  );
+}
+
+function VoiceSlider({
+  label,
+  desc,
+  value,
+  onChange,
+}: {
+  label: string;
+  desc: string;
+  value: number;
+  onChange(v: number): void;
+}) {
+  return (
+    <Row label={label} desc={desc}>
+      <div className="flex items-center gap-2.5">
+        <input
+          type="range"
+          aria-label={label}
+          min={0}
+          max={1}
+          step={0.05}
+          defaultValue={value}
+          onChange={(e) => onChange(Number(e.target.value))}
+          className="w-40"
+          style={{ accentColor: 'var(--color-accent)' }}
+        />
+        <span className="tabular w-10 text-right text-[12.5px] text-muted">{value.toFixed(2)}</span>
+      </div>
+    </Row>
+  );
 }
 
 function MicrophoneTab(p: SettingsProps) {
@@ -973,6 +1128,8 @@ function CopyBox({ text, onCopy }: { text: string; onCopy(text: string): void })
   );
 }
 
+const EXTENSION_URL = 'https://github.com/lopadova/jarvis-desktop/releases/latest/download/jarvis.mcpb';
+
 function IntegrationsTab(p: SettingsProps) {
   const t = useT();
   const [relayUrl, setRelayUrl] = useState(p.settings.relayUrl);
@@ -994,10 +1151,11 @@ function IntegrationsTab(p: SettingsProps) {
           {t('integrations.claudeDesktop.hint')}
         </span>
         <div>
-          <button type="button" className={primaryBtn} disabled title={t('common.comingSoon')}>
+          <button type="button" className={primaryBtn} onClick={() => p.onOpenUrl(EXTENSION_URL)}>
             <Download size={14} aria-hidden="true" />
             {t('integrations.install')}
           </button>
+          <p className="text-pretty m-0 mt-2 text-[12px] leading-[1.45] text-muted">{t('integrations.install.hint')}</p>
         </div>
       </div>
       <div className={card}>

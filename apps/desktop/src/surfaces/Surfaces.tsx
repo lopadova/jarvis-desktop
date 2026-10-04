@@ -187,6 +187,27 @@ export function HomeSurface({ platform }: { platform: Platform }) {
       onOpenSession={(id) => send('session.open', { id })}
       onViewSessions={() => void showWindow('sessions')}
       onApproval={(id, decision) => send('approval.decide', { id, decision, via: 'click' })}
+      onAddMemory={(text) => {
+        const call = useApp.getState().call;
+        void call('memory.add', { text })
+          .then(() => call('memory.list', {}))
+          .then((r) => setMemories((r as { memories?: Memory[] }).memories ?? []))
+          .catch(() => {});
+      }}
+      onSaveProject={(project) => {
+        const call = useApp.getState().call;
+        void call('projects.upsert', { project: { ...project, aliases: [], permission: 'safe', allowlist: [] } })
+          .then(() => call('projects.list', {}))
+          .then((r) => setProjects((r as { projects?: Project[] }).projects ?? []))
+          .catch(() => {});
+      }}
+      onRemoveProject={(id) => {
+        const call = useApp.getState().call;
+        void call('projects.remove', { id })
+          .then(() => call('projects.list', {}))
+          .then((r) => setProjects((r as { projects?: Project[] }).projects ?? []))
+          .catch(() => {});
+      }}
       onForget={(id) => {
         setPendingForget((x) => [...x, id]);
         forgetTimers.current.set(

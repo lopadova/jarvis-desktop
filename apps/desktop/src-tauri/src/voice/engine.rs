@@ -168,7 +168,8 @@ fn load_vad(root: &Path) -> Option<sherpa_onnx::VoiceActivityDetector> {
 struct AsrJob {
     samples: Vec<f32>,
     trigger: Trigger,
-    spec: &'static ModelSpec,
+    /// The selected `whisperModel` setting; resolved to an installed model when the job runs.
+    whisper_setting: String,
     language: String,
 }
 
@@ -180,11 +181,22 @@ fn start_asr(root: PathBuf, sink: Arc<dyn VoiceSink>) -> Sender<AsrJob> {
             let mut loaded: Option<(&'static str, sherpa_onnx::OfflineRecognizer)> = None;
             while let Ok(job) = rx.recv() {
                 let duration_ms = (job.samples.len() as u64 * 1000) / TARGET_RATE as u64;
-                if loaded.as_ref().map(|(id, _)| *id) != Some(job.spec.id) {
-                    loaded = build_recognizer(&root, job.spec, &job.language).map(|r| (job.spec.id, r));
+                let Some(spec) = models::usable_whisper(&root, &job.whisper_setting) else {
+                    log::warn!("no whisper model installed (selected: {})", job.whisper_setting);
+                    sink.notify(
+                        "voice.nothingHeard",
+                        json!({ "trigger": job.trigger.as_str(), "reason": "no-model" }),
+                    );
+                    continue;
+                };
+                if spec.id != format!("whisper-{}", job.whisper_setting) {
+                    log::warn!("whisper model {} selected but not installed; using {}", job.whisper_setting, spec.id);
+                }
+                if loaded.as_ref().map(|(id, _)| *id) != Some(spec.id) {
+                    loaded = build_recognizer(&root, spec, &job.language).map(|r| (spec.id, r));
                 }
                 let Some((_, rec)) = &loaded else {
-                    log::warn!("whisper model {} not available", job.spec.id);
+                    log::warn!("whisper model {} could not be loaded", spec.id);
                     sink.notify("voice.nothingHeard", json!({ "trigger": job.trigger.as_str() }));
                     continue;
                 };
@@ -508,7 +520,7 @@ impl Worker {
                     let _ = self.asr.send(AsrJob {
                         samples,
                         trigger,
-                        spec: models::whisper_spec(&self.settings.whisper_model),
+                        whisper_setting: self.settings.whisper_model.clone(),
                         language: language.into(),
                     });
                 } else {

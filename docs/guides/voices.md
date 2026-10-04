@@ -29,6 +29,19 @@ Choose with `elevenlabsModel`:
 
 `eleven_v3` does not support the WebSocket input-streaming endpoint, so Jarvis uses HTTP streaming for it; if you want the fastest possible first word, pick `eleven_flash_v2_5` (cues are then removed).
 
+### Choosing a voice and tuning it
+
+In **Settings › Voice**, picking ElevenLabs shows a status chip (*Ready* once the API key is entered), a **voice** list pulled from your account, the **model**, and the ElevenLabs voice settings:
+
+| Setting | Effect |
+|---|---|
+| Stability | Lower = more expressive and varied, higher = steadier |
+| Similarity | How closely the voice follows the original recording |
+| Style exaggeration | Amplifies the voice's style (keep it low for the most stable result) |
+| Speaker boost | Boosts similarity to the original speaker; slightly slower |
+
+Speaking speed is the shared *Speaking speed* slider. With `eleven_v3` the stability setting is effectively coarse (creative / natural / robust). The ▶ button previews the current voice. If the provider you picked cannot be used (no key, voice not downloaded, request failed) Jarvis tells you and speaks with the system voice instead.
+
 ## Expressive cues
 
 The brain may add a few **neutral cues** to a reply, for example `[happy] Done! [laugh] the footer behaved.` Jarvis translates them into each provider's own dialect and strips them for providers that do not support them. At most **three** effects are kept per reply, so Jarvis never overacts.

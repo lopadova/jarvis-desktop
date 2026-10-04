@@ -64,6 +64,15 @@ export async function micMonitor(enabled: boolean): Promise<void> {
   await invoke('mic_monitor', { enabled });
 }
 
+/** Opens a project page in the system browser (the webview cannot follow target=_blank links itself). */
+export async function openExternal(url: string): Promise<void> {
+  if (!isTauri()) {
+    window.open(url, '_blank', 'noopener,noreferrer');
+    return;
+  }
+  await invoke('open_external', { url });
+}
+
 export async function modelStatus(): Promise<ModelStatus[]> {
   if (!isTauri()) return [];
   return invoke<ModelStatus[]>('model_status');

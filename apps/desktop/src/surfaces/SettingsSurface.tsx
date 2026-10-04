@@ -1,8 +1,16 @@
 /** Settings container (lazy chunk): store + IPC → presentational `Settings`. */
 import { type Project, SETTINGS_TABS, type SettingsTab } from '@jarvis/core';
 import { useEffect, useState } from 'react';
-import { Settings } from '../components/settings/Settings';
-import { downloadModels, micMonitor, onShellEvent, reloadShortcuts, SHELL_EVENTS, windowAction } from '../lib/tauri';
+import { Settings, type VoiceInfo } from '../components/settings/Settings';
+import {
+  downloadModels,
+  micMonitor,
+  onShellEvent,
+  openExternal,
+  reloadShortcuts,
+  SHELL_EVENTS,
+  windowAction,
+} from '../lib/tauri';
 import { send, useApp } from '../store/app';
 import type { Platform } from '../types/ui';
 import { Toasts } from './Toasts';
@@ -76,7 +84,14 @@ export function SettingsSurface({ platform }: { platform: Platform }) {
         setProjects((ps) => ps.map((x) => (x.id === project.id ? { ...x, permission } : x)));
         send('projects.upsert', { project: { ...project, permission } });
       }}
-      onTtsPreview={(provider) => send('tts.preview', { provider })}
+      onTtsPreview={(provider, voiceId) => send('tts.preview', voiceId ? { provider, voiceId } : { provider })}
+      onLoadVoices={(provider) =>
+        useApp
+          .getState()
+          .call('tts.voices', { provider })
+          .then((r) => r as { voices: VoiceInfo[]; configured: boolean })
+      }
+      onOpenUrl={(url) => void openExternal(url)}
       onDownloadModels={() => void downloadModels()}
       onMicMonitor={(on) => void micMonitor(on)}
       onPair={(relayUrl) => send('relay.pair', { relayUrl })}

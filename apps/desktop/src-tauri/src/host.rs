@@ -461,6 +461,12 @@ pub fn apply_settings(shell: &ShellRef, settings: Value) {
         shell.voice.send(VoiceCmd::Settings(v));
     }
     let changed = |k: &str| prev.get(k) != settings.get(k);
+    // The set of models to show/download depends on these: refresh the list so a newly picked Whisper size
+    // appears with its download button, and let the engine pick the model up if it is already on disk.
+    if changed("whisperModel") || changed("stt") || changed("privateMode") {
+        crate::commands::emit_model_status(shell);
+        shell.voice.send(VoiceCmd::ModelsChanged);
+    }
     if changed("pushToTalk") || changed("toggleSessions") {
         let ptt = shell.setting_str("pushToTalk", shortcuts::DEFAULT_PTT);
         let sessions = shell.setting_str("toggleSessions", shortcuts::DEFAULT_SESSIONS);

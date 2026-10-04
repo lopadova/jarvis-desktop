@@ -78,6 +78,16 @@ describe('ElevenLabs TTS', () => {
     });
   });
 
+  it('sends the ElevenLabs voice settings chosen in Settings', async () => {
+    const { tts, calls } = setup({
+      elevenlabsVoice: { stability: 0.2, similarityBoost: 0.9, style: 0.4, speakerBoost: false },
+    });
+    await tts.synthesize({ text: 'Hi', locale: 'en' });
+    expect(bodyOf(calls[0])).toMatchObject({
+      voice_settings: { stability: 0.2, similarity_boost: 0.9, style: 0.4, use_speaker_boost: false, speed: 1 },
+    });
+  });
+
   it('omits language_code for multilingual v2', async () => {
     const { tts, calls } = setup({ elevenlabsModel: 'eleven_multilingual_v2' });
     await tts.synthesize({ text: 'Hi', locale: 'en' });

@@ -123,6 +123,23 @@ pub fn whisper_spec(setting: &str) -> &'static ModelSpec {
         .unwrap_or(&WHISPER[2])
 }
 
+/// The Whisper model to transcribe with: the selected one when it is installed, otherwise the best other one that
+/// is. Without this, picking a size that is not downloaded yet made the microphone silently do nothing.
+pub fn usable_whisper(root: &Path, setting: &str) -> Option<&'static ModelSpec> {
+    let chosen = whisper_spec(setting);
+    if is_ready(root, chosen) {
+        return Some(chosen);
+    }
+    ["small", "base", "tiny", "large-v3-turbo", "medium"]
+        .iter()
+        .filter_map(|s| {
+            WHISPER
+                .iter()
+                .find(|m| m.id.strip_prefix("whisper-") == Some(*s))
+        })
+        .find(|m| is_ready(root, m))
+}
+
 /// Models needed for the current settings (KWS + VAD + the selected Whisper size).
 pub fn needed(whisper_model: &str, local_stt: bool) -> Vec<&'static ModelSpec> {
     let mut v = vec![&KWS, &VAD];
@@ -309,6 +326,35 @@ mod tests {
         assert!(is_ready(&root, &VAD));
         assert_eq!(ModelStatus::of(&root, &VAD).state, "ready");
         assert_eq!(ModelStatus::of(&root, &KWS).state, "missing");
+        let _ = std::fs::remove_dir_all(&root);
+    }
+    fn install(root: &Path, spec: &ModelSpec) {
+        std::fs::create_dir_all(model_dir(root, spec)).unwrap();
+        for f in spec.files {
+            std::fs::write(model_dir(root, spec).join(f), b"x").unwrap();
+        }
+    }
+
+    #[test]
+    fn selected_whisper_falls_back_to_an_installed_one() {
+        let root =
+            std::env::temp_dir().join(format!("jarvis-models-{}", crate::sidecar::new_token()));
+        assert!(
+            usable_whisper(&root, "large-v3-turbo").is_none(),
+            "nothing installed"
+        );
+        install(&root, whisper_spec("small"));
+        // The user picked large-v3-turbo but only small is on disk: use small instead of doing nothing.
+        assert_eq!(
+            usable_whisper(&root, "large-v3-turbo").unwrap().id,
+            "whisper-small"
+        );
+        install(&root, whisper_spec("large-v3-turbo"));
+        assert_eq!(
+            usable_whisper(&root, "large-v3-turbo").unwrap().id,
+            "whisper-large-v3-turbo",
+            "the selected one wins once installed"
+        );
         let _ = std::fs::remove_dir_all(&root);
     }
 }

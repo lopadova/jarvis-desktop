@@ -32,6 +32,15 @@ export const SettingsSchema = z.object({
   ttsVoice: z.record(z.string(), z.string()).default({}),
   elevenlabsModel: z.enum(['eleven_v3', 'eleven_flash_v2_5', 'eleven_multilingual_v2']).default('eleven_v3'),
   fishModel: z.string().default('s2-pro'),
+  /** ElevenLabs voice settings (all models accept them; Eleven v3 mostly follows `stability`). */
+  elevenlabsVoice: z
+    .object({
+      stability: z.number().min(0).max(1).default(0.5),
+      similarityBoost: z.number().min(0).max(1).default(0.75),
+      style: z.number().min(0).max(1).default(0),
+      speakerBoost: z.boolean().default(true),
+    })
+    .default({ stability: 0.5, similarityBoost: 0.75, style: 0, speakerBoost: true }),
   speakingRate: z.number().min(0.5).max(2).default(1),
   speakReplies: z.boolean().default(true),
   speakProgress: z.boolean().default(true),
