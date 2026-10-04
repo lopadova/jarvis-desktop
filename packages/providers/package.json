@@ -1,6 +1,6 @@
 {
   "name": "@jarvis/providers",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Jarvis brain, TTS and cloud STT providers (Sign in with ChatGPT, Claude/Codex CLIs, API keys, local models).",
   "license": "MIT",
   "type": "module",

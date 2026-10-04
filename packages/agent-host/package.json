@@ -1,6 +1,6 @@
 {
   "name": "@jarvis/agent-host",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Jarvis sidecar: loopback JSON-RPC server, turn orchestrator, sessions, agent drivers, approvals, voice pipeline, reminders, MCP and relay link.",
   "license": "MIT",
   "type": "module",

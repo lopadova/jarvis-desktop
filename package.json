@@ -1,7 +1,7 @@
 {
   "name": "jarvis-desktop-monorepo",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Jarvis Desktop — a voice-first personal assistant for macOS, Windows and Linux.",
   "license": "MIT",
   "type": "module",
