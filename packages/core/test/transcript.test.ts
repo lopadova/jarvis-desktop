@@ -44,3 +44,47 @@ describe('isSelfEcho', () => {
     expect(isSelfEcho('anything at all here', [])).toBe(false);
   });
 });
+
+import { matchWakeUtterance } from '../src/voice/transcript.js';
+
+describe('matchWakeUtterance', () => {
+  it('finds the wake word, however Whisper spells it', () => {
+    for (const t of [
+      'Jarvis',
+      'Giarvis',
+      'jarvis.',
+      'Iarvis,',
+      'Jervis',
+      'Yarvis',
+      'Garvis',
+      'Hey Jarvis',
+      'Ehi Giarvis',
+      'OK Jarvis!',
+      '"Jarvis"',
+    ]) {
+      expect(matchWakeUtterance(t), t).toEqual({ matched: true, rest: '' });
+    }
+  });
+
+  it('returns the command that follows the wake word', () => {
+    expect(matchWakeUtterance('Jarvis Choresono')).toEqual({ matched: true, rest: 'Choresono' });
+    expect(matchWakeUtterance('Jarvis, che ore sono?')).toEqual({ matched: true, rest: 'che ore sono?' });
+    expect(matchWakeUtterance('Hey Jarvis: what time is it')).toEqual({ matched: true, rest: 'what time is it' });
+  });
+
+  it('ignores ordinary speech, including the word in the middle of a sentence', () => {
+    for (const t of [
+      'che ore sono',
+      'ask Jarvis later',
+      'the service was fine',
+      'servizio',
+      'I think so',
+      'Harvey',
+      'marvelous',
+      '',
+      '[Musica]',
+    ]) {
+      expect(matchWakeUtterance(t).matched, t).toBe(false);
+    }
+  });
+});

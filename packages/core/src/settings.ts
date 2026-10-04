@@ -50,6 +50,8 @@ export const SettingsSchema = z.object({
   stt: z.enum(['local-whisper', 'openai', 'elevenlabs']).default('local-whisper'),
   whisperModel: z.enum(['tiny', 'base', 'small', 'medium', 'large-v3-turbo']).default('small'),
   wakeWord: z.boolean().default(true),
+  /** Also hear the wake word with on-device speech recognition (copes with Italian accents; uses more CPU). */
+  wakeByRecognition: z.boolean().default(true),
   wakeOnClap: z.boolean().default(false),
   conversationMode: z.boolean().default(true),
   conversationWindowMs: z.number().int().min(2000).max(20000).default(6000),

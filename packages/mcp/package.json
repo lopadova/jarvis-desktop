@@ -1,6 +1,6 @@
 {
   "name": "@jarvis/mcp",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "private": true,
   "description": "MCP server for Jarvis Desktop: lets Claude, Codex and other agents talk to the user through Jarvis (stdio + Streamable HTTP).",
   "license": "MIT",

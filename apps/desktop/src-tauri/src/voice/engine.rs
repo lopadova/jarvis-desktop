@@ -25,6 +25,18 @@ const VAD_WINDOW: usize = 512; // Silero window @ 16 kHz (32 ms)
 const LEVEL_EVERY_MS: u64 = 50; // ~20 Hz
 const MIN_CAPTURE_SAMPLES: usize = (TARGET_RATE as usize) * 3 / 10; // 300 ms
 
+// Wake word by speech recognition ("probes"): short phrases heard while idle are transcribed on this computer and
+// the assistant decides whether they start with "Jarvis". Complements the English-trained keyword spotter, which
+// misses many Italian pronunciations.
+const PROBE_PREROLL_FRAMES: usize = 8; // ~256 ms kept before the speech starts
+const PROBE_END_SILENCE_FRAMES: u32 = 20; // ~640 ms of silence ends the phrase
+const PROBE_MIN_SAMPLES: usize = (TARGET_RATE as usize) * 4 / 10; // 400 ms
+const PROBE_MAX_SAMPLES: usize = (TARGET_RATE as usize) * 4; // longer speech is conversation, not a wake phrase
+
+/// Speech-recognition jobs queued or running; probes are skipped while the recogniser is busy so they never delay a
+/// real capture.
+static ASR_PENDING: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
+
 pub fn describe_input_devices() -> Vec<String> {
     let host = cpal::default_host();
     let mut out = vec![];
@@ -120,8 +132,50 @@ struct Kws {
 /// "JARVIS" tokenised with the KWS model's BPE (sentencepiece): tokens, boost, threshold, label.
 const WAKE_KEYWORD: &str = "▁JA R VI S :2.5 #0.15 @JARVIS";
 
+/// Diagnostics only: JARVIS_WAKE_KEYWORDS replaces the keyword lines (write `\n` between lines) so thresholds and
+/// pronunciations can be tuned against recordings without rebuilding.
+fn wake_keywords() -> String {
+    match std::env::var("JARVIS_WAKE_KEYWORDS") {
+        Ok(v) if !v.trim().is_empty() => v.replace("\\n", "\n"),
+        _ => WAKE_KEYWORD.to_string(),
+    }
+}
+
 fn load_kws(root: &Path) -> Option<Kws> {
-    load_kws_with(root, WAKE_KEYWORD)
+    load_kws_with(root, &wake_keywords())
+}
+
+/// Diagnostics only: when JARVIS_DUMP_CAPTURES names a directory, every finished capture is saved there as a
+/// 16 kHz mono WAV so a real voice can be replayed against the wake-word and speech models. Off by default.
+fn dump_capture(samples: &[f32], trigger: &str) {
+    let Ok(dir) = std::env::var("JARVIS_DUMP_CAPTURES") else {
+        return;
+    };
+    let pcm = f32_to_pcm16_le(samples);
+    let mut wav = Vec::with_capacity(44 + pcm.len());
+    let rate = TARGET_RATE;
+    wav.extend_from_slice(b"RIFF");
+    wav.extend_from_slice(&(36 + pcm.len() as u32).to_le_bytes());
+    wav.extend_from_slice(b"WAVEfmt ");
+    wav.extend_from_slice(&16u32.to_le_bytes());
+    wav.extend_from_slice(&1u16.to_le_bytes()); // PCM
+    wav.extend_from_slice(&1u16.to_le_bytes()); // mono
+    wav.extend_from_slice(&rate.to_le_bytes());
+    wav.extend_from_slice(&(rate * 2).to_le_bytes());
+    wav.extend_from_slice(&2u16.to_le_bytes());
+    wav.extend_from_slice(&16u16.to_le_bytes());
+    wav.extend_from_slice(b"data");
+    wav.extend_from_slice(&(pcm.len() as u32).to_le_bytes());
+    wav.extend_from_slice(&pcm);
+    let ms = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_millis())
+        .unwrap_or(0);
+    let _ = std::fs::create_dir_all(&dir);
+    let _ = std::fs::write(
+        Path::new(&dir).join(format!("capture-{ms}-{trigger}.wav")),
+        wav,
+    );
 }
 
 fn load_kws_with(root: &Path, keywords: &str) -> Option<Kws> {
@@ -170,6 +224,8 @@ struct AsrJob {
     trigger: Trigger,
     /// The selected `whisperModel` setting; resolved to an installed model when the job runs.
     whisper_setting: String,
+    /// A wake-word probe: a missing model or an empty result is silent, and the transcript is tagged "probe".
+    probe: bool,
     language: String,
 }
 
@@ -180,9 +236,18 @@ fn start_asr(root: PathBuf, sink: Arc<dyn VoiceSink>) -> Sender<AsrJob> {
         .spawn(move || {
             let mut loaded: Option<(&'static str, sherpa_onnx::OfflineRecognizer)> = None;
             while let Ok(job) = rx.recv() {
+                let probe = job.probe;
+                let trigger_name = if probe { "probe" } else { job.trigger.as_str() };
                 let duration_ms = (job.samples.len() as u64 * 1000) / TARGET_RATE as u64;
                 let Some(spec) = models::usable_whisper(&root, &job.whisper_setting) else {
-                    log::warn!("no whisper model installed (selected: {})", job.whisper_setting);
+                    if probe {
+                        ASR_PENDING.fetch_sub(1, std::sync::atomic::Ordering::SeqCst);
+                        continue;
+                    }
+                    log::warn!(
+                        "no whisper model installed (selected: {})",
+                        job.whisper_setting
+                    );
                     sink.notify(
                         "voice.nothingHeard",
                         json!({ "trigger": job.trigger.as_str(), "reason": "no-model" }),
@@ -190,14 +255,22 @@ fn start_asr(root: PathBuf, sink: Arc<dyn VoiceSink>) -> Sender<AsrJob> {
                     continue;
                 };
                 if spec.id != format!("whisper-{}", job.whisper_setting) {
-                    log::warn!("whisper model {} selected but not installed; using {}", job.whisper_setting, spec.id);
+                    log::warn!(
+                        "whisper model {} selected but not installed; using {}",
+                        job.whisper_setting,
+                        spec.id
+                    );
                 }
                 if loaded.as_ref().map(|(id, _)| *id) != Some(spec.id) {
                     loaded = build_recognizer(&root, spec, &job.language).map(|r| (spec.id, r));
                 }
                 let Some((_, rec)) = &loaded else {
+                    ASR_PENDING.fetch_sub(1, std::sync::atomic::Ordering::SeqCst);
                     log::warn!("whisper model {} could not be loaded", spec.id);
-                    sink.notify("voice.nothingHeard", json!({ "trigger": job.trigger.as_str() }));
+                    sink.notify(
+                        "voice.nothingHeard",
+                        json!({ "trigger": job.trigger.as_str() }),
+                    );
                     continue;
                 };
                 let stream = rec.create_stream();
@@ -207,12 +280,16 @@ fn start_asr(root: PathBuf, sink: Arc<dyn VoiceSink>) -> Sender<AsrJob> {
                     .get_result()
                     .map(|r| r.text.trim().to_string())
                     .unwrap_or_default();
+                ASR_PENDING.fetch_sub(1, std::sync::atomic::Ordering::SeqCst);
                 if text.is_empty() {
-                    sink.notify("voice.nothingHeard", json!({ "trigger": job.trigger.as_str() }));
+                    // A probe that heard nothing is not an event: the user never asked for anything.
+                    if !probe {
+                        sink.notify("voice.nothingHeard", json!({ "trigger": trigger_name }));
+                    }
                 } else {
                     sink.notify(
                         "voice.transcript",
-                        json!({ "text": text, "trigger": job.trigger.as_str(), "durationMs": duration_ms }),
+                        json!({ "text": text, "trigger": trigger_name, "durationMs": duration_ms }),
                     );
                 }
             }
@@ -263,6 +340,11 @@ struct Worker {
     vad: Option<sherpa_onnx::VoiceActivityDetector>,
     asr: Sender<AsrJob>,
     capture: Vec<f32>,
+    /// Wake-word probe: rolling pre-roll, then the current short phrase.
+    probe: Vec<f32>,
+    probe_active: bool,
+    probe_overflow: bool,
+    probe_silence: u32,
     monitor: bool,
     epoch: Instant,
     last_level_ms: u64,
@@ -286,6 +368,10 @@ impl Worker {
             mic: None,
             mic_failed_at: None,
             capture: Vec::new(),
+            probe: Vec::new(),
+            probe_active: false,
+            probe_overflow: false,
+            probe_silence: 0,
             monitor: false,
             epoch: Instant::now(),
             last_level_ms: 0,
@@ -438,6 +524,8 @@ impl Worker {
             None => rms > 0.03, // energy fallback until the VAD model is present
         };
 
+        self.probe_frame(frame, speech);
+
         if self.fsm.wants_wake_word()
             && self.settings.wake_word
             && let Some(k) = &self.kws
@@ -492,6 +580,67 @@ impl Worker {
         }
     }
 
+    /// Collects short phrases heard while idle and queues them for a wake-word probe.
+    fn probe_frame(&mut self, frame: &[f32], speech: bool) {
+        let listening = self.settings.wake_by_recognition
+            && self.settings.wake_word
+            && self.fsm.mode() == Mode::Idle
+            && !self.fsm.is_capturing();
+        if !listening {
+            self.probe.clear();
+            self.probe_active = false;
+            self.probe_overflow = false;
+            self.probe_silence = 0;
+            return;
+        }
+        if speech {
+            if self.probe_overflow {
+                return;
+            }
+            self.probe_silence = 0;
+            self.probe_active = true;
+            self.probe.extend_from_slice(frame);
+            if self.probe.len() > PROBE_MAX_SAMPLES {
+                // Too long to be a wake phrase: ordinary conversation, do not transcribe it.
+                self.probe.clear();
+                self.probe_active = false;
+                self.probe_overflow = true;
+            }
+        } else if self.probe_active {
+            self.probe.extend_from_slice(frame);
+            self.probe_silence += 1;
+            if self.probe_silence >= PROBE_END_SILENCE_FRAMES {
+                let samples = std::mem::take(&mut self.probe);
+                self.probe_active = false;
+                self.probe_silence = 0;
+                if samples.len() >= PROBE_MIN_SAMPLES
+                    && ASR_PENDING.load(std::sync::atomic::Ordering::SeqCst) == 0
+                {
+                    ASR_PENDING.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+                    let _ = self.asr.send(AsrJob {
+                        samples,
+                        trigger: Trigger::WakeWord,
+                        probe: true,
+                        whisper_setting: self.settings.whisper_model.clone(),
+                        language: if self.settings.locale.starts_with("it") {
+                            "it".into()
+                        } else {
+                            "en".into()
+                        },
+                    });
+                }
+            }
+        } else {
+            self.probe_overflow = false;
+            self.probe.extend_from_slice(frame);
+            let keep = PROBE_PREROLL_FRAMES * VAD_WINDOW;
+            if self.probe.len() > keep {
+                let extra = self.probe.len() - keep;
+                self.probe.drain(..extra);
+            }
+        }
+    }
+
     fn act(&mut self, action: Action) {
         match action {
             Action::Start(trigger) => {
@@ -505,6 +654,7 @@ impl Worker {
                 ..
             } => {
                 let samples = std::mem::take(&mut self.capture);
+                dump_capture(&samples, trigger.as_str());
                 self.sink.mic_level(0.0);
                 if !heard_speech || samples.len() < MIN_CAPTURE_SAMPLES {
                     self.sink
@@ -517,9 +667,11 @@ impl Worker {
                     } else {
                         "en"
                     };
+                    ASR_PENDING.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
                     let _ = self.asr.send(AsrJob {
                         samples,
                         trigger,
+                        probe: false,
                         whisper_setting: self.settings.whisper_model.clone(),
                         language: language.into(),
                     });
@@ -567,5 +719,24 @@ mod tests {
             }
         }
         assert_eq!(found, expect);
+    }
+    /// Diagnostics (needs downloaded models): prints what Whisper hears in a recording.
+    /// `JARVIS_TEST_MODELS=<models dir> JARVIS_TEST_WAV=<wav> [JARVIS_TEST_LANG=it] [JARVIS_TEST_WHISPER=small]
+    /// cargo test -- --ignored --nocapture whisper_hears`.
+    #[test]
+    #[ignore]
+    fn whisper_hears_the_recording() {
+        let root = PathBuf::from(std::env::var("JARVIS_TEST_MODELS").expect("JARVIS_TEST_MODELS"));
+        let wav = std::env::var("JARVIS_TEST_WAV").expect("JARVIS_TEST_WAV");
+        let lang = std::env::var("JARVIS_TEST_LANG").unwrap_or_else(|_| "it".into());
+        let size = std::env::var("JARVIS_TEST_WHISPER").unwrap_or_else(|_| "small".into());
+        let rec = build_recognizer(&root, models::whisper_spec(&size), &lang)
+            .expect("Whisper model loads");
+        let w = sherpa_onnx::Wave::read(&wav).expect("wav");
+        let stream = rec.create_stream();
+        stream.accept_waveform(w.sample_rate(), w.samples());
+        rec.decode(&stream);
+        let text = stream.get_result().map(|r| r.text).unwrap_or_default();
+        println!("WHISPER[{size}/{lang}]: {text}");
     }
 }

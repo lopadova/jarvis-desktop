@@ -1,6 +1,6 @@
 {
   "name": "@jarvis/desktop",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "private": true,
   "description": "Jarvis Desktop app: Tauri 2 shell + React 19 UI.",
   "license": "MIT",

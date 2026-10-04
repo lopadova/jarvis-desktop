@@ -7,7 +7,7 @@ Your voice assistant for Mac, Windows and Linux — it uses the AI subscriptions
 and nothing risky happens without your OK.</p>
 
 <p align="center">
-  <a href="https://github.com/lopadova/jarvis-desktop/releases/latest"><img alt="Download" src="https://img.shields.io/badge/%E2%AC%87%20Download-v0.1.0-22b8e6?style=for-the-badge"/></a>
+  <a href="https://github.com/lopadova/jarvis-desktop/releases/latest"><img alt="Download" src="https://img.shields.io/badge/%E2%AC%87%20Download-v0.1.2-22b8e6?style=for-the-badge"/></a>
   <a href="#quickstarts"><img alt="Quickstarts" src="https://img.shields.io/badge/Quickstarts-ChatGPT%20%C2%B7%20Claude%20%C2%B7%20Codex%20%C2%B7%20local-0b1426?style=for-the-badge"/></a>
   <a href="docs/guides/getting-started.md"><img alt="Docs" src="https://img.shields.io/badge/Read%20the-docs-7c5cff?style=for-the-badge"/></a>
 </p>
@@ -37,7 +37,7 @@ and nothing risky happens without your OK.</p>
 Jarvis is a small assistant that lives next to your clock. You talk to it like you would to a helpful colleague: it answers quick questions out loud, sets timers and reminders, tidies up what you copied, and hands bigger jobs to a background helper that keeps you posted. It works with ChatGPT, Claude or a model running on your own computer, and it **always asks before doing anything that could cause trouble**.
 
 > [!NOTE]
-> **Status: v0.1.0 is out as a pre-release.** Installers are **unsigned** for now — see [Install](#install) for the one-time "open anyway" step. The design lives in the [product spec](docs/product-spec.md); what's next is in the [Roadmap](ROADMAP.md). If something doesn't work on your computer, please [open an issue](https://github.com/lopadova/jarvis-desktop/issues/new/choose) — early feedback shapes the next release.
+> **Status: v0.1.2 is out as a pre-release.** Installers are **unsigned** for now — see [Install](#install) for the one-time "open anyway" step. The design lives in the [product spec](docs/product-spec.md); what's next is in the [Roadmap](ROADMAP.md). If something doesn't work on your computer, please [open an issue](https://github.com/lopadova/jarvis-desktop/issues/new/choose) — early feedback shapes the next release.
 
 ### ⚡ Start in 60 seconds — pick your path
 
@@ -174,16 +174,16 @@ A fair comparison against general categories of tools, not specific products.
 
 ## Install
 
-Download from **[GitHub Releases](https://github.com/lopadova/jarvis-desktop/releases/latest)**. v0.1.1 is a **pre-release**:
+Download from **[GitHub Releases](https://github.com/lopadova/jarvis-desktop/releases/latest)**. v0.1.2 is a **pre-release**:
 
 | Your computer | File | Tested |
 |---|---|---|
-| Windows 10/11 | `Jarvis_0.1.1_x64-setup.exe` (or the `.msi`) | Real Windows 11 |
-| Mac with Apple chip | `Jarvis_0.1.1_aarch64.dmg` | Built by CI only |
-| Mac with Intel chip | `Jarvis_0.1.1_x64.dmg` | Built by CI only |
-| Linux (any) | `Jarvis_0.1.1_amd64.AppImage` | Built by CI only |
-| Debian / Ubuntu | `Jarvis_0.1.1_amd64.deb` | Built by CI only |
-| Fedora / openSUSE | `Jarvis-0.1.1-1.x86_64.rpm` | Built by CI only |
+| Windows 10/11 | `Jarvis_0.1.2_x64-setup.exe` (or the `.msi`) | Real Windows 11 |
+| Mac with Apple chip | `Jarvis_0.1.2_aarch64.dmg` | Built by CI only |
+| Mac with Intel chip | `Jarvis_0.1.2_x64.dmg` | Built by CI only |
+| Linux (any) | `Jarvis_0.1.2_amd64.AppImage` | Built by CI only |
+| Debian / Ubuntu | `Jarvis_0.1.2_amd64.deb` | Built by CI only |
+| Fedora / openSUSE | `Jarvis-0.1.2-1.x86_64.rpm` | Built by CI only |
 | Claude Desktop / Cowork | `jarvis.mcpb` (double-click) | Real Claude |
 | Any MCP client | `jarvis-mcp-bundle.zip` | Real Claude Code |
 
@@ -460,7 +460,7 @@ More: [FAQ](docs/guides/faq.md) · [Troubleshooting](docs/guides/troubleshooting
 
 ## Roadmap
 
-v0.1.0 "Hello, Jarvis" is out. Next up: a **📱 mobile companion app** (push-to-talk, live sessions, remote approvals, notifications through an end-to-end encrypted Jarvis Link), signed installers, speaker verification and scheduled routines. See [ROADMAP.md](ROADMAP.md).
+v0.1 "Hello, Jarvis" is out (current: v0.1.2). Next up: a **📱 mobile companion app** (push-to-talk, live sessions, remote approvals, notifications through an end-to-end encrypted Jarvis Link), signed installers, speaker verification and scheduled routines. See [ROADMAP.md](ROADMAP.md).
 
 ---
 

@@ -6,7 +6,8 @@ import { join } from 'node:path';
 import { connect, pageFor, sleep } from './lib.mjs';
 
 const WebSocket = createRequire(join(process.cwd(), 'packages/mcp/package.json'))('ws');
-const sentence = process.argv[2] ?? 'what time is it';
+const wake = process.argv.includes('--wake');
+const sentence = process.argv.find((a, i) => i > 1 && !a.startsWith('--')) ?? 'what time is it';
 const b = await connect();
 const home = await pageFor(b, 'home');
 const ep = await home.evaluate(() => window.__TAURI_INTERNALS__.invoke('sidecar_endpoint'));
@@ -24,15 +25,15 @@ ws.on('message', (raw) => {
   console.log(`+${((Date.now() - t0) / 1000).toFixed(1)}s ${JSON.stringify(m).slice(0, 220)}`);
 });
 const invoke = (c, a) => home.evaluate(([x, y]) => window.__TAURI_INTERNALS__.invoke(x, y), [c, a ?? {}]);
-await invoke('push_to_talk', { pressed: true });
+if (!wake) await invoke('push_to_talk', { pressed: true });
 await sleep(700);
 spawnSync('powershell', [
   '-NoProfile',
   '-Command',
-  `Add-Type -AssemblyName System.Speech; $s = New-Object System.Speech.Synthesis.SpeechSynthesizer; $s.Volume = 100; $s.Speak('${sentence}')`,
+  `Add-Type -AssemblyName System.Speech; $s = New-Object System.Speech.Synthesis.SpeechSynthesizer; $s.Volume = 100; if ($env:VOICE) { $s.SelectVoice($env:VOICE) }; $s.Speak('${sentence}')`,
 ]);
 await sleep(900);
-await invoke('push_to_talk', { pressed: false });
+if (!wake) await invoke('push_to_talk', { pressed: false });
 await sleep(12000);
 console.log('max mic level while listening:', maxLevel.toFixed(3));
 ws.close();

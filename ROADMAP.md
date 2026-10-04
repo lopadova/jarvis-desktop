@@ -35,6 +35,15 @@ Today's voice is turn-based with barge-in: wake word and VAD run on-device, Whis
 
 Trade-offs to keep in mind: it needs API keys (ChatGPT plan tokens do not cover audio, so no subscription option), it is billed per audio minute, it sends audio off the computer (so it is disabled in private mode), and the realtime model is the voice, not the coding agent. Both steps are opt-in; the local, private pipeline stays the default.
 
+### Open items after v0.1
+Honest list of what was **not** finished or verified in v0.1.x:
+- **Wake word by speech recognition** — implemented and unit-tested (matching rules, 58 Rust tests), but not yet verified on the real app with a spoken "Jarvis": Windows Smart App Control blocked the freshly built unsigned executable on the development PC.
+- **Echo cancellation** — the setting exists but the feature does not; Jarvis only ignores transcripts that repeat what it just said. Headphones are the fix for now.
+- **Local commands wait behind a slow brain turn** — "what time is it" can queue behind a Codex/Claude turn (up to 2 minutes).
+- **macOS and Linux installers** are built by CI but have not been run on those systems.
+- **Fish Audio / OpenAI voices** were checked only as far as their APIs allow (the Fish test account had no API credit).
+- **Signing, updater key and docs hosting** need credentials that belong to the project owner (see below).
+
 ### 🔏 Signed & notarised installers
 Signing needs an Apple Developer ID (notarisation) and a Windows code-signing certificate, both paid. Until then, releases ship unsigned with clear "how to open" instructions. The release workflow already supports signing: it turns on when the secrets exist (see [Code signing](docs/guides/signing.md)).
 

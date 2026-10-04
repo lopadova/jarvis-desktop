@@ -8,6 +8,7 @@ Jarvis is built so that the microphone is **useful without being creepy**: the w
 |---|---|---|---|
 | Wake word **"Jarvis"** | `wakeWord` | on | On-device keyword spotting. |
 | Push-to-talk | `pushToTalk` | `Alt+Space` (`⌥ Space` on macOS) | Hold = listen, release = send. On Windows `Alt+Space` opens the window menu; we suggest `Ctrl+Alt+Space`. Change it in Settings › Shortcuts. |
+| Wake word by speech recognition | `wakeByRecognition` | on | Short phrases are transcribed on this computer; those starting with "Jarvis", "Giarvis", "Hey Jarvis" … count. Better for Italian accents. Uses more CPU and needs a Whisper model. |
 | Double clap | `wakeOnClap` | off | Only while Jarvis is idle. |
 | Conversation mode | `conversationMode` | on | Keeps listening after a reply, without the wake word. |
 | Typing / chips | — | — | Home window composer or suggestion chips. |
@@ -15,6 +16,15 @@ Jarvis is built so that the microphone is **useful without being creepy**: the w
 The Sessions panel shortcut is `toggleSessions` (default `Cmd/Ctrl+Shift+J`).
 
 > **Linux Wayland:** global shortcuts depend on your compositor and desktop portal. On some setups push-to-talk only works while a Jarvis window is focused. The wake word is unaffected.
+
+## How the wake word works
+
+Two detectors run while Jarvis is idle, both on your computer:
+
+1. **Keyword spotting** — a tiny model (sherpa-onnx) that listens for "Jarvis". It is fast and light, but it was trained on English speech. In a test with one Italian speaker it recognised only 1 of 8 recordings; the 5 English synthetic voices were all recognised.
+2. **Speech recognition** (`wakeByRecognition`) — when you say a short phrase (up to about 4 seconds), Whisper transcribes it locally and Jarvis checks whether it **starts with** "Jarvis", "Giarvis", "Iarvis", "Hey Jarvis" and similar. In the same test Whisper heard "Jarvis"/"Giarvis" in 5 of 8. Anything that does not start with the wake word is discarded. If you say "Jarvis, che ore sono?" the command runs straight away; if you only say "Jarvis" the microphone stays open for your command.
+
+Whisper listens in the **interface language**: with Italian selected, say your commands in Italian.
 
 ## How a request is captured
 
@@ -60,5 +70,7 @@ Even with cloud transcription, wake-word detection stays on-device and only the 
 - Speak at a normal volume, about an arm's length from the mic.
 - If the TV triggers Jarvis, that is harmless for risky actions — high-risk steps always need a click ([Permissions](permissions.md)) — but you can turn off the wake word and use push-to-talk instead.
 - Headsets give the best results in noisy rooms.
+- **Echo cancellation is not available yet** (the setting is a placeholder). Jarvis ignores transcripts that mostly repeat what it just said, but headphones are still the reliable fix when you use speakers.
+- If you pick a Whisper size that is not downloaded yet, Jarvis uses a size that is installed; with none installed it tells you and the microphone cannot transcribe until you download one.
 
 Not hearing you? See [Troubleshooting](troubleshooting.md#jarvis-does-not-hear-me).

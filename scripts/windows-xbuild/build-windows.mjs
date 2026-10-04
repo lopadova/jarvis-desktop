@@ -28,7 +28,11 @@ function run(cmd, args, opts = {}) {
 }
 
 const pnpm = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm';
-run(pnpm, ['--filter', '@jarvis/desktop', 'build'], { shell: process.platform === 'win32' });
+// JARVIS_SKIP_UI_BUILD=1 reuses apps/desktop/dist (for example built in a Linux container when the host's
+// application-control policy blocks the web bundler's native module).
+if (!process.env.JARVIS_SKIP_UI_BUILD) {
+  run(pnpm, ['--filter', '@jarvis/desktop', 'build'], { shell: process.platform === 'win32' });
+}
 run(pnpm, ['sidecar:build'], {
   shell: process.platform === 'win32',
   env: { ...process.env, JARVIS_SIDECAR_TARGET: triple, BUN_TARGET: 'bun-windows-x64' },

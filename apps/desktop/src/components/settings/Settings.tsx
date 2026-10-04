@@ -1077,6 +1077,7 @@ function MicrophoneTab(p: SettingsProps) {
             label={t('settings.wakeWord')}
           />
         </Row>
+        {sw('wakeByRecognition', 'settings.wakeByRecognition', 'settings.wakeByRecognition.desc')}
         {sw('wakeOnClap', 'settings.wakeOnClap', 'settings.wakeOnClap.desc')}
         <ShortcutRow
           label={t('shortcut.pushToTalk')}
@@ -1086,7 +1087,7 @@ function MicrophoneTab(p: SettingsProps) {
           onChange={(pushToTalk) => p.onPatch({ pushToTalk })}
         />
         {sw('conversationMode', 'settings.conversationMode')}
-        {sw('echoCancellation', 'settings.echoCancellation')}
+        {sw('echoCancellation', 'settings.echoCancellation', 'settings.echoCancellation.desc')}
         {sw('muteDuringFocus', 'settings.muteDuringFocus')}
       </Section>
       <Section title={t('models.title')}>

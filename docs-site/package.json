@@ -1,6 +1,6 @@
 {
   "name": "jarvis-desktop-docs",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Static docmd documentation site for Jarvis Desktop, the open-source voice assistant for macOS, Windows and Linux.",
   "private": true,
   "scripts": {

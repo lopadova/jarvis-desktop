@@ -29,7 +29,7 @@ If you want extra assurance, compare the file's SHA-256 with the checksum listed
 
 > **WebView2 Runtime.** Jarvis draws its windows with Microsoft's WebView2, which Windows 11 includes. On a clean install or on Windows 10 the setup program installs it for you. The **portable zip** does not: if you see a message about a missing "WebView2 Runtime", install the [Evergreen Bootstrapper](https://developer.microsoft.com/microsoft-edge/webview2/) once and start Jarvis again.
 >
-> **Portable zip (unsigned).** Keep `agent-host.exe` next to `jarvis-desktop.exe`. If Smart App Control blocks it ("an app control policy blocked this file"), it only trusts signed apps: use a signed release when available, or turn the feature off (a one-way switch on most Windows 11 builds, so check first).
+> **Portable zip (unsigned).** Keep `agent-host.exe` next to `jarvis-desktop.exe`. If Smart App Control blocks it ("an app control policy blocked this file"), it only trusts signed apps: use a signed release when available, or turn the feature off (a one-way switch on most Windows 11 builds, so check first). Smart App Control judges each unsigned file separately and its verdict can change over time, so a build that ran yesterday may be blocked today. Developers can run the assistant process from source with `JARVIS_SIDECAR_REPO=PATH_TO_CHECKOUT`.
 
 > Windows uses `Alt+Space` for the window menu. In Jarvis Settings › Shortcuts we suggest switching push-to-talk to `Ctrl+Alt+Space`.
 
@@ -67,7 +67,7 @@ The on-device speech models (wake word, voice-activity detection, Whisper) are d
 
 ## Updating
 
-v0.1.0 has no automatic updates yet (update signing is not configured). To update, download the newer installer from the releases page and install over the existing app; your settings, memory and history are kept.
+v0.1.x has no automatic updates yet (update signing is not configured). To update, download the newer installer from the releases page and install over the existing app; your settings, memory and history are kept.
 
 ## Uninstalling
 
