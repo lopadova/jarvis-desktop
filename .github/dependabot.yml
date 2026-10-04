@@ -30,7 +30,7 @@ updates:
     commit-message:
       prefix: "chore(deps)"
 
-  # Documentation site (npm, separate lockfile used by Cloudflare Pages `npm ci`)
+  # Documentation site (npm, separate lockfile used by `npm ci`)
   - package-ecosystem: npm
     directory: /docs-site
     schedule:

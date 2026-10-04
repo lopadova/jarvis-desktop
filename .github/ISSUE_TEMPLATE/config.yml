@@ -9,6 +9,6 @@ contact_links:
   - name: Troubleshooting and FAQ
     url: https://github.com/lopadova/jarvis-desktop/blob/main/docs/guides/troubleshooting.md
     about: Common problems and their fixes.
-  - name: Documentation site
-    url: https://jarvis-desktop.pages.dev
+  - name: Documentation
+    url: https://github.com/lopadova/jarvis-desktop/tree/main/docs
     about: Guides, reference and architecture.

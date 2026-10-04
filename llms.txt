@@ -47,7 +47,7 @@ Key facts for assistants:
 
 ## Optional
 
-- [Documentation site](https://jarvis-desktop.pages.dev)
+- [Documentation](https://github.com/lopadova/jarvis-desktop/tree/main/docs)
 - [Roadmap](https://github.com/lopadova/jarvis-desktop/blob/main/ROADMAP.md): mobile companion, signed installers
 - [Contributing](https://github.com/lopadova/jarvis-desktop/blob/main/CONTRIBUTING.md)
 - [Security policy](https://github.com/lopadova/jarvis-desktop/blob/main/SECURITY.md)
