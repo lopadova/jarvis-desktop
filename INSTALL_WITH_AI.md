@@ -136,7 +136,7 @@ Tell them:
 - They can say **"Jarvis"** or hold **Alt+Space** (⌥ Space on Mac) to talk. On Windows, if Alt+Space opens a window menu instead, they can change the shortcut in *Settings › Shortcuts* (for example to Ctrl+Alt+Space).
 - Anything risky shows an approval card; high-risk actions always need a click.
 - *"Jarvis, switch to local mode"* keeps everything on the computer.
-- Help: <https://jarvis-desktop.pages.dev> and <https://github.com/lopadova/jarvis-desktop#readme>.
+- Help: <https://github.com/lopadova/jarvis-desktop/tree/main/docs> and <https://github.com/lopadova/jarvis-desktop#readme>.
 
 🛑 **Ask first** before offering optional extras such as starting at login (*Settings › General*) or connecting Claude Desktop / ChatGPT.
 

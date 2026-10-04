@@ -108,5 +108,5 @@ npm run check    # rejects raw HTML in markdown
 npm run build    # static site + semantic search index
 ```
 
-Use docmd containers (callouts, cards, steps, tabs, collapsibles) instead of HTML. Cloudflare Pages runs
+Use docmd containers (callouts, cards, steps, tabs, collapsibles) instead of HTML. The docs build runs
 `npm ci`, so keep `package.json` and `package-lock.json` in sync.

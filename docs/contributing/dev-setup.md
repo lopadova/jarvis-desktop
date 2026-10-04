@@ -130,9 +130,8 @@ Headless check of the native shell: `jarvis-desktop --self-test` initialises aud
 
 - `.github/workflows/ci.yml` runs Biome, typecheck and Vitest on Ubuntu, plus `cargo fmt`, `clippy` and `cargo test` on macOS, Windows and Linux.
 - `.github/workflows/release.yml` runs on a `v*` tag. It builds the Bun sidecar for each target triple, builds unsigned installers with `tauri-action` and builds the MCP bundles. A single job with write access then creates a **draft** release, adding `SHA256SUMS.txt`. A maintainer publishes it after testing.
-- `.github/workflows/docs.yml` builds `docs-site/` on PRs and deploys it to Cloudflare Pages from `main`. It needs the repository secrets `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`, and optionally the variable `CLOUDFLARE_PAGES_PROJECT`.
-  - Create the token with **least privilege**: Account › *Cloudflare Pages* › *Edit*, limited to this one account and, where the dashboard allows it, to this one Pages project.
-  - Never use the global API key, and never use a token that also has Workers, DNS or other permissions.
+- `.github/workflows/docs.yml` builds `docs-site/` on PRs and on pushes to `main` to check that the documentation builds. It **does not publish anything**: there is no deploy job, environment or hosting credential in this repository.
+  - To host the site, publish the generated `docs-site/_site` folder on a static host you own. If you use a hosting service's own project, give it a name that is yours alone and keep its token out of this repository unless you add a deploy job on purpose.
 - Every action is **pinned to a full commit SHA**, with the version as a comment. Dependabot (`.github/dependabot.yml`) proposes weekly bumps for actions, npm and cargo.
 
 ## Troubleshooting the build
