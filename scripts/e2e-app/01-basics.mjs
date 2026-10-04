@@ -84,9 +84,13 @@ const know = await waitConversation(home, (c) => /remember|saved|nothing|know/i.
 check('"what do you know about me" answered locally', !!know, know?.slice(-140));
 
 await say(home, "delete today's history");
-// Everything from today must be gone (the confirmation itself may be wiped too, so an empty conversation is fine).
+// Every message from today must be gone. The shopping card is the live list (eggs remain), not history.
 await sleep(3000);
-const left = await waitConversation(home, (c) => !/milk|shopping list|what time/i.test(c), 90000);
+const left = await waitConversation(
+  home,
+  (c) => !/what time is it|timer for 8 seconds|add milk and eggs|remove milk|private mode|what do you know/i.test(c),
+  90000,
+);
 check(
   '"delete today\'s history" clears the conversation',
   left !== null,
