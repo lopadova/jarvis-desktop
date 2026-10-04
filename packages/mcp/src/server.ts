@@ -12,7 +12,7 @@ import { errorResult, type Forward } from './forward.js';
 import { isToolName, toolDefinitions } from './tools.js';
 
 export const SERVER_NAME = 'jarvis';
-export const SERVER_VERSION = '0.1.2';
+export const SERVER_VERSION = '0.1.3';
 
 export const SERVER_INSTRUCTIONS =
   "Jarvis is the user's voice assistant on their computer. Use jarvis_speak for short spoken updates, " +

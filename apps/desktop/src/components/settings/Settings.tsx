@@ -1087,6 +1087,7 @@ function MicrophoneTab(p: SettingsProps) {
           onChange={(pushToTalk) => p.onPatch({ pushToTalk })}
         />
         {sw('conversationMode', 'settings.conversationMode')}
+        {sw('bargeIn', 'settings.bargeIn', 'settings.bargeIn.desc')}
         {sw('echoCancellation', 'settings.echoCancellation', 'settings.echoCancellation.desc')}
         {sw('muteDuringFocus', 'settings.muteDuringFocus')}
       </Section>

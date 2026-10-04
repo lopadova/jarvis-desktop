@@ -38,7 +38,7 @@ Trade-offs to keep in mind: it needs API keys (ChatGPT plan tokens do not cover 
 ### Open items after v0.1
 Honest list of what was **not** finished or verified in v0.1.x:
 - **Wake word by speech recognition** — implemented and unit-tested (matching rules, 58 Rust tests), but not yet verified on the real app with a spoken "Jarvis": Windows Smart App Control blocked the freshly built unsigned executable on the development PC.
-- **Echo cancellation** — the setting exists but the feature does not; Jarvis only ignores transcripts that repeat what it just said. Headphones are the fix for now.
+- **Echo cancellation** — the setting exists but the feature does not. Mitigations in v0.1.3: interrupting by speaking is off by default, the microphone is ignored for 1.5 s after each reply, and transcripts that repeat the last reply are dropped. Headphones are the fix for now.
 - **Local commands wait behind a slow brain turn** — "what time is it" can queue behind a Codex/Claude turn (up to 2 minutes).
 - **macOS and Linux installers** are built by CI but have not been run on those systems.
 - **Fish Audio / OpenAI voices** were checked only as far as their APIs allow (the Fish test account had no API credit).

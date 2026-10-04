@@ -423,7 +423,10 @@ impl Worker {
     fn handle(&mut self, cmd: VoiceCmd) {
         let now = self.now_ms();
         match cmd {
-            VoiceCmd::Settings(s) => self.settings = s,
+            VoiceCmd::Settings(s) => {
+                self.fsm.set_barge_in(s.barge_in);
+                self.settings = s;
+            }
             VoiceCmd::Mode {
                 mode,
                 conversation_ms,

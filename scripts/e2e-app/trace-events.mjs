@@ -18,7 +18,13 @@ ws.on('message', (raw) => {
   const st = m.params?.state;
   if (m.method === 'ui.pill' && st?.kind === 'listening') {
     maxLevel = Math.max(maxLevel, st.level ?? 0);
-    if (!st.partial && !st.committed && (st.level ?? 0) < 0.02 && Date.now() - t0 > 0) { if (!globalThis.__shownListen) { globalThis.__shownListen = true; console.log(`+${((Date.now() - t0) / 1000).toFixed(1)}s [pill: listening]`); } return; }
+    if (!st.partial && !st.committed && (st.level ?? 0) < 0.02 && Date.now() - t0 > 0) {
+      if (!globalThis.__shownListen) {
+        globalThis.__shownListen = true;
+        console.log(`+${((Date.now() - t0) / 1000).toFixed(1)}s [pill: listening]`);
+      }
+      return;
+    }
   }
   console.log(`+${((Date.now() - t0) / 1000).toFixed(1)}s ${JSON.stringify(m).slice(0, 210)}`);
 });

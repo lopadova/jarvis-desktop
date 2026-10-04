@@ -3,7 +3,7 @@
   "manifest_version": "0.3",
   "name": "jarvis",
   "display_name": "Jarvis",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Let Claude talk to you out loud through Jarvis, your voice assistant on this computer.",
   "long_description": "Jarvis Desktop is a voice-first personal assistant. With this extension Claude can speak short updates, ask you a question out loud and wait for your answer, show a notification, start background tasks in Jarvis and read what Jarvis remembers about you.\n\nThe Jarvis app must be running on this computer. Calls go only to the local Jarvis process (loopback); risky actions still need your approval on screen.",
   "author": {

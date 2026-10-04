@@ -103,7 +103,15 @@ pub struct Fsm {
     mode: Mode,
     conversation_until: Option<u64>,
     speech_run_start: Option<u64>,
+    /// Speaking over Jarvis interrupts it. Off by default: without acoustic echo cancellation the speakers
+    /// would make Jarvis interrupt (and answer) itself.
+    barge_in_enabled: bool,
+    /// After Jarvis stops speaking, ignore the microphone for a moment: the tail of its own voice is still in the room.
+    quiet_until: u64,
 }
+
+/// How long the microphone is ignored after Jarvis finishes a reply.
+const AFTER_SPEECH_QUIET_MS: u64 = 1500;
 
 impl Fsm {
     pub fn new(cfg: Config) -> Self {
@@ -113,7 +121,13 @@ impl Fsm {
             mode: Mode::Idle,
             conversation_until: None,
             speech_run_start: None,
+            barge_in_enabled: false,
+            quiet_until: 0,
         }
+    }
+
+    pub fn set_barge_in(&mut self, enabled: bool) {
+        self.barge_in_enabled = enabled;
     }
 
     pub fn is_capturing(&self) -> bool {
@@ -130,6 +144,9 @@ impl Fsm {
     }
 
     pub fn set_mode(&mut self, mode: Mode, conversation_ms: Option<u64>, now: u64) {
+        if self.mode == Mode::Speaking && mode != Mode::Speaking {
+            self.quiet_until = now + AFTER_SPEECH_QUIET_MS;
+        }
         self.mode = mode;
         self.speech_run_start = None;
         self.conversation_until = match mode {
@@ -188,6 +205,10 @@ impl Fsm {
     pub fn frame(&mut self, now: u64, speech: bool) -> Option<Action> {
         match self.phase {
             Phase::Idle => {
+                if now < self.quiet_until {
+                    self.speech_run_start = None;
+                    return None;
+                }
                 if !speech {
                     self.speech_run_start = None;
                     if let Some(until) = self.conversation_until
@@ -199,6 +220,7 @@ impl Fsm {
                 }
                 let run_start = *self.speech_run_start.get_or_insert(now);
                 if self.mode == Mode::Speaking
+                    && self.barge_in_enabled
                     && now.saturating_sub(run_start) >= self.cfg.barge_in_ms
                 {
                     return self.wake(Trigger::BargeIn, now);
@@ -330,6 +352,7 @@ mod tests {
     #[test]
     fn barge_in_needs_400_ms_of_speech_while_speaking() {
         let mut f = Fsm::new(Config::default());
+        f.set_barge_in(true);
         f.set_mode(Mode::Speaking, None, 0);
         assert!(!f.wants_wake_word());
         // 300 ms burst, then silence: no barge-in.
@@ -338,6 +361,27 @@ mod tests {
         // Sustained speech: barge-in.
         let a = feed(&mut f, 600, 1200, true);
         assert_eq!(a.first(), Some(&Action::Start(Trigger::BargeIn)));
+    }
+
+    #[test]
+    fn speaking_over_jarvis_does_nothing_unless_barge_in_is_enabled() {
+        let mut f = Fsm::new(Config::default());
+        f.set_mode(Mode::Speaking, None, 0);
+        // Jarvis' own voice coming back through the microphone must not interrupt it.
+        assert!(feed(&mut f, 0, 3000, true).is_empty());
+    }
+
+    #[test]
+    fn the_microphone_is_ignored_right_after_jarvis_stops_speaking() {
+        let mut f = Fsm::new(Config::default());
+        f.set_mode(Mode::Speaking, None, 0);
+        f.set_mode(Mode::Conversation, Some(6000), 1000);
+        // The echo of the reply's tail (inside the quiet period) never starts a capture…
+        assert!(feed(&mut f, 1000, 2400, true).is_empty());
+        assert!(feed(&mut f, 2400, 2600, false).is_empty());
+        // …but the user speaking after it does.
+        let a = feed(&mut f, 2600, 3000, true);
+        assert_eq!(a.first(), Some(&Action::Start(Trigger::Conversation)));
     }
 
     #[test]

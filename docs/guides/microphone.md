@@ -10,7 +10,8 @@ Jarvis is built so that the microphone is **useful without being creepy**: the w
 | Push-to-talk | `pushToTalk` | `Alt+Space` (`⌥ Space` on macOS) | Hold = listen, release = send. On Windows `Alt+Space` opens the window menu; we suggest `Ctrl+Alt+Space`. Change it in Settings › Shortcuts. |
 | Wake word by speech recognition | `wakeByRecognition` | on | Short phrases are transcribed on this computer; those starting with "Jarvis", "Giarvis", "Hey Jarvis" … count. Better for Italian accents. Uses more CPU and needs a Whisper model. |
 | Double clap | `wakeOnClap` | off | Only while Jarvis is idle. |
-| Conversation mode | `conversationMode` | on | Keeps listening after a reply, without the wake word. |
+| Conversation mode | `conversationMode` | on | Keeps listening after a reply, without the wake word. The microphone is ignored for a moment after Jarvis stops talking. |
+| Interrupt Jarvis by speaking | `bargeIn` | off | Speak over a reply to stop it. **Use headphones**: without echo cancellation, speakers would make Jarvis interrupt and answer itself. Push-to-talk and Esc always stop it. |
 | Typing / chips | — | — | Home window composer or suggestion chips. |
 
 The Sessions panel shortcut is `toggleSessions` (default `Cmd/Ctrl+Shift+J`).

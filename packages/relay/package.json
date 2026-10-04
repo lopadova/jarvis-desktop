@@ -1,6 +1,6 @@
 {
   "name": "@jarvis/relay",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "private": true,
   "description": "Remote MCP relay for Jarvis Desktop (Cloudflare Worker + Durable Object, free tier) so ChatGPT can reach Jarvis on your computer.",
   "license": "MIT",
