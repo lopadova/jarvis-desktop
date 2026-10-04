@@ -245,7 +245,12 @@ export function matchFastIntent(utterance: string): FastIntent | null {
     return { kind: 'status' };
   }
   if (/^(repeat|say (that|it) again|ripeti|puoi ripetere|come hai detto)$/.test(t)) return { kind: 'repeat' };
-  if (/^(what time is it|what'?s the time|che ore sono|che ora e|che ora è)$/.test(t)) return { kind: 'time' };
+  if (
+    /^(what time is it|what'?s the time|(what time is it|che ore sono|che ora sono|che ora e|che ore e)( now| adesso| ora)?)$/.test(
+      t,
+    )
+  )
+    return { kind: 'time' };
   if (/^(what'?s the date|what day is (it|today)|che giorno e( oggi)?|che data e( oggi)?)$/.test(t))
     return { kind: 'date' };
   if (/^(open settings|apri (le )?impostazioni|settings|impostazioni)$/.test(t)) return { kind: 'open-settings' };

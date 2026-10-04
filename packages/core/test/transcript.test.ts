@@ -88,3 +88,21 @@ describe('matchWakeUtterance', () => {
     }
   });
 });
+
+import { matchFastIntent } from '../src/router/fastpath.js';
+
+describe('local time question (Whisper spells it both ways)', () => {
+  it('answers locally for "che ora sono" and "che ore sono" and the English forms', () => {
+    for (const t of [
+      'che ora sono',
+      'Che ore sono?',
+      'che ora è',
+      'che ore sono adesso',
+      'what time is it',
+      'What time is it now?',
+    ]) {
+      expect(matchFastIntent(t), t).toEqual({ kind: 'time' });
+    }
+    expect(matchFastIntent('che ora sono i miei')).toBeNull();
+  });
+});
