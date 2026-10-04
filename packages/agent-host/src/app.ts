@@ -64,7 +64,7 @@ import { errorMessage, expandHome, newId } from './util.js';
 import { safeOpenable } from './viewable.js';
 import { VoiceOutput } from './voice/output.js';
 
-export const VERSION = '0.1.3';
+export const VERSION = '0.1.4';
 
 export interface AppDeps {
   store: Store;

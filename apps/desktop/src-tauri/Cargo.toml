@@ -1,6 +1,6 @@
 [package]
 name = "jarvis-desktop"
-version = "0.1.3"
+version = "0.1.4"
 description = "Jarvis Desktop shell: windows, tray, shortcuts, keyring, audio playback and on-device voice input"
 authors = ["Jarvis Desktop contributors"]
 license = "MIT"
