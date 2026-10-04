@@ -46,7 +46,11 @@ Use a larger `whisperModel` (`medium` or `large-v3-turbo`), check that the UI la
 speak (English/Italiano), or try a cloud transcription provider.
 :::
 
-::: collapsible "Jarvis hears itself / interrupts itself"
+::: collapsible "Jarvis hears itself / answers itself in a loop"
+Without acoustic echo cancellation (not available yet), speakers can feed Jarvis's own voice back into the microphone. Interrupting by speaking (`bargeIn`) is therefore **off** by default, the microphone is ignored for a moment after each reply, and transcripts that repeat the last reply are dropped. If it still loops on your speakers, turn off conversation mode or use headphones.
+:::
+
+::: collapsible "Jarvis hears itself / interrupts itself (older notes)"
 Keep `echoCancellation` on, lower the speaker volume or use headphones.
 :::
 

@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.1.3] — 2026-10-05
+
+### Fixed
+- **Jarvis answering itself in a loop on speakers:** without echo cancellation its own voice was heard as a request. Interrupting by speaking (`bargeIn`) is now off by default (enable it with headphones), the microphone is ignored for 1.5 s after each reply, and the voice engine returns to idle when the assistant process restarts.
+- "Che ora sono" (Whisper's spelling) is answered locally; Whisper's inventions on silence ("(speaking in foreign language)", subtitle credits) are dropped.
+
 ## [0.1.2] — 2026-10-04
 
 ### Added

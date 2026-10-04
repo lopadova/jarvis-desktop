@@ -52,6 +52,8 @@ export const SettingsSchema = z.object({
   wakeWord: z.boolean().default(true),
   /** Also hear the wake word with on-device speech recognition (copes with Italian accents; uses more CPU). */
   wakeByRecognition: z.boolean().default(true),
+  /** Speaking over Jarvis interrupts it. Off by default: without echo cancellation the speakers interrupt it. */
+  bargeIn: z.boolean().default(false),
   wakeOnClap: z.boolean().default(false),
   conversationMode: z.boolean().default(true),
   conversationWindowMs: z.number().int().min(2000).max(20000).default(6000),

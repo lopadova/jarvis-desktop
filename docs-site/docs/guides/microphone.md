@@ -21,6 +21,7 @@ whenever the microphone is live.
 | **Double clap** | Clap twice, only when idle | `wakeOnClap` (off) |
 | **Type or click** | Home composer or a suggestion chip | — |
 | **Conversation mode** | After a reply, keep talking without "Jarvis" | `conversationMode` (on), `conversationWindowMs` (6000) |
+| **Interrupt by speaking** | Speak over a reply to stop it (use headphones) | `bargeIn` (off) |
 
 On macOS the push-to-talk default shows as `⌥Space`. On Windows, `Alt+Space` opens many apps' window
 menu — `Ctrl+Alt+Space` is a good choice. Change it in **Settings › Shortcuts** (the recorder warns

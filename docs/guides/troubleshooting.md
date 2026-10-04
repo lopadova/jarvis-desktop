@@ -38,7 +38,7 @@ The TV or a video said something like "Jarvis". This is harmless for risky actio
 - Settings › Voice › press ▶ preview. If preview is silent, check the output device and system volume.
 - Cloud voices need a valid API key. Settings › Voice shows **Ready** or **Needs setup** for the provider you picked. If it cannot speak (no key, voice not downloaded, no credit left, request failed) Jarvis says so and uses the system voice instead. Fish Audio bills its API credit separately from the subscription ("Insufficient API credit").
 - `speakReplies` must be on. During Focus / Do Not Disturb Jarvis stays quiet if `muteDuringFocus` is on.
-- Jarvis hears itself and stops? Keep `echoCancellation` on, or use headphones.
+- Jarvis hears itself, interrupts itself or answers itself in a loop? Echo cancellation is not available yet. Interrupting by speaking (`bargeIn`) is off by default, the microphone is ignored for a moment after each reply and transcripts that repeat the last reply are dropped; if it still loops on your speakers, turn off conversation mode or use headphones.
 
 ## "I don't have a brain connected yet"
 

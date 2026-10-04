@@ -87,6 +87,14 @@ async fn connect_once(
     {
         let s = shell.clone();
         tokio::spawn(async move {
+            // A (re)started assistant process knows nothing about what the voice engine was doing: a mode left over
+            // from a request that died with the old process (busy, speaking, conversation) would keep it deaf to the
+            // wake word, so go back to idle and stop any half-played reply.
+            s.voice.send(crate::voice::VoiceCmd::Mode {
+                mode: crate::voice::fsm::Mode::Idle,
+                conversation_ms: None,
+            });
+            s.audio.send(AudioCmd::Stop);
             if let Ok(res) = s.request("settings.get", json!({})).await
                 && let Some(settings) = res.get("settings")
             {

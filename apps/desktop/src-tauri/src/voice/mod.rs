@@ -37,6 +37,8 @@ pub struct VoiceSettings {
     pub wake_word: bool,
     /// Also hear the wake word by transcribing short phrases (works for accents the keyword spotter misses).
     pub wake_by_recognition: bool,
+    /// Speaking over Jarvis interrupts it (needs headphones: there is no echo cancellation yet).
+    pub barge_in: bool,
     pub wake_on_clap: bool,
     pub conversation_mode: bool,
     pub conversation_window_ms: u64,
@@ -52,6 +54,7 @@ impl Default for VoiceSettings {
             whisper_model: "small".into(),
             wake_word: true,
             wake_by_recognition: true,
+            barge_in: false,
             wake_on_clap: false,
             conversation_mode: true,
             conversation_window_ms: 6000,
