@@ -18,11 +18,11 @@
     "build:binary": "node scripts/build-binary.mjs"
   },
   "dependencies": {
-    "@anthropic-ai/claude-agent-sdk": "^0.3.288",
+    "@anthropic-ai/claude-agent-sdk": "^0.3.292",
     "@jarvis/core": "workspace:*",
     "@jarvis/providers": "workspace:*",
-    "@modelcontextprotocol/sdk": "^1.32.0",
-    "@openai/codex-sdk": "^0.160.0",
+    "@modelcontextprotocol/sdk": "^1.32.1",
+    "@openai/codex-sdk": "^0.160.1",
     "ipaddr.js": "^2.5.0",
     "tldts": "^7.4.16",
     "ws": "^8.22.0",
