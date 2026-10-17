@@ -55,7 +55,7 @@ hex = "0.4.3"
 sha2 = "0.11.0"
 url = "2.5.8"
 keyring = "4.2.0"
-rodio = { version = "0.22.2", default-features = false, features = ["playback", "mp3", "wav"] }
+rodio = { version = "0.23.0", default-features = false, features = ["playback", "mp3", "wav"] }
 enigo = "0.6.1"
 image = { version = "0.25.10", default-features = false, features = ["png"] }
 window-vibrancy = "0.8.1"
