@@ -16,6 +16,6 @@
   },
   "dependencies": {
     "@jarvis/core": "workspace:*",
-    "jose": "^6.2.12"
+    "jose": "^6.2.13"
   }
 }
